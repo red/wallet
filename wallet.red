@@ -14,15 +14,28 @@ Red [
 
 wallet: context [
 
-	on-connect: func [face [object!] event [event!]][
-		ledger/connect
-		dev/text: "Ledger Nano S"
+	list-font: make font! [name: "Consolas" size: 11]
+
+	on-connect: func [face [object!] event [event!] /local addresses n][
+		either ledger/connect [
+			dev/text: "Ledger Nano S"
+			addresses: make block! 10
+			n: 0
+			loop 5 [
+				append addresses ledger/get-address n
+				n: n + 1
+			]
+			addr-list/data: addresses
+		][
+			dev/text: "No Device"
+		]
 	]
 
 	ui: layout [
-		text "Device:" dev: text 100 button "Connect" :on-connect
+		title "Red Wallet"
+		text 60 "Device:" dev: text 250 button "Connect" :on-connect
 		return
-		text-list 265x400
+		addr-list: text-list font list-font 400x200
 	]
 
 	setup-actors: does [

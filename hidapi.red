@@ -43,6 +43,10 @@ Red [
 				millisec	[integer!]
 				return:		[integer!]
 			]
+			hid_error: "hid_error" [
+				device		[int-ptr!]
+				return:		[c-string!]
+			]
 		]
 	]
 
@@ -63,15 +67,19 @@ hid: context [
 	open: routine [
 		vendor_id	[integer!]
 		product_id	[integer!]
-		return:		[handle!]
+		/local
+			h		[int-ptr!]
 	][
-		handle/box as-integer hid_open vendor_id product_id null
+		h: hid_open vendor_id product_id null
+		either null? h [stack/set-last none-value][
+			handle/box as-integer h
+		]
 	]
 	
 	read: routine [
 		dev		[handle!]
 		buffer	[binary!]
-		timeout [integer!]
+		timeout [integer!]		;-- millisec
 		/local
 			s	[series!]
 			p	[byte-ptr!]
@@ -82,6 +90,7 @@ hid: context [
 		sz: hid_read_timeout as int-ptr! dev/value p s/size timeout
 		either sz = -1 [
 			probe "read error"
+			stack/set-last none-value
 		][
 			s/tail: as cell! (p + sz)
 		]
