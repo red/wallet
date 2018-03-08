@@ -30,7 +30,7 @@ rlp: context [
 			rejoin [encode-length length? buffer 192 buffer]
 		][
 			buffer: to binary! data
-			if integer? data [buffer: trim/head buffer]
+			if number? data [buffer: trim/head buffer]
 			either all [1 = length? buffer buffer/1 < 128][
 				buffer
 			][
