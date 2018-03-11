@@ -22,6 +22,8 @@ wallet: context [
 	ETH-ratio: make bignum! #{5AF3107A4000}
 	GWei-ratio: make bignum! 100000
 
+	signed-data: none
+
 	eth-to-wei: func [eth /local n][
 		if string? eth [eth: to float! eth]
 		n: to bignum! to integer! eth * 10000
@@ -65,7 +67,7 @@ wallet: context [
 			copy/part next signed 32
 			copy/part skip signed 33 32
 		]
-		probe rlp/encode tx
+		rlp/encode tx
 	]
 
 	on-connect: func [face [object!] event [event!] /local addresses addr n][
@@ -81,13 +83,6 @@ wallet: context [
 			addr-list/data: addresses
 		][
 			dev/text: "No Device"
-			#if debug? [
-				dev/text: "Debug Testing"
-				addr: "0x16B181e3dF2453b7C334Ed6cF9Ecc7561845fafe"
-				addrs: make block! 2
-				append addrs rejoin [addr "   " get-balance addr]
-				addr-list/data: addrs
-			]
 		]
 	]
 
@@ -107,12 +102,29 @@ wallet: context [
 			eth-to-wei amount-field/text		;-- value
 			#{}									;-- data
 		]
-		get-signed-data tx
-		view/flags confirm-sheet 'modal
+		signed-data: get-signed-data tx
+		;@@ TBD fill confirmation sheet
+		if signed-data [view/flags confirm-sheet 'modal]
 	]
 
-	on-confirm: func [face [object!] event [event!]][
-		
+	on-confirm: func [face [object!] event [event!] /local url data body reply][
+		url: http://api.infura.io/v1/jsonrpc/rinkeby
+		data: rejoin ["0x" enbase/base signed-data 16]
+		body: #(
+			jsonrpc: "2.0"
+			id: 57386342
+			method: "eth_sendRawTransaction"
+		)
+		body/params: reduce [data]
+		reply: json/decode write/info url compose [
+			POST
+			[
+				Content-Type: "application/json"
+				Accept: "application/json"
+			]
+			(json/encode body)
+		]
+		reply/result			;-- tx hash
 	]
 
 	send-dialog: layout [
@@ -138,7 +150,7 @@ wallet: context [
 		label "Max TX Fee:" text 300 return
 		label "Nonce:" text 300 return
 		label "Data:" text 300 return
-		pad 144x10 button "No" [unview] button "Yes" :on-confirm
+		pad 144x10 button "No" [signed-data: none unview] button "Yes" :on-confirm
 	]
 
 	ui: layout [
