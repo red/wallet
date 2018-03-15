@@ -1,5 +1,5 @@
 Red [
-	Title:	"RED Wallet for Ledger Nano S (Demo)"
+	Title:	"RED Wallet (Demo)"
 	Author: "Xie Qingtian"
 	File: 	%wallet.red
 	Needs:	View
@@ -37,7 +37,7 @@ wallet: context [
 	]
 
 	get-balance: func [address [string!] /local url data n][
-		url: copy http://api.infura.io/v1/jsonrpc/rinkeby/eth_getBalance?params=%5B%22address%22%2C%22latest%22%5D
+		url: copy https://api.infura.io/v1/jsonrpc/rinkeby/eth_getBalance?params=%5B%22address%22%2C%22latest%22%5D
 		replace url "address" address
 		data: json/decode read url
 		either (length? data/result) % 2 <> 0 [
@@ -50,7 +50,7 @@ wallet: context [
 	]
 
 	get-nonce: function [address [string!]][
-		url: copy http://api.infura.io/v1/jsonrpc/rinkeby/eth_getTransactionCount?params=%5B%22address%22%2C%20%22pending%22%5D
+		url: copy https://api.infura.io/v1/jsonrpc/rinkeby/eth_getTransactionCount?params=%5B%22address%22%2C%20%22pending%22%5D
 		replace url "address" address
 		data: json/decode read url
 		either (length? data/result) % 2 <> 0 [
@@ -72,6 +72,7 @@ wallet: context [
 
 	on-connect: func [face [object!] event [event!] /local addresses addr n][
 		either ledger/connect [
+			face/enabled?: no
 			dev/text: "Ledger Nano S"
 			addresses: make block! 10
 			n: 0
@@ -83,11 +84,19 @@ wallet: context [
 			addr-list/data: addresses
 		][
 			dev/text: "No Device"
+			#if debug? [
+				dev/text: "Debug Testing"
+				addr: "0xEd6cF9Ecc7561845fafe16B181e3dF2453b7C334"
+				addrs: make block! 2
+				append addrs rejoin [addr "   " get-balance addr]
+				addr-list/data: addrs
+			]
 		]
 	]
 
 	on-send: func [face [object!] event [event!]][
-		if all [addr-list/data addr-list/selected][
+		if addr-list/data [
+			if addr-list/selected = -1 [addr-list/selected: 1]
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
 			view/flags send-dialog 'modal 
 		]
@@ -102,13 +111,27 @@ wallet: context [
 			eth-to-wei amount-field/text		;-- value
 			#{}									;-- data
 		]
-		signed-data: get-signed-data tx
-		;@@ TBD fill confirmation sheet
-		if signed-data [view/flags confirm-sheet 'modal]
+		view/flags check-dlg 'modal
+		#either debug? [signed-data: #{1234}][
+			signed-data: get-signed-data tx
+		]
+		if check-dlg/state [unview]
+		if signed-data [
+			info-from/text: addr-from/text
+			info-to/text: addr-to/text
+			info-amount/text: amount-field/text
+			info-network/text: "Rinkeby Testnet"
+			info-price/text: gas-price/text
+			info-limit/text: gas-limit/text
+			info-fee/text: mold (to float! gas-price/text) * (to float! gas-limit/text)
+			info-nonce/text: mold tx/1
+			info-data/text: mold signed-data
+			view/flags confirm-sheet 'modal
+		]
 	]
 
 	on-confirm: func [face [object!] event [event!] /local url data body reply][
-		url: http://api.infura.io/v1/jsonrpc/rinkeby
+		url: https://api.infura.io/v1/jsonrpc/rinkeby
 		data: rejoin ["0x" enbase/base signed-data 16]
 		body: #(
 			jsonrpc: "2.0"
@@ -124,7 +147,7 @@ wallet: context [
 			]
 			(json/encode body)
 		]
-		reply/result			;-- tx hash
+		probe reply/result			;-- tx hash
 	]
 
 	send-dialog: layout [
@@ -141,15 +164,16 @@ wallet: context [
 	confirm-sheet: layout [
 		title "Confirm Transaction"
 		style label: text 100 right
-		label "From Address:" text 300 return
-		label "To Address:" text 300 return
-		label "Amount to Send:" text 300 return
-		label "Network:" text 300 return
-		label "Gas Price:" text "21000" return
-		label "Gas Limit:" text "21" return
-		label "Max TX Fee:" text 300 return
-		label "Nonce:" text 300 return
-		label "Data:" text 300 return
+		style info: text 300 middle
+		label "From Address:" info-from: info return
+		label "To Address:" info-to: info return
+		label "Amount to Send:" info-amount: info return
+		label "Network:" info-network: info return
+		label "Gas Price:" info-price: info return
+		label "Gas Limit:" info-limit: info return
+		label "Max TX Fee:" info-fee: info return
+		label "Nonce:" info-nonce: info return
+		label "Data:" info-data: info return
 		pad 144x10 button "No" [signed-data: none unview] button "Yes" :on-confirm
 	]
 
@@ -160,6 +184,12 @@ wallet: context [
 		button "Send" :on-send
 		return
 		addr-list: text-list font list-font 450x200
+	]
+
+	check-dlg: layout [
+		title "Check on your key"
+		text "Please check the transcation on your key"
+		button "Ok"
 	]
 
 	setup-actors: does [
