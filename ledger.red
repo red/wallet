@@ -40,7 +40,10 @@ ledger: context [
 	data-frame: make binary! PACKET_SIZE
 
 	connect: func [][
-		dongle: hid/open 2C97h 1		;-- vendor ID (2C97h) and product ID (01h) for the Nano S
+		unless dongle [
+			dongle: hid/open 2C97h 1	;-- vendor ID (2C97h) and product ID (01h) for the Nano S
+		]
+		dongle
 	]
 
 	read-apdu: func [
@@ -102,9 +105,9 @@ ledger: context [
 
 			limit: PACKET_SIZE - length? data-frame
 			append/part data-frame data limit
-			if PACKET_SIZE <> length? data-frame [
-				append/dup data-frame 0 PACKET_SIZE - length? data-frame
-			]
+			;if PACKET_SIZE <> length? data-frame [
+			;	append/dup data-frame 0 PACKET_SIZE - length? data-frame
+			;]
 			data: skip data limit
 			hid/write dongle data-frame
 		]
@@ -127,10 +130,12 @@ ledger: context [
 		write-apdu data
 		data: read-apdu 10
 
-		;-- parse reply data
-		pub-key-len: to-integer data/1
-		addr-len: to-integer pick skip data pub-key-len + 1 1
-		rejoin ["0x" to-string copy/part skip data pub-key-len + 2 addr-len]
+		if 40 < length? data [
+			;-- parse reply data
+			pub-key-len: to-integer data/1
+			addr-len: to-integer pick skip data pub-key-len + 1 1
+			rejoin ["0x" to-string copy/part skip data pub-key-len + 2 addr-len]
+		]
 	]
 
 	sign-eth-tx: func [addr-idx [integer!] tx [block!] /local data max-sz sz signed][
@@ -158,7 +163,8 @@ ledger: context [
 			]
 			append/part chunk tx-bin sz
 			write-apdu chunk
-			signed: read-apdu 180
+			signed: read-apdu 300
+			?? signed
 			tx-bin: skip tx-bin sz
 		]
 		signed

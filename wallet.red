@@ -10,7 +10,7 @@ Red [
 	}
 ]
 
-#do [debug?: yes]
+#do [debug?: no]
 
 #include %ledger.red
 #include %json.red
@@ -37,7 +37,7 @@ wallet: context [
 	]
 
 	get-balance: func [address [string!] /local url data n][
-		url: copy https://api.infura.io/v1/jsonrpc/rinkeby/eth_getBalance?params=%5B%22address%22%2C%22latest%22%5D
+		url: copy http://api.infura.io/v1/jsonrpc/rinkeby/eth_getBalance?params=%5B%22address%22%2C%22latest%22%5D
 		replace url "address" address
 		data: json/decode read url
 		either (length? data/result) % 2 <> 0 [
@@ -50,7 +50,7 @@ wallet: context [
 	]
 
 	get-nonce: function [address [string!]][
-		url: copy https://api.infura.io/v1/jsonrpc/rinkeby/eth_getTransactionCount?params=%5B%22address%22%2C%20%22pending%22%5D
+		url: copy http://api.infura.io/v1/jsonrpc/rinkeby/eth_getTransactionCount?params=%5B%22address%22%2C%20%22pending%22%5D
 		replace url "address" address
 		data: json/decode read url
 		either (length? data/result) % 2 <> 0 [
@@ -72,21 +72,26 @@ wallet: context [
 
 	on-connect: func [face [object!] event [event!] /local addresses addr n][
 		either ledger/connect [
-			face/enabled?: no
 			dev/text: "Ledger Nano S"
 			addresses: make block! 10
 			n: 0
 			loop 5 [
 				addr: Ledger/get-address n
+				unless addr [
+					view/flags unlock-dev-dlg 'modal
+					exit
+				]
+				face/enabled?: no
 				append addresses rejoin [addr "   " get-balance addr]
+				addr-list/data: addresses
+				loop 3 [do-events/no-wait]
 				n: n + 1
 			]
-			addr-list/data: addresses
 		][
 			dev/text: "No Device"
 			#if debug? [
 				dev/text: "Debug Testing"
-				addr: "0xEd6cF9Ecc7561845fafe16B181e3dF2453b7C334"
+				addr: "0x8254e77cF78f4eBB29f5fdDBae72d1192343d2Ef"
 				addrs: make block! 2
 				append addrs rejoin [addr "   " get-balance addr]
 				addr-list/data: addrs
@@ -102,7 +107,7 @@ wallet: context [
 		]
 	]
 
-	on-transaction: func [face [object!] event [event!] /local tx][
+	on-sign-tx: func [face [object!] event [event!] /local tx][
 		tx: reduce [
 			get-nonce addr-from/text			;-- nonce
 			gwei-to-wei gas-price/text			;-- gas-price
@@ -111,19 +116,22 @@ wallet: context [
 			eth-to-wei amount-field/text		;-- value
 			#{}									;-- data
 		]
-		view/flags check-dlg 'modal
-		#either debug? [signed-data: #{1234}][
+		;view/flags check-dlg 'modal
+		;if check-dlg/state [unview]
+		#either debug? [signed-data: #{}][
 			signed-data: get-signed-data tx
 		]
-		if check-dlg/state [unview]
 		if signed-data [
 			info-from/text: addr-from/text
 			info-to/text: addr-to/text
-			info-amount/text: amount-field/text
+			info-amount/text: rejoin [amount-field/text " Ether"]
 			info-network/text: "Rinkeby Testnet"
-			info-price/text: gas-price/text
+			info-price/text: rejoin [gas-price/text " Gwei"]
 			info-limit/text: gas-limit/text
-			info-fee/text: mold (to float! gas-price/text) * (to float! gas-limit/text)
+			info-fee/text: rejoin [
+				mold (to float! gas-price/text) * (to float! gas-limit/text) / 1e9
+				" Ether"
+			]
 			info-nonce/text: mold tx/1
 			info-data/text: mold signed-data
 			view/flags confirm-sheet 'modal
@@ -131,7 +139,7 @@ wallet: context [
 	]
 
 	on-confirm: func [face [object!] event [event!] /local url data body reply][
-		url: https://api.infura.io/v1/jsonrpc/rinkeby
+		url: http://api.infura.io/v1/jsonrpc/rinkeby
 		data: rejoin ["0x" enbase/base signed-data 16]
 		body: #(
 			jsonrpc: "2.0"
@@ -139,15 +147,16 @@ wallet: context [
 			method: "eth_sendRawTransaction"
 		)
 		body/params: reduce [data]
-		reply: json/decode write/info url compose [
+		reply: json/decode write url compose [
 			POST
 			[
 				Content-Type: "application/json"
 				Accept: "application/json"
 			]
-			(json/encode body)
+			(to-binary json/encode body)
 		]
-		probe reply/result			;-- tx hash
+		browse rejoin [https://rinkeby.etherscan.io/tx/ reply/result]
+		unview
 	]
 
 	send-dialog: layout [
@@ -158,7 +167,7 @@ wallet: context [
 		label "Amount to Send:" amount-field: field 300 return
 		label "Gas Price:" gas-price: field 300 "21" return
 		label "Gas Limit:" gas-limit: field 300 "21000" return
-		pad 144x10 button "Generate Transaction" :on-transaction
+		pad 170x10 button 60 "Sign" :on-sign-tx
 	]
 
 	confirm-sheet: layout [
@@ -174,7 +183,7 @@ wallet: context [
 		label "Max TX Fee:" info-fee: info return
 		label "Nonce:" info-nonce: info return
 		label "Data:" info-data: info return
-		pad 144x10 button "No" [signed-data: none unview] button "Yes" :on-confirm
+		pad 144x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
 	]
 
 	ui: layout [
@@ -188,8 +197,14 @@ wallet: context [
 
 	check-dlg: layout [
 		title "Check on your key"
-		text "Please check the transcation on your key"
-		button "Ok"
+		text font-size 12 "Please check the transcation on your key"
+	]
+
+	unlock-dev-dlg: layout [
+		title "Unlock your key"
+		text font-size 12 "Please open the ethereum app and set browser support to NO!"
+		return
+		pad 200x10 button "OK" [unview]
 	]
 
 	setup-actors: does [
@@ -201,6 +216,7 @@ wallet: context [
 	]
 
 	open: does [
+		setup-actors
 		view ui
 	]
 ]
