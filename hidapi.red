@@ -10,45 +10,7 @@ Red [
 ]
 
 #system [
-	#either OS = 'Windows [
-		#define LIB_HID_API "hidapi.dll"
-	][
-		#define LIB_HID_API "libhidapi.so"
-	]
-
-	#import [
-		"hidapi.dll" cdecl [
-			hid_exit: "hid_exit" [
-				return:		[integer!]
-			]
-			hid_open: "hid_open" [
-				vendor_id	[integer!]
-				product_id	[integer!]
-				serial_num	[c-string!]
-				return:		[int-ptr!]
-			]
-			hid_close: "hid_close" [
-				device		[int-ptr!]
-			]
-			hid_write: "hid_write" [
-				device		[int-ptr!]
-				data		[byte-ptr!]
-				length		[integer!]
-				return:		[integer!]
-			]
-			hid_read_timeout: "hid_read_timeout" [
-				device		[int-ptr!]
-				data		[byte-ptr!]
-				length		[integer!]
-				millisec	[integer!]
-				return:		[integer!]
-			]
-			hid_error: "hid_error" [
-				device		[int-ptr!]
-				return:		[c-string!]
-			]
-		]
-	]
+	#include %red-hidapi.reds
 
 	int-to-bin*: func [int [integer!] bin [red-binary!]
 		/local
@@ -70,7 +32,7 @@ hid: context [
 		/local
 			h		[int-ptr!]
 	][
-		h: hid_open vendor_id product_id null
+		h: hid/open vendor_id product_id null
 		either null? h [stack/set-last none-value][
 			handle/box as-integer h
 		]
@@ -87,7 +49,7 @@ hid: context [
 	][
 		s: GET_BUFFER(buffer)
 		p: (as byte-ptr! s/offset) + buffer/head
-		sz: hid_read_timeout as int-ptr! dev/value p s/size timeout
+		sz: hid/read-timeout as int-ptr! dev/value p s/size timeout
 		either sz = -1 [
 			probe "read error"
 			stack/set-last none-value
@@ -102,7 +64,7 @@ hid: context [
 		/local
 			sz	[integer!]
 	][
-		sz: hid_write as int-ptr! dev/value binary/rs-head data binary/rs-length? data
+		sz: hid/write as int-ptr! dev/value binary/rs-head data binary/rs-length? data
 		if sz = -1 [
 			probe "write error"
 		]
@@ -111,6 +73,6 @@ hid: context [
 	close: routine [
 		dev		[handle!]
 	][
-		if dev/value <> 0 [hid_close as int-ptr! dev/value]
+		if dev/value <> 0 [hid/close as int-ptr! dev/value]
 	]
 ]
