@@ -173,8 +173,8 @@ ledger: context [
 	close: does [hid/close dongle]
 ]
 
-;ledger/connect
+ledger/connect
 
-;probe ledger/get-address 0
+probe ledger/get-address 0
 
-;ledger/close
+ledger/close
