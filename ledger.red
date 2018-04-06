@@ -9,7 +9,6 @@ Red [
 	}
 ]
 
-#include %hidapi.red
 #include %rlp.red
 
 to-bin8: func [v [integer! char!]][
@@ -32,7 +31,7 @@ ledger: context [
 
 	DEFAULT_CHANNEL:	0101h
 	TAG_APDU:			05h
-	PACKET_SIZE:		65
+	PACKET_SIZE:		#either config/OS = 'Windows [65][64]
 	MAX_APDU_SIZE:		260
 
 	dongle: none
@@ -92,7 +91,7 @@ ledger: context [
 		while [not empty? data][
 			clear data-frame
 			append data-frame reduce [	;-- header
-				0
+				#if config/OS = 'Windows [0]
 				to-bin16 DEFAULT_CHANNEL
 				TAG_APDU
 				to-bin16 idx
@@ -105,9 +104,9 @@ ledger: context [
 
 			limit: PACKET_SIZE - length? data-frame
 			append/part data-frame data limit
-			;if PACKET_SIZE <> length? data-frame [
-			;	append/dup data-frame 0 PACKET_SIZE - length? data-frame
-			;]
+			if PACKET_SIZE <> length? data-frame [
+				append/dup data-frame 0 PACKET_SIZE - length? data-frame
+			]
 			data: skip data limit
 			hid/write dongle data-frame
 		]

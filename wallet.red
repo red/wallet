@@ -12,12 +12,14 @@ Red [
 
 #do [debug?: no]
 
+#include %hidapi.red
 #include %ledger.red
+;#include %trezor.red
 #include %json.red
 
 wallet: context [
 
-	list-font: make font! [name: "Consolas" size: 11]
+	list-font: make font! [name: get 'font-fixed size: 11]
 
 	ETH-ratio: make bignum! #{5AF3107A4000}
 	GWei-ratio: make bignum! 100000
@@ -100,7 +102,7 @@ wallet: context [
 					view/flags unlock-dev-dlg 'modal
 					exit
 				]
-				face/enabled?: no
+				;face/enabled?: no
 				append addresses rejoin [addr "   " get-balance addr]
 				addr-list/data: addresses
 				loop 3 [do-events/no-wait]
@@ -122,7 +124,7 @@ wallet: context [
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
-			view/flags send-dialog 'modal 
+			view/flags send-dialog 'modal
 		]
 	]
 
@@ -161,6 +163,7 @@ wallet: context [
 			]
 			info-nonce/text: mold tx/1
 			info-data/text: mold signed-data
+			unview
 			view/flags confirm-sheet 'modal
 		]
 	]
