@@ -2,6 +2,10 @@ Red/System []
 
 hid: context [
 	#define MAX_STRING_WCHARS				00000FFFh
+	#define FILE_SHARE_READ                 00000001h  
+	#define FILE_SHARE_WRITE                00000002h 
+	#define GENERIC_READ                    80000000h
+	#define GENERIC_WRITE                   40000000h
 	#define FILE_FLAG_OVERLAPPED            40000000h
 	#define DIGCF_PRESENT          			00000002h
 	#define DIGCF_DEVICEINTERFACE   		00000010h
@@ -209,6 +213,7 @@ hid: context [
 				]
 			ResetEvent: "ResetEvent" [
 				hEvent 	[integer!]
+				return: [logic!]
 			]
 			ReadFile:	"ReadFile" [
 					file		[integer!]
@@ -247,7 +252,7 @@ hid: context [
 				nSize		 					[integer!]
 				Arguments	 					[integer!]
 				return:		 					[integer!]
-		]
+			]
 			GetOverlappedResult: "GetOverlappedResult" [
 				hFile							[int-ptr!]
 				lpOverlapped					[overlapped-struct]
@@ -361,7 +366,7 @@ hid: context [
 		dev/read-buf: null
 		set-memory as byte-ptr! :dev/ol null-byte size? overlapped-struct
 		dev/ol/hEvent: CreateEvent null 0 0 null
-		return dev
+		dev
 	]
 
 	;--free-hid-device function
@@ -404,20 +409,21 @@ hid: context [
 	;--static handle open_device func
 	open-device: func [
 		path 		[c-string!]
-		enumerate 	[logic!]
+		enumerate? 	[logic!]
 		return: 	[int-ptr!]
 		/local 
 			handle 			[int-ptr!]
 			desired-access 	[integer!]
 			share-mode		[integer!]
 	][
-		either enumerate [
+		either enumerate? [
 			desired-access: 0
+			share-mode: FILE_SHARE_READ or FILE_SHARE_WRITE
 		][
 			desired-access: GENERIC_WRITE or GENERIC_READ
+			share-mode: FILE_SHARE_READ
 		]
 		
-		share-mode: FILE_SHARE_READ or FILE_SHARE_WRITE
 		as int-ptr! CreateFileA
 						path
 						desired-access
@@ -448,7 +454,7 @@ hid: context [
 			attrib 				[HIDD-ATTRIBUTES]
 			str 				[c-string!]
 			tmp 				[hid-device-info]
-			pp-data 			[int-ptr!]
+			pp-data 			[integer!]
 			caps 				[HIDP-CAPS value]
 			res1				[logic!]
 			nt-res				[integer!]
@@ -466,7 +472,7 @@ hid: context [
 		
 		root: as hid-device-info allocate size? hid-device-info
 		cur-dev: as hid-device-info allocate size? hid-device-info
-		hex-str: declare c-string!
+
 		;-- allocate mem for devinfo
 		root: null
 		cur-dev: null
@@ -489,6 +495,8 @@ hid: context [
 		device-info-set: as int-ptr! SetupDiGetClassDevs InterfaceClassGuid null null 
 		(DIGCF_PRESENT or DIGCF_DEVICEINTERFACE)
 		;--Iterate over each device in the HID class, looking for the right one.
+		driver_name: as c-string! system/stack/allocate 64
+		wstr: as c-string! system/stack/allocate 256
 		forever [
 			write-handle: as int-ptr! INVALID-HANDLE-VALUE
 			required-size: 0
@@ -504,7 +512,7 @@ hid: context [
 			devinterface-detail: as dev-interface-detail allocate required-size
 			devinterface-detail/cbSize: 5
 			;--Get the detailed data for this device.
-			res: SetupDiGetDeviceInterfaceDetail  device-info-set 
+			res: SetupDiGetDeviceInterfaceDetail device-info-set 
 			devinterface-data devinterface-detail required-size null null ;have some mistakes
 			buffer: as c-string! :devinterface-detail/DevicePath
 			if res = false [
@@ -512,7 +520,6 @@ hid: context [
 				device-index: device-index + 1
 			]
 			;--Make sure this device is of Setup Class "HIDClass" and has a driver bound to it.
-			driver_name: as c-string! system/stack/allocate 64
 			i: 0
 			forever [
 				res: SetupDiEnumDeviceInfo (as integer! device-info-set) i devinfo-data 
@@ -544,16 +551,15 @@ hid: context [
 			;--check validity of write-handle
 			if write-handle = (as int-ptr! INVALID-HANDLE-VALUE) [
 				CloseHandle (as integer! write-handle)
+				return null
 			]
 
 			;--Get the Vendor ID and Product ID for this device.
 			attrib/Size: size? HIDD-ATTRIBUTES
 			HidD_GetAttributes write-handle attrib
-			if (id = 0) or (attrib/ID = id) [
-				wstr: as c-string! allocate 1024
+			if any [id = 0 attrib/ID = id][
 				tmp: as hid-device-info allocate size? hid-device-info
-				pp-data: declare int-ptr!
-				d: declare c-string!
+
 				;--vid/pid match . create the record
 				either as logic! cur-dev [
 					cur-dev/next: tmp
@@ -562,14 +568,14 @@ hid: context [
 				]
 				cur-dev: tmp
 				;--Get the Usage Page and Usage for this device.
-				res1: HidD_GetPreparsedData write-handle pp-data 
+				pp-data: 0
+				res1: HidD_GetPreparsedData write-handle :pp-data
 				if res1 [
-					nt-res: HidP_GetCaps (as int-ptr! pp-data/value) caps
+					nt-res: HidP_GetCaps as int-ptr! pp-data caps
 					if nt-res = 00110000h [
 						cur-dev/usage: caps/Usage
 					]
-					HidD_FreePreparsedData as int-ptr! pp-data/value
-					HidD_FreePreparsedData pp-data
+					HidD_FreePreparsedData as int-ptr! pp-data
 				]
 				;--fill out the record
 				cur-dev/next: null
@@ -587,8 +593,8 @@ hid: context [
 				;--serial number
 				res1: HidD_GetSerialNumberString write-handle wstr 1024
 				;b/value: b/value and 0000FFFFh or (00000000h << 16)
-				wstr/1021: null-byte
-				wstr/1022: null-byte
+				wstr/1023: null-byte
+				wstr/1024: null-byte
 				either res1 [
 					cur-dev/serial-number: wcsdup wstr
 				][
@@ -596,8 +602,8 @@ hid: context [
 				]
 				;--manufacturer string
 				res1: HidD_GetManufacturerString write-handle  wstr 1024
-				wstr/1021: null-byte
-				wstr/1022: null-byte
+				wstr/1023: null-byte
+				wstr/1024: null-byte
 				if res1 [
 					cur-dev/manufacturer-string: wcsdup wstr
 				]
@@ -605,8 +611,8 @@ hid: context [
 
 				;--product string
 				res1: HidD_GetProductString write-handle wstr 1024
-				wstr/1021: null-byte
-				wstr/1022: null-byte
+				wstr/1023: null-byte
+				wstr/1024: null-byte
 				if res1 [
 					cur-dev/product-string: wcsdup wstr
 				]
@@ -739,7 +745,7 @@ hid: context [
 		]
 
 		nt-res: HidP_GetCaps as int-ptr! pp-data caps
-		if (nt-res xor HIDP_STATUS_SUCCESS) <> 0[
+		if nt-res <> HIDP_STATUS_SUCCESS [
 			register-error dev "HidP_GetCaps"
 			HidD_FreePreparsedData as int-ptr! pp-data
 		]
@@ -747,7 +753,7 @@ hid: context [
 		dev/input-report-length: HIWORD(caps/ReportByteLength)
 		HidD_FreePreparsedData as int-ptr! pp-data
 		dev/read-buf: as c-string! allocate dev/input-report-length
-		return dev 
+		dev 
 	]
 
 	write: func [
@@ -764,8 +770,8 @@ hid: context [
 			i 				[integer!]
 	][	
 		dev: as hid-device device
-		bytes-written: 1 
-		set-memory as byte-ptr! ol null-byte (size? ol)	
+		bytes-written: 0
+		set-memory as byte-ptr! :ol null-byte (size? ol)	
 		either length >= dev/output-report-length [
 			buf: data 
 		][
@@ -774,9 +780,8 @@ hid: context [
 			set-memory (buf + length) null-byte (dev/output-report-length - length)
 			length: dev/output-report-length
 		]
-		probe ["dev/out-report-length:"dev/output-report-length]
-		res: WriteFile as integer! dev/device-handle buf  length null (as int-ptr! ol)
-		probe ["res:"res] 
+
+		res: WriteFile as integer! dev/device-handle buf  length null (as int-ptr! :ol)
 		if res = false [
 			if GetLastError <> ERROR_IO_PENDING [
 				register-error dev "WriteFile"
@@ -787,19 +792,15 @@ hid: context [
 			]
 		]
 
-		; ;--Wait here until the write is done.
-		 res: GetOverlappedResult dev/device-handle ol :bytes-written true
+		;--Wait here until the write is done.
+		res: GetOverlappedResult dev/device-handle ol :bytes-written true
 		if res = false [
 			register-error dev  "WriteFile"
 			bytes-written: -1
-			if buf <> data  [
-					free buf 
-				]
+			if buf <> data [free buf]
 		]
-		if buf <> data  [
-					free buf 
-				]
-		return bytes-written
+		if buf <> data  [free buf]
+		bytes-written
 	]
 
 	read-timeout: func [
@@ -833,94 +834,87 @@ hid: context [
 					;--ReadFile() has failed. Clean up and return error.
 					CancelIo dev/device-handle
 					dev/read-pending: false
-					if res = false [
-						register-error dev "GetOverlappedResult"
-						return -1
-					]
+					register-error dev "GetOverlappedResult"
+					return -1
 				]
 			]
 		]
-			if milliseconds >= 0 [
-				probe "11"
-				;--see if there is any data yet
-				if 0 <> WaitForSingleObject ev milliseconds [
-					;--there was no data this time.return zero bytes available
-					return 0
-				]
 
-				probe "22"
+		if milliseconds >= 0 [
+			;--see if there is any data yet
+			if 0 <> WaitForSingleObject ev milliseconds [
+				;--there was no data this time.return zero bytes available
+				return 0
 			]
+		]
 
-probe "1abc2"
-probe [dev/device-handle " " dev/ol " " bytes-read]
-			res: GetOverlappedResult dev/device-handle as overlapped-struct :dev/ol :bytes-read true
-probe "2"	
+		res: GetOverlappedResult dev/device-handle as overlapped-struct :dev/ol :bytes-read true
 
-			;--set pending back to false
-			dev/read-pending: false
+		;--set pending back to false
+		dev/read-pending: false
 
-			if all [
-				res
-				bytes-read > 0
-			][
-				either dev/read-buf/1 = null-byte [
-					bytes-read: bytes-read - 1
-					either length > bytes-read [
-						copy-len: bytes-read
+		if all [
+			res
+			bytes-read > 0
+		][
+			either dev/read-buf/1 = null-byte [
+				bytes-read: bytes-read - 1
+				either length > bytes-read [
+					copy-len: bytes-read
 
-					][
-						copy-len: length
-					]
-					copy-memory data 
-					((as byte-ptr! dev/read-buf) + 1) copy-len
 				][
-					;--copy the whole buffer ,report number and all
-					either length > bytes-read [
-						copy-len: bytes-read
-
-					][
-						copy-len: length
-					]
-					copy-memory data as byte-ptr! dev/read-buf copy-len
+					copy-len: length
 				]
-			]
-			if res = false [
-						register-error dev "GetOverlappedResult"
-						return -1
-					]
-			return copy-len
-		]
-
-		read: func [
-			device 	[int-ptr!]
-			data 	[byte-ptr!]
-			length	[integer!]
-			return: [integer!]
-			/local
-				dev [hid-device]
-				a 	[integer!]
-				b 	[integer!]
-		][
-			dev: as hid-device device
-			either dev/blocking [
-				a: -1 
+				copy-memory data 
+				((as byte-ptr! dev/read-buf) + 1) copy-len
 			][
-				a: 0
-			]   ;compile error
-			b: read-timeout device data length a 
-			return b
-		]
+				;--copy the whole buffer ,report number and all
+				either length > bytes-read [
+					copy-len: bytes-read
 
-		close: func [
-			device	[int-ptr!]
-			/local
-				dev [hid-device]
-		][
-			dev: as hid-device device
-			if dev <> null [
-				CancelIo dev/device-handle
-				free-hid-device dev
+				][
+					copy-len: length
+				]
+				copy-memory data as byte-ptr! dev/read-buf copy-len
 			]
 		]
+		if res = false [
+			register-error dev "GetOverlappedResult"
+			return -1
+		]
+		copy-len
+	]
+
+	read: func [
+		device 	[int-ptr!]
+		data 	[byte-ptr!]
+		length	[integer!]
+		return: [integer!]
+		/local
+			dev [hid-device]
+			a 	[integer!]
+			b 	[integer!]
+	][
+		dev: as hid-device device
+		either dev/blocking [
+			a: -1 
+		][
+			a: 0
+		]   ;compile error
+		b: read-timeout device data length a 
+		return b
+	]
+
+	close: func [
+		device	[int-ptr!]
+		/local
+			dev [hid-device]
+	][
+		dev: as hid-device device
+		if dev <> null [
+			CancelIo dev/device-handle
+			free-hid-device dev
+		]
+	]
 
 ]

@@ -24,6 +24,22 @@ wallet: context [
 
 	signed-data: none
 
+	networks: [
+		https://eth.red-lang.org/v1/jsonrpc/mainnet
+		https://eth.red-lang.org/v1/jsonrpc/rinkeby
+		https://eth.red-lang.org/v1/jsonrpc/kovan
+	]
+
+	etherscans: [
+		https://etherscan.io/tx/
+		https://rinkeby.etherscan.io/tx/
+		https://kovan.etherscan.io/tx/
+	]
+
+	etherscan: https://rinkeby.etherscan.io/tx/
+	network: https://eth.red-lang.org/v1/jsonrpc/rinkeby
+	net-name: "rinkeby"
+
 	eth-to-wei: func [eth /local n][
 		if string? eth [eth: to float! eth]
 		n: to bignum! to integer! eth * 10000
@@ -37,8 +53,9 @@ wallet: context [
 	]
 
 	get-balance: func [address [string!] /local url data n][
-		url: copy http://api.infura.io/v1/jsonrpc/rinkeby/eth_getBalance?params=%5B%22address%22%2C%22latest%22%5D
-		replace url "address" address
+		url: replace rejoin [
+			network {/eth_getBalance?params=["address","latest"]}
+		] "address" address
 		data: json/decode read url
 		either (length? data/result) % 2 <> 0 [
 			poke data/result 2 #"0"
@@ -50,8 +67,10 @@ wallet: context [
 	]
 
 	get-nonce: function [address [string!]][
-		url: copy http://api.infura.io/v1/jsonrpc/rinkeby/eth_getTransactionCount?params=%5B%22address%22%2C%20%22pending%22%5D
-		replace url "address" address
+		url: replace rejoin [
+			network
+			{/eth_getTransactionCount?params=["address", "pending"]}
+		] "address" address
 		data: json/decode read url
 		either (length? data/result) % 2 <> 0 [
 			poke data/result 2 #"0"
@@ -107,6 +126,14 @@ wallet: context [
 		]
 	]
 
+	on-select: func [face [object!] event [event!] /local idx][
+		idx: face/selected
+		net-name: pick face/data idx - 1 * 2
+		network: pick networks idx
+		etherscan: pick etherscans idx
+		connect-btn/enabled?: yes
+	]
+
 	on-sign-tx: func [face [object!] event [event!] /local tx][
 		tx: reduce [
 			get-nonce addr-from/text			;-- nonce
@@ -125,7 +152,7 @@ wallet: context [
 			info-from/text: addr-from/text
 			info-to/text: addr-to/text
 			info-amount/text: rejoin [amount-field/text " Ether"]
-			info-network/text: "Rinkeby Testnet"
+			info-network/text: net-name
 			info-price/text: rejoin [gas-price/text " Gwei"]
 			info-limit/text: gas-limit/text
 			info-fee/text: rejoin [
@@ -139,7 +166,7 @@ wallet: context [
 	]
 
 	on-confirm: func [face [object!] event [event!] /local url data body reply][
-		url: http://api.infura.io/v1/jsonrpc/rinkeby
+		url: network
 		data: rejoin ["0x" enbase/base signed-data 16]
 		body: #(
 			jsonrpc: "2.0"
@@ -155,7 +182,7 @@ wallet: context [
 			]
 			(to-binary json/encode body)
 		]
-		browse rejoin [https://rinkeby.etherscan.io/tx/ reply/result]
+		browse rejoin [etherscan reply/result]
 		unview
 	]
 
@@ -188,8 +215,9 @@ wallet: context [
 
 	ui: layout [
 		title "Red Wallet"
-		text 60 "Device:" dev: text 200
-		button "Connect" :on-connect
+		text 60 "Device:" dev: text 120
+		drop-list data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select
+		connect-btn: button "Connect" :on-connect
 		button "Send" :on-send
 		return
 		addr-list: text-list font list-font 450x200
