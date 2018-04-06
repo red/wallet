@@ -10,7 +10,11 @@ Red [
 ]
 
 #system [
-	#include %red-hidapi.reds
+	#switch OS [
+		Windows  [#include %win/hid.reds]
+		macOS	 [#include %mac/hid.reds]
+		#default []
+	]
 
 	int-to-bin*: func [int [integer!] bin [red-binary!]
 		/local
