@@ -163,10 +163,9 @@ ledger: context [
 			append/part chunk tx-bin sz
 			write-apdu chunk
 			signed: read-apdu 300
-			?? signed
 			tx-bin: skip tx-bin sz
 		]
-		signed
+		either 4 > length? signed [none][signed]
 	]
 
 	close: does [hid/close dongle]

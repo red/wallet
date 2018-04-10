@@ -595,6 +595,8 @@ hid: context [
 		cf-str: IOHIDDeviceGetProperty device prop
 		buf/1: null-byte
 		buf/2: null-byte
+		buf/3: null-byte
+		buf/4: null-byte
 		either cf-str <> null [
 			str_len: CFStringGetLength cf-str
 			len: len - 1
@@ -615,12 +617,20 @@ hid: context [
 			either chars_copied = len [
 				len1: len * 4 + 1
 				buf/len1: null-byte
-				len1: len + 1
+				len1: len1 + 1
+				buf/len1: null-byte
+				len1: len1 + 1
+				buf/len1: null-byte
+				len1: len1 + 1
 				buf/len1: null-byte
 			][
 				len1: chars_copied * 4 + 1
 				buf/len1: null-byte
-				len1: len +1
+				len1: len1 + 1
+				buf/len1: null-byte
+				len1: len1 + 1
+				buf/len1: null-byte
+				len1: len1 + 1
 				buf/len1: null-byte
 			]
 			return 0

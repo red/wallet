@@ -38,11 +38,21 @@ wallet: context [
 		https://kovan.etherscan.io/tx/
 	]
 
+	contracts: [
+		;"RED" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
+		"RED" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
+	]
+
 	etherscan: https://rinkeby.etherscan.io/tx/
 	network: https://eth.red-lang.org/v1/jsonrpc/rinkeby
 	net-name: "rinkeby"
+	token-name: "ETH"
+	token-contract: none
+
+	connected?: no
 
 	eth-to-wei: func [eth /local n][
+		abc: 2
 		if string? eth [eth: to float! eth]
 		n: to bignum! to integer! eth * 10000
 		n * ETH-ratio
@@ -54,18 +64,55 @@ wallet: context [
 		n * GWei-ratio
 	]
 
+	pad: function [data [string! binary!]][
+		n: length? data
+		either binary? data [c: #{00} len: 32][c: #"0" len: 64]
+		if n < len [
+			insert/dup data c len - n
+		]
+		data
+	]
+
+	parse-balance: function [amount][
+		either (length? amount) % 2 <> 0 [
+			poke amount 2 #"0"
+			n: 1
+		][n: 2]
+		n: make bignum! debase/base skip amount n 16
+		n: load form n / ETH-ratio
+		n / 10000.0
+	]
+
+	get-balance-token: func [address [string!] /local body url token-url params reply][
+		url: network
+		token-url: rejoin ["0x" token-contract]
+		params: make map! 4
+		params/to: token-url
+		params/data: rejoin ["0x70a08231" pad copy skip address 2]
+
+		body: #(
+			jsonrpc: "2.0"
+			id: 57386342
+			method: "eth_call"
+		)
+		body/params: reduce [params "latest"]
+		reply: json/decode write url compose [
+			POST
+			[
+				Content-Type: "application/json"
+				Accept: "application/json"
+			]
+			(to-binary json/encode body)
+		]
+		parse-balance reply/result
+	]
+
 	get-balance: func [address [string!] /local url data n][
 		url: replace rejoin [
 			network {/eth_getBalance?params=["address","latest"]}
 		] "address" address
 		data: json/decode read url
-		either (length? data/result) % 2 <> 0 [
-			poke data/result 2 #"0"
-			n: 1
-		][n: 2]
-		n: make bignum! debase/base skip data/result n 16
-		n: load form n / ETH-ratio
-		n / 10000.0
+		parse-balance data/result
 	]
 
 	get-nonce: function [address [string!]][
@@ -83,16 +130,19 @@ wallet: context [
 
 	get-signed-data: func [tx /local signed][
 		signed: ledger/sign-eth-tx 0 tx
-		append tx reduce [
-			copy/part signed 1
-			copy/part next signed 32
-			copy/part skip signed 33 32
+		if signed [
+			append tx reduce [
+				copy/part signed 1
+				copy/part next signed 32
+				copy/part skip signed 33 32
+			]
+			rlp/encode tx
 		]
-		rlp/encode tx
 	]
 
-	on-connect: func [face [object!] event [event!] /local addresses addr n][
+	on-connect: func [face [object!] event [event!] /local addresses addr n amount][
 		either ledger/connect [
+			connected?: yes
 			dev/text: "Ledger Nano S"
 			addresses: make block! 10
 			n: 0
@@ -103,20 +153,18 @@ wallet: context [
 					exit
 				]
 				;face/enabled?: no
-				append addresses rejoin [addr "   " get-balance addr]
+				amount: either token-contract [
+					get-balance-token addr
+				][
+					get-balance addr
+				]
+				append addresses rejoin [addr "   " amount]
 				addr-list/data: addresses
 				loop 3 [do-events/no-wait]
 				n: n + 1
 			]
 		][
 			dev/text: "No Device"
-			#if debug? [
-				dev/text: "Debug Testing"
-				addr: "0x8254e77cF78f4eBB29f5fdDBae72d1192343d2Ef"
-				addrs: make block! 2
-				append addrs rejoin [addr "   " get-balance addr]
-				addr-list/data: addrs
-			]
 		]
 	]
 
@@ -124,11 +172,12 @@ wallet: context [
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
+			gas-limit/text: either token-contract ["79510"]["21000"]
 			view/flags send-dialog 'modal
 		]
 	]
 
-	on-select: func [face [object!] event [event!] /local idx][
+	on-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		net-name: pick face/data idx - 1 * 2
 		network: pick networks idx
@@ -136,24 +185,52 @@ wallet: context [
 		connect-btn/enabled?: yes
 	]
 
+	on-select-token: func [face [object!] event [event!] /local idx][
+		idx: face/selected
+		token-name: pick face/data idx - 1 * 2 + 1
+		token-contract: select contracts token-name
+		if connected? [on-connect face event]
+	]
+
+	notify-user: does [
+		btn-sign/offset/x: 150
+		btn-sign/size/x: 200
+		btn-sign/text: "please check on your key"
+		loop 3 [do-events/no-wait]
+	]
+
 	on-sign-tx: func [face [object!] event [event!] /local tx][
-		tx: reduce [
-			get-nonce addr-from/text			;-- nonce
-			gwei-to-wei gas-price/text			;-- gas-price
-			to-integer gas-limit/text			;-- gas-limit
-			debase/base skip addr-to/text 2 16	;-- to address
-			eth-to-wei amount-field/text		;-- value
-			#{}									;-- data
+		either token-contract [
+			tx: reduce [
+				get-nonce addr-from/text			;-- nonce
+				gwei-to-wei gas-price/text			;-- gas-price
+				to-integer gas-limit/text			;-- gas-limit
+				debase/base token-contract 16		;-- to address
+				eth-to-wei 0						;-- value
+				rejoin [							;-- data
+					#{a9059cbb}		;-- method ID
+					debase/base pad copy skip addr-to/text 2 16
+					pad to-binary eth-to-wei amount-field/text
+				]
+			]
+		][
+			tx: reduce [
+				get-nonce addr-from/text			;-- nonce
+				gwei-to-wei gas-price/text			;-- gas-price
+				to-integer gas-limit/text			;-- gas-limit
+				debase/base skip addr-to/text 2 16	;-- to address
+				eth-to-wei amount-field/text		;-- value
+				#{}									;-- data
+			]
 		]
-		;view/flags check-dlg 'modal
-		;if check-dlg/state [unview]
-		#either debug? [signed-data: #{}][
-			signed-data: get-signed-data tx
-		]
+
+		notify-user
+		signed-data: get-signed-data tx
+
 		if signed-data [
 			info-from/text: addr-from/text
 			info-to/text: addr-to/text
-			info-amount/text: rejoin [amount-field/text " Ether"]
+			info-amount/text: rejoin [amount-field/text " " token-name]
 			info-network/text: net-name
 			info-price/text: rejoin [gas-price/text " Gwei"]
 			info-limit/text: gas-limit/text
@@ -162,7 +239,7 @@ wallet: context [
 				" Ether"
 			]
 			info-nonce/text: mold tx/1
-			info-data/text: mold signed-data
+			;info-data/text: mold signed-data
 			unview
 			view/flags confirm-sheet 'modal
 		]
@@ -192,12 +269,12 @@ wallet: context [
 	send-dialog: layout [
 		title "Send Ether & Tokens"
 		style label: text 100 middle
-		label "From Address:" addr-from: label 300 return
-		label "To Address:" addr-to: field 300 return
-		label "Amount to Send:" amount-field: field 300 return
-		label "Gas Price:" gas-price: field 300 "21" return
-		label "Gas Limit:" gas-limit: field 300 "21000" return
-		pad 170x10 button 60 "Sign" :on-sign-tx
+		label "From Address:" addr-from: label 360 return
+		label "To Address:" addr-to: field 360 return
+		label "Amount to Send:" amount-field: field 300 label-unit: label 50 return
+		label "Gas Price:" gas-price: field 360 "21" return
+		label "Gas Limit:" gas-limit: field 360 "21000" return
+		pad 200x10 btn-sign: button 60 "Sign" :on-sign-tx
 	]
 
 	confirm-sheet: layout [
@@ -212,23 +289,18 @@ wallet: context [
 		label "Gas Limit:" info-limit: info return
 		label "Max TX Fee:" info-fee: info return
 		label "Nonce:" info-nonce: info return
-		label "Data:" info-data: info return
-		pad 144x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
+		pad 174x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
 	]
 
 	ui: layout [
 		title "Red Wallet"
 		text 60 "Device:" dev: text 120
-		drop-list data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select
-		connect-btn: button "Connect" :on-connect
-		button "Send" :on-send
+		drop-list 70x24 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
+		connect-btn: button 66x25 "Connect" :on-connect
+		button 66x25 "Send" :on-send
+		drop-list 48x24 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
 		return
-		addr-list: text-list font list-font 450x200
-	]
-
-	check-dlg: layout [
-		title "Check on your key"
-		text font-size 12 "Please check the transcation on your key"
+		addr-list: text-list font list-font 530x200
 	]
 
 	unlock-dev-dlg: layout [

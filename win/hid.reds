@@ -2,10 +2,10 @@ Red/System []
 
 hid: context [
 	#define MAX_STRING_WCHARS				00000FFFh
-	#define FILE_SHARE_READ                 00000001h  
-	#define FILE_SHARE_WRITE                00000002h 
-	#define GENERIC_READ                    80000000h
-	#define GENERIC_WRITE                   40000000h
+	;#define FILE_SHARE_READ                 00000001h  
+	;#define FILE_SHARE_WRITE                00000002h 
+	;#define GENERIC_READ                    80000000h
+	;#define GENERIC_WRITE                   40000000h
 	#define FILE_FLAG_OVERLAPPED            40000000h
 	#define DIGCF_PRESENT          			00000002h
 	#define DIGCF_DEVICEINTERFACE   		00000010h
@@ -356,6 +356,7 @@ hid: context [
 			dev 	[hid-device]
 	][
 		dev: as hid-device allocate size? hid-device
+		set-memory as byte-ptr! dev null-byte size? hid-device
 		dev/device-handle: as int-ptr! INVALID-HANDLE-VALUE
 		dev/blocking: true
 		dev/output-report-length: 0
@@ -468,11 +469,8 @@ hid: context [
 			buffer 				[c-string!]
 			d 					[c-string!]
 			len1 				[integer!]
+			skip?				[logic!]
 	][	
-		
-		root: as hid-device-info allocate size? hid-device-info
-		cur-dev: as hid-device-info allocate size? hid-device-info
-
 		;-- allocate mem for devinfo
 		root: null
 		cur-dev: null
@@ -492,8 +490,10 @@ hid: context [
 		devinfo-data/cbSize: size? dev-info-data
 		devinterface-data/cbSize: size? dev-interface-data
 		;--information for all the devices belonging to the HID class.
-		device-info-set: as int-ptr! SetupDiGetClassDevs InterfaceClassGuid null null 
-		(DIGCF_PRESENT or DIGCF_DEVICEINTERFACE)
+		device-info-set: as int-ptr! 	SetupDiGetClassDevs InterfaceClassGuid 
+															null 
+															null 
+															(DIGCF_PRESENT or DIGCF_DEVICEINTERFACE)
 		;--Iterate over each device in the HID class, looking for the right one.
 		driver_name: as c-string! system/stack/allocate 64
 		wstr: as c-string! system/stack/allocate 256
@@ -501,14 +501,21 @@ hid: context [
 			write-handle: as int-ptr! INVALID-HANDLE-VALUE
 			required-size: 0
 			attrib: as HIDD-ATTRIBUTES allocate size? HIDD-ATTRIBUTES
-			res: SetupDiEnumDeviceInterfaces (as integer! device-info-set) 
-			null InterfaceClassGuid device-index devinterface-data 
+			res: SetupDiEnumDeviceInterfaces 	(as integer! device-info-set) 
+												null 
+												InterfaceClassGuid 
+												device-index 
+												devinterface-data 
 			if res = false [
 				;-- A return of FALSE from this function means that there are no more devices.
 				break
 			]
-			res: SetupDiGetDeviceInterfaceDetail  device-info-set 
-			devinterface-data null 0 :required-size null
+			res: SetupDiGetDeviceInterfaceDetail  	device-info-set 
+													devinterface-data 
+													null 
+													0 
+													:required-size 
+													null
 			devinterface-detail: as dev-interface-detail allocate required-size
 			devinterface-detail/cbSize: 5
 			;--Get the detailed data for this device.
@@ -521,123 +528,131 @@ hid: context [
 			]
 			;--Make sure this device is of Setup Class "HIDClass" and has a driver bound to it.
 			i: 0
+			skip?: no
 			forever [
-				res: SetupDiEnumDeviceInfo (as integer! device-info-set) i devinfo-data 
-				if res = false [
-					free as byte-ptr! devinterface-detail
-					device-index: device-index + 1	
+				if false = SetupDiEnumDeviceInfo (as integer! device-info-set) i devinfo-data [
+					skip?: yes
+					break
 				]
 
-				res: SetupDiGetDeviceRegistryPropertyA (as integer! device-info-set)
-				devinfo-data 7 null driver_name 256 null
-				if res = false [
-					free as byte-ptr! devinterface-detail
-					device-index: device-index + 1	
-				]
+				if false = SetupDiGetDeviceRegistryPropertyA 
+							(as integer! device-info-set)
+							devinfo-data 
+							7 
+							null 
+							driver_name 
+							256 
+							null [skip?: yes break]
 
 				if (strcmp driver_name "HIDClass") = 0 [
-					res: SetupDiGetDeviceRegistryPropertyA (as integer! device-info-set)
-					devinfo-data 9 null driver_name 256 null
-					if res [
-						break
-					]
+					if SetupDiGetDeviceRegistryPropertyA
+							(as integer! device-info-set)
+							devinfo-data 
+							9 
+							null 
+							driver_name 
+							256 
+							null [break]
 				]
 				i: i + 1
 			]
 
-			;------------------------
-			;--open a handle to the device 
-			write-handle: open-device buffer true
-			;--check validity of write-handle
-			if write-handle = (as int-ptr! INVALID-HANDLE-VALUE) [
-				CloseHandle (as integer! write-handle)
-				return null
-			]
-
-			;--Get the Vendor ID and Product ID for this device.
-			attrib/Size: size? HIDD-ATTRIBUTES
-			HidD_GetAttributes write-handle attrib
-			if any [id = 0 attrib/ID = id][
-				tmp: as hid-device-info allocate size? hid-device-info
-
-				;--vid/pid match . create the record
-				either as logic! cur-dev [
-					cur-dev/next: tmp
-				][
-					root: tmp
+			
+			unless skip? [
+				;------------------------
+				;--open a handle to the device 
+				write-handle: open-device buffer true
+				;--check validity of write-handle
+				if write-handle = (as int-ptr! INVALID-HANDLE-VALUE) [
+					CloseHandle (as integer! write-handle)
+					return null
 				]
-				cur-dev: tmp
-				;--Get the Usage Page and Usage for this device.
-				pp-data: 0
-				res1: HidD_GetPreparsedData write-handle :pp-data
-				if res1 [
-					nt-res: HidP_GetCaps as int-ptr! pp-data caps
-					if nt-res = 00110000h [
-						cur-dev/usage: caps/Usage
+
+				;--Get the Vendor ID and Product ID for this device.
+				attrib/Size: size? HIDD-ATTRIBUTES
+				HidD_GetAttributes write-handle attrib
+				if any [id = 0 attrib/ID = id][
+					tmp: as hid-device-info allocate size? hid-device-info
+
+					;--vid/pid match . create the record
+					either cur-dev <> null [
+						cur-dev/next: tmp
+					][
+						root: tmp
 					]
-					HidD_FreePreparsedData as int-ptr! pp-data
-				]
-				;--fill out the record
-				cur-dev/next: null
-				str: buffer
-				either as logic! (as integer! str) [
-					len: length? str
-					len1: len + 1
-					cur-dev/path: as c-string! allocate len1
-					strncpy cur-dev/path str len
-					cur-dev/path/len1: null-byte
-				][
-					cur-dev/path: null
+					cur-dev: tmp
+					;--Get the Usage Page and Usage for this device.
+					pp-data: 0
+					res1: HidD_GetPreparsedData write-handle :pp-data
+					if res1 [
+						nt-res: HidP_GetCaps as int-ptr! pp-data caps
+						if nt-res = 00110000h [
+							cur-dev/usage: caps/Usage
+						]
+						HidD_FreePreparsedData as int-ptr! pp-data
+					]
+					;--fill out the record
+					cur-dev/next: null
+					str: buffer
+					either as logic! (as integer! str) [
+						len: length? str
+						len1: len + 1
+						cur-dev/path: as c-string! allocate len1
+						strncpy cur-dev/path str len
+						cur-dev/path/len1: null-byte
+					][
+						cur-dev/path: null
+						
+					]
+					;--serial number
+					res1: HidD_GetSerialNumberString write-handle wstr 1024
+					;b/value: b/value and 0000FFFFh or (00000000h << 16)
+					wstr/1023: null-byte
+					wstr/1024: null-byte
+					either res1 [
+						cur-dev/serial-number: wcsdup wstr
+					][
+						cur-dev/serial-number: "null"
+					]
+					;--manufacturer string
+					res1: HidD_GetManufacturerString write-handle  wstr 1024
+					wstr/1023: null-byte
+					wstr/1024: null-byte
+					if res1 [
+						cur-dev/manufacturer-string: wcsdup wstr
+					]
+					;-------
+
+					;--product string
+					res1: HidD_GetProductString write-handle wstr 1024
+					wstr/1023: null-byte
+					wstr/1024: null-byte
+					if res1 [
+						cur-dev/product-string: wcsdup wstr
+					]
+
+					;--vid/pid
+					cur-dev/id: attrib/ID
+					;--release Number
+					cur-dev/release-number: attrib/VersionNumber			
+					;--Interface Number.
+					cur-dev/interface-number: -1
 					
-				]
-				;--serial number
-				res1: HidD_GetSerialNumberString write-handle wstr 1024
-				;b/value: b/value and 0000FFFFh or (00000000h << 16)
-				wstr/1023: null-byte
-				wstr/1024: null-byte
-				either res1 [
-					cur-dev/serial-number: wcsdup wstr
-				][
-					cur-dev/serial-number: "null"
-				]
-				;--manufacturer string
-				res1: HidD_GetManufacturerString write-handle  wstr 1024
-				wstr/1023: null-byte
-				wstr/1024: null-byte
-				if res1 [
-					cur-dev/manufacturer-string: wcsdup wstr
-				]
-				;-------
-
-				;--product string
-				res1: HidD_GetProductString write-handle wstr 1024
-				wstr/1023: null-byte
-				wstr/1024: null-byte
-				if res1 [
-					cur-dev/product-string: wcsdup wstr
-				]
-
-				;--vid/pid
-				cur-dev/id: attrib/ID
-				;--release Number
-				cur-dev/release-number: attrib/VersionNumber			
-				;--Interface Number.
-				cur-dev/interface-number: -1
-				
-				if as logic! cur-dev/path [
-					interface-component: declare c-string!
-					interface-component: strstr cur-dev/path "&mi_"
-					if as logic! interface-component [
-					hex-str: interface-component + 4
-					endptr: 0
-					cur-dev/interface-number: strtol hex-str (as c-string! :endptr) 16 ;have some problems
-					if (as c-string! endptr) = hex-str [
-						cur-dev/interface-number: -1
-					]
+					if as logic! cur-dev/path [
+						interface-component: declare c-string!
+						interface-component: strstr cur-dev/path "&mi_"
+						if as logic! interface-component [
+						hex-str: interface-component + 4
+						endptr: 0
+						cur-dev/interface-number: strtol hex-str (as c-string! :endptr) 16
+						if (as c-string! endptr) = hex-str [
+							cur-dev/interface-number: -1
+						]
+						]
 					]
 				]
+				CloseHandle (as integer! write-handle)
 			]
-			CloseHandle (as integer! write-handle)
 			free as byte-ptr! devinterface-detail
 			device-index: device-index + 1	
 		]
@@ -680,6 +695,7 @@ hid: context [
 		path-to-open: null
 		handle: null
 		id: product-id * 65536 + vendor-id
+
 		devs: enumerate id
 		cur-dev: devs 
 		while [cur-dev <> null] [
@@ -698,7 +714,7 @@ hid: context [
 			cur-dev: cur-dev/next
 		]
 
-		if as logic! path-to-open [
+		if path-to-open <> null [
 			;--open the device 
 			handle: open-path path-to-open ;--have not been defined
 		]
@@ -828,7 +844,7 @@ hid: context [
 			set-memory as byte-ptr! dev/read-buf null-byte dev/input-report-length
 			ResetEvent ev 
 			res: ReadFile (as integer! dev/device-handle) 
-			as byte-ptr! dev/read-buf dev/input-report-length :bytes-read (as int-ptr! :dev/ol)
+			as byte-ptr! dev/read-buf dev/input-report-length :bytes-read :dev/ol
 			if res = false [
 				if GetLastError <> ERROR_IO_PENDING [
 					;--ReadFile() has failed. Clean up and return error.
