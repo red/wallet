@@ -173,6 +173,10 @@ wallet: context [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
 			gas-limit/text: either token-contract ["79510"]["21000"]
+			btn-sign/offset/x: 200
+			btn-sign/size/x: 60
+			btn-sign/text: "Sign"
+			label-unit/text: token-name
 			view/flags send-dialog 'modal
 		]
 	]
@@ -280,7 +284,7 @@ wallet: context [
 	confirm-sheet: layout [
 		title "Confirm Transaction"
 		style label: text 100 right
-		style info: text 300 middle
+		style info: text 330 middle
 		label "From Address:" info-from: info return
 		label "To Address:" info-to: info return
 		label "Amount to Send:" info-amount: info return
@@ -289,7 +293,7 @@ wallet: context [
 		label "Gas Limit:" info-limit: info return
 		label "Max TX Fee:" info-fee: info return
 		label "Nonce:" info-nonce: info return
-		pad 174x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
+		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
 	]
 
 	ui: layout [
