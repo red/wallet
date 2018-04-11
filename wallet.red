@@ -12,6 +12,7 @@ Red [
 
 #do [debug?: no]
 
+#include %int256.red
 #include %hidapi.red
 #include %ledger.red
 ;#include %trezor.red
@@ -21,8 +22,8 @@ wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	ETH-ratio: make bignum! #{5AF3107A4000}
-	GWei-ratio: make bignum! 100000
+	ETH-ratio: to-i256 #{5AF3107A4000}
+	GWei-ratio: to-i256 100000
 
 	signed-data: none
 
@@ -54,14 +55,14 @@ wallet: context [
 	eth-to-wei: func [eth /local n][
 		abc: 2
 		if string? eth [eth: to float! eth]
-		n: to bignum! to integer! eth * 10000
-		n * ETH-ratio
+		n: to-i256 to integer! eth * 10000
+		mul256 n ETH-ratio
 	]
 
 	gwei-to-wei: func [gwei /local n][
 		if string? gwei [gwei: to float! gwei]
-		n: to bignum! to integer! gwei * 10000
-		n * GWei-ratio
+		n: to-i256 to integer! gwei * 10000
+		mul256 n GWei-ratio
 	]
 
 	pad: function [data [string! binary!]][
@@ -78,8 +79,8 @@ wallet: context [
 			poke amount 2 #"0"
 			n: 1
 		][n: 2]
-		n: make bignum! debase/base skip amount n 16
-		n: load form n / ETH-ratio
+		n: to-i256 debase/base skip amount n 16
+		n: i256-to-int div256 n ETH-ratio
 		n / 10000.0
 	]
 
@@ -214,7 +215,7 @@ wallet: context [
 				rejoin [							;-- data
 					#{a9059cbb}		;-- method ID
 					debase/base pad copy skip addr-to/text 2 16
-					pad to-binary eth-to-wei amount-field/text
+					pad i256-to-bin eth-to-wei amount-field/text
 				]
 			]
 		][
