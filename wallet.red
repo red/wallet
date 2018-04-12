@@ -22,7 +22,7 @@ wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	ETH-ratio: to-i256 #{5AF3107A4000}
+	ETH-ratio:  to-i256 #{5AF3107A4000}
 	GWei-ratio: to-i256 100000
 
 	signed-data: none
@@ -309,9 +309,9 @@ wallet: context [
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
-		text font-size 12 "Please open the ethereum app and set browser support to NO!"
+		text font-size 12 {Please open the Ethereum app on your Ledger key and set "Browser support" to "No".}
 		return
-		pad 200x10 button "OK" [unview]
+		pad 260x10 button "OK" [unview]
 	]
 
 	setup-actors: does [
@@ -322,10 +322,10 @@ wallet: context [
 		]
 	]
 
-	open: does [
+	run: does [
 		setup-actors
 		view ui
 	]
 ]
 
-wallet/open
+wallet/run
