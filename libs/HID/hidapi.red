@@ -11,8 +11,8 @@ Red [
 
 #system [
 	#switch OS [
-		Windows  [#include %win/hid.reds]
-		macOS	 [#include %mac/hid.reds]
+		Windows  [#include %windows.reds]
+		macOS	 [#include %macOS.reds]
 		#default []
 	]
 

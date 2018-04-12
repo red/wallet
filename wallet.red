@@ -14,8 +14,8 @@ Red [
 
 #include %libs/int256.red
 #include %libs/json.red
-#include %hidapi.red
-#include %ledger.red
+#include %libs/HID/hidapi.red
+#include %keys/Ledger/ledger.red
 ;#include %trezor.red
 
 wallet: context [
