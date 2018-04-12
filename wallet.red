@@ -140,9 +140,13 @@ wallet: context [
 			rlp/encode tx
 		]
 	]
+	
+	process-events: does [loop 5 [do-events/no-wait]]
 
 	on-connect: func [face [object!] event [event!] /local addresses addr n amount][
 		either ledger/connect [
+			face/enabled?: no
+			process-events
 			connected?: yes
 			dev/text: "Ledger Nano S"
 			addresses: make block! 10
@@ -151,9 +155,9 @@ wallet: context [
 				addr: Ledger/get-address n
 				unless addr [
 					view/flags unlock-dev-dlg 'modal
+					face/enabled?: yes
 					exit
 				]
-				;face/enabled?: no
 				amount: either token-contract [
 					get-balance-token addr
 				][
@@ -161,11 +165,12 @@ wallet: context [
 				]
 				append addresses rejoin [addr "   " amount]
 				addr-list/data: addresses
-				loop 3 [do-events/no-wait]
+				process-events
 				n: n + 1
 			]
+			face/enabled?: yes
 		][
-			dev/text: "No Device"
+			dev/text: "<No Device>"
 		]
 	]
 
@@ -201,7 +206,7 @@ wallet: context [
 		btn-sign/offset/x: 150
 		btn-sign/size/x: 200
 		btn-sign/text: "please check on your key"
-		loop 3 [do-events/no-wait]
+		process-events
 	]
 
 	on-sign-tx: func [face [object!] event [event!] /local tx][
@@ -298,7 +303,7 @@ wallet: context [
 
 	ui: layout [
 		title "Red Wallet"
-		text 60 "Device:" dev: text 120
+		text 60 "Device:" dev: text 120 "<No Device>"
 		drop-list 70x24 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
 		connect-btn: button 66x25 "Connect" :on-connect
 		button 66x25 "Send" :on-send
