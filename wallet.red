@@ -184,7 +184,7 @@ wallet: context [
 
 	on-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
-		net-name: pick face/data idx - 1 * 2
+		net-name: pick face/data idx - 1 * 2 + 1
 		network:  pick networks idx
 		explorer: pick explorers idx
 		connect-btn/enabled?: yes
