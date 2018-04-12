@@ -33,7 +33,7 @@ wallet: context [
 		https://eth.red-lang.org/v1/jsonrpc/kovan
 	]
 
-	etherscans: [
+	explorers: [
 		https://etherscan.io/tx/
 		https://rinkeby.etherscan.io/tx/
 		https://kovan.etherscan.io/tx/
@@ -44,8 +44,8 @@ wallet: context [
 		"RED" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
 	]
 
-	etherscan: https://rinkeby.etherscan.io/tx/
-	network: https://eth.red-lang.org/v1/jsonrpc/rinkeby
+	explorer: explorers/2
+	network: networks/2
 	net-name: "rinkeby"
 	token-name: "ETH"
 	token-contract: none
@@ -185,8 +185,8 @@ wallet: context [
 	on-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		net-name: pick face/data idx - 1 * 2
-		network: pick networks idx
-		etherscan: pick etherscans idx
+		network:  pick networks idx
+		explorer: pick explorers idx
 		connect-btn/enabled?: yes
 	]
 
@@ -260,40 +260,39 @@ wallet: context [
 		)
 		body/params: reduce [data]
 		reply: json/decode write url compose [
-			POST
-			[
+			POST [
 				Content-Type: "application/json"
 				Accept: "application/json"
 			]
 			(to-binary json/encode body)
 		]
-		browse rejoin [etherscan reply/result]
+		browse rejoin [explorer reply/result]
 		unview
 	]
 
 	send-dialog: layout [
 		title "Send Ether & Tokens"
 		style label: text 100 middle
-		label "From Address:" addr-from: label 360 return
-		label "To Address:" addr-to: field 360 return
+		label "From Address:"	addr-from:	  label 360 return
+		label "To Address:"		addr-to:	  field 360 return
 		label "Amount to Send:" amount-field: field 300 label-unit: label 50 return
-		label "Gas Price:" gas-price: field 360 "21" return
-		label "Gas Limit:" gas-limit: field 360 "21000" return
+		label "Gas Price:"		gas-price:	  field 360 "21" return
+		label "Gas Limit:"		gas-limit:	  field 360 "21000" return
 		pad 200x10 btn-sign: button 60 "Sign" :on-sign-tx
 	]
 
 	confirm-sheet: layout [
 		title "Confirm Transaction"
-		style label: text 100 right
+		style label: text 100 right bold
 		style info: text 330 middle
-		label "From Address:" info-from: info return
-		label "To Address:" info-to: info return
-		label "Amount to Send:" info-amount: info return
-		label "Network:" info-network: info return
-		label "Gas Price:" info-price: info return
-		label "Gas Limit:" info-limit: info return
-		label "Max TX Fee:" info-fee: info return
-		label "Nonce:" info-nonce: info return
+		label "From Address:" 	info-from:    info return
+		label "To Address:" 	info-to: 	  info return
+		label "Amount to Send:" info-amount:  info return
+		label "Network:"		info-network: info return
+		label "Gas Price:" 		info-price:	  info return
+		label "Gas Limit:" 		info-limit:	  info return
+		label "Max TX Fee:" 	info-fee:	  info return
+		label "Nonce:"			info-nonce:	  info return
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
 	]
 
