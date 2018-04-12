@@ -12,11 +12,11 @@ Red [
 
 #do [debug?: no]
 
-#include %int256.red
+#include %libs/int256.red
+#include %libs/json.red
 #include %hidapi.red
 #include %ledger.red
 ;#include %trezor.red
-#include %json.red
 
 wallet: context [
 
