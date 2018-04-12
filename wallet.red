@@ -4,16 +4,18 @@ Red [
 	File: 	%wallet.red
 	Needs:	View
 	Tabs: 	4
+	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
 	License: {
 		Distributed under the Boost Software License, Version 1.0.
 		See https://github.com/red/red/blob/master/BSL-License.txt
 	}
 ]
 
-#do [debug?: no]
+#do [debug?: yes]
 
 #include %libs/int256.red
 #include %libs/json.red
+#include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/Ledger/ledger.red
 ;#include %trezor.red
@@ -21,9 +23,6 @@ Red [
 wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
-
-	ETH-ratio:  to-i256 #{5AF3107A4000}
-	GWei-ratio: to-i256 100000
 
 	signed-data: none
 
@@ -40,8 +39,11 @@ wallet: context [
 	]
 
 	contracts: [
-		;"RED" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
-		"RED" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
+		#either debug? [
+			"RED" "43df37f66b8b9fececcc3031c9c1d2511db17c42"	;-- RED token contract on Rinkeby
+		][
+			"RED" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"	;-- RED token contract on Mainnet
+		]
 	]
 
 	explorer: explorers/2
@@ -52,95 +54,6 @@ wallet: context [
 
 	connected?: no
 
-	eth-to-wei: func [eth /local n][
-		abc: 2
-		if string? eth [eth: to float! eth]
-		n: to-i256 to integer! eth * 10000
-		mul256 n ETH-ratio
-	]
-
-	gwei-to-wei: func [gwei /local n][
-		if string? gwei [gwei: to float! gwei]
-		n: to-i256 to integer! gwei * 10000
-		mul256 n GWei-ratio
-	]
-
-	pad: function [data [string! binary!]][
-		n: length? data
-		either binary? data [c: #{00} len: 32][c: #"0" len: 64]
-		if n < len [
-			insert/dup data c len - n
-		]
-		data
-	]
-
-	parse-balance: function [amount][
-		either (length? amount) % 2 <> 0 [
-			poke amount 2 #"0"
-			n: 1
-		][n: 2]
-		n: to-i256 debase/base skip amount n 16
-		n: i256-to-int div256 n ETH-ratio
-		n / 10000.0
-	]
-
-	get-balance-token: func [address [string!] /local body url token-url params reply][
-		url: network
-		token-url: rejoin ["0x" token-contract]
-		params: make map! 4
-		params/to: token-url
-		params/data: rejoin ["0x70a08231" pad copy skip address 2]
-
-		body: #(
-			jsonrpc: "2.0"
-			id: 57386342
-			method: "eth_call"
-		)
-		body/params: reduce [params "latest"]
-		reply: json/decode write url compose [
-			POST
-			[
-				Content-Type: "application/json"
-				Accept: "application/json"
-			]
-			(to-binary json/encode body)
-		]
-		parse-balance reply/result
-	]
-
-	get-balance: func [address [string!] /local url data n][
-		url: replace rejoin [
-			network {/eth_getBalance?params=["address","latest"]}
-		] "address" address
-		data: json/decode read url
-		parse-balance data/result
-	]
-
-	get-nonce: function [address [string!]][
-		url: replace rejoin [
-			network
-			{/eth_getTransactionCount?params=["address", "pending"]}
-		] "address" address
-		data: json/decode read url
-		either (length? data/result) % 2 <> 0 [
-			poke data/result 2 #"0"
-			n: 1
-		][n: 2]
-		to integer! debase/base skip data/result n 16
-	]
-
-	get-signed-data: func [tx /local signed][
-		signed: ledger/sign-eth-tx 0 tx
-		if signed [
-			append tx reduce [
-				copy/part signed 1
-				copy/part next signed 32
-				copy/part skip signed 33 32
-			]
-			rlp/encode tx
-		]
-	]
-	
 	process-events: does [loop 5 [do-events/no-wait]]
 
 	on-connect: func [face [object!] event [event!] /local addresses addr n amount][
@@ -159,9 +72,9 @@ wallet: context [
 					exit
 				]
 				amount: either token-contract [
-					get-balance-token addr
+					eth/get-balance-token network token-contract addr
 				][
-					get-balance addr
+					eth/get-balance network addr
 				]
 				append addresses rejoin [addr "   " amount]
 				addr-list/data: addresses
@@ -192,6 +105,7 @@ wallet: context [
 		net-name: pick face/data idx - 1 * 2 + 1
 		network:  pick networks idx
 		explorer: pick explorers idx
+		if connected? [on-connect face event]
 		connect-btn/enabled?: yes
 	]
 
@@ -212,30 +126,30 @@ wallet: context [
 	on-sign-tx: func [face [object!] event [event!] /local tx][
 		either token-contract [
 			tx: reduce [
-				get-nonce addr-from/text			;-- nonce
-				gwei-to-wei gas-price/text			;-- gas-price
-				to-integer gas-limit/text			;-- gas-limit
-				debase/base token-contract 16		;-- to address
-				eth-to-wei 0						;-- value
-				rejoin [							;-- data
+				eth/get-nonce network addr-from/text	;-- nonce
+				eth/gwei-to-wei gas-price/text			;-- gas-price
+				to-integer gas-limit/text				;-- gas-limit
+				debase/base token-contract 16			;-- to address
+				eth/eth-to-wei 0						;-- value
+				rejoin [								;-- data
 					#{a9059cbb}		;-- method ID
-					debase/base pad copy skip addr-to/text 2 16
-					pad i256-to-bin eth-to-wei amount-field/text
+					debase/base eth/pad64 copy skip addr-to/text 2 16
+					eth/pad64 i256-to-bin eth/eth-to-wei amount-field/text
 				]
 			]
 		][
 			tx: reduce [
-				get-nonce addr-from/text			;-- nonce
-				gwei-to-wei gas-price/text			;-- gas-price
-				to-integer gas-limit/text			;-- gas-limit
-				debase/base skip addr-to/text 2 16	;-- to address
-				eth-to-wei amount-field/text		;-- value
-				#{}									;-- data
+				eth/get-nonce network addr-from/text	;-- nonce
+				eth/gwei-to-wei gas-price/text			;-- gas-price
+				to-integer gas-limit/text				;-- gas-limit
+				debase/base skip addr-to/text 2 16		;-- to address
+				eth/eth-to-wei amount-field/text		;-- value
+				#{}										;-- data
 			]
 		]
 
 		notify-user
-		signed-data: get-signed-data tx
+		signed-data: ledger/get-signed-data tx
 
 		if signed-data [
 			info-from/text: addr-from/text
@@ -249,7 +163,6 @@ wallet: context [
 				" Ether"
 			]
 			info-nonce/text: mold tx/1
-			;info-data/text: mold signed-data
 			unview
 			view/flags confirm-sheet 'modal
 		]

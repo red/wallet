@@ -168,6 +168,18 @@ ledger: context [
 		either 4 > length? signed [none][signed]
 	]
 
+	get-signed-data: func [tx /local signed][
+		signed: sign-eth-tx 0 tx
+		if signed [
+			append tx reduce [
+				copy/part signed 1
+				copy/part next signed 32
+				copy/part skip signed 33 32
+			]
+			rlp/encode tx
+		]
+	]
+
 	close: does [hid/close dongle]
 ]
 
