@@ -1,4 +1,15 @@
-Red/System []
+Red/System [
+	Title:	"Hidapi"
+	Author: "Huang Yongzhao"
+	File: 	%macOS.reds
+	Needs:	View
+	Tabs: 	4
+	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
+	License: {
+		Distributed under the Boost Software License, Version 1.0.
+		See https://github.com/red/red/blob/master/BSL-License.txt
+	}
+]
 hid: context [
 	#define	EINVAL		22		;/* Invalid argument */
 	#define kIOHIDSerialNumberKey               "SerialNumber"
@@ -846,6 +857,8 @@ hid: context [
 			path_to_open 	[c-string!]
 			handle 			[hid-device]
 	][
+		path_to_open: null
+		handle: null
 		devs: enumerate 0 0
 		cur_dev: devs 
 		while [cur_dev <> null] [
