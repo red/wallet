@@ -61,6 +61,7 @@ wallet: context [
 	process-events: does [loop 5 [do-events/no-wait]]
 
 	connect-device: func [/prev /next /local addresses addr n amount][
+		update-ui no
 		either ledger/connect [
 			process-events
 			connected?: yes
@@ -96,6 +97,7 @@ wallet: context [
 				process-events
 				n: n + 1
 			]
+			update-ui yes
 		][
 			dev/text: "<No Device>"
 		]
@@ -131,6 +133,19 @@ wallet: context [
 
 	check-data: func [][
 		yes
+	]
+
+	update-ui: func [enabled? [logic!]][
+		btn-send/enabled?: all [
+			enabled?
+			addr-list/selected
+			addr-list/selected % 2 = 0
+		]
+		if page > 0 [btn-prev/enabled?: enabled?]
+		btn-more/enabled?: enabled?
+		net-list/enabled?: enabled?
+		token-list/enabled?: enabled?
+		process-events
 	]
 
 	notify-user: does [
@@ -260,11 +275,11 @@ wallet: context [
 		title "Red Wallet"
 		text 60 "Device:" dev: text 160 "<No Device>"
 		btn-send: button 66 "Send" :on-send disabled
-		drop-list 48 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
-		drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
+		token-list: drop-list 48 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
+		net-list: drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
 		return
-		addr-list: text-list font list-font 450x200 return
-		pad 300x0 btn-prev: button "Prev" disabled :on-prev-addr button "More" :on-more-addr
+		addr-list: text-list font list-font 450x195 return
+		pad 300x0 btn-prev: button "Prev" disabled :on-prev-addr btn-more: button "More" :on-more-addr
 	]
 
 	unlock-dev-dlg: layout [
