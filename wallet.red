@@ -129,7 +129,13 @@ wallet: context [
 		if connected? [connect-device]
 	]
 
+	check-data: func [][
+		yes
+	]
+
 	notify-user: does [
+		btn-sign/enabled?: no
+		process-events
 		btn-sign/offset/x: 150
 		btn-sign/size/x: 200
 		btn-sign/text: "please check on your key"
@@ -137,6 +143,8 @@ wallet: context [
 	]
 
 	on-sign-tx: func [face [object!] event [event!] /local tx][
+		unless check-data [exit]
+
 		either token-contract [
 			tx: reduce [
 				eth/get-nonce network addr-from/text	;-- nonce
@@ -201,8 +209,10 @@ wallet: context [
 		unview
 	]
 
-	on-select-addr: func [face event][
-		btn-send/enabled?: face/selected % 2 = 0
+	copy-addr: func [][
+		if btn-send/enabled? [
+			write-clipboard copy/part pick addr-list/data addr-list/selected 42
+		]
 	]
 
 	on-more-addr: func [face event][
@@ -253,7 +263,7 @@ wallet: context [
 		drop-list 48 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
 		drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
 		return
-		addr-list: text-list :on-select-addr font list-font 450x200 return
+		addr-list: text-list font list-font 450x200 return
 		pad 300x0 btn-prev: button "Prev" disabled :on-prev-addr button "More" :on-more-addr
 	]
 
@@ -315,6 +325,21 @@ wallet: context [
 			on-close: func [face event][
 				ledger/close
 			]
+		]
+
+		addr-list/actors: make object! [
+			on-menu: func [face [object!] event [event!]][
+				switch event/picked [
+					copy	[copy-addr]
+				]
+			]
+			on-change: func [face event][
+				btn-send/enabled?: face/selected % 2 = 0
+			]
+		]
+
+		addr-list/menu: [
+			"Copy address"		copy
 		]
 	]
 
