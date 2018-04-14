@@ -56,7 +56,7 @@ ledger: context [
 		clear buffer
 		until [
 			if none? hid/read dongle clear data-frame timeout * 1000 [
-				throw "Read Error"
+				return buffer
 			]
 
 			data: data-frame
@@ -64,15 +64,12 @@ ledger: context [
 			;-- sanity check the frame
 			if DEFAULT_CHANNEL <> to-int16 data [
 				return buffer
-				;throw "APDU Wrong Channel"
 			]
 			if TAG_APDU <> data/3 [
 				return buffer
-				;throw "APDU Wrong Tag"
 			]
 			if idx <> to-int16 skip data 3 [
 				return buffer
-				;throw "APDU Wrong Sequence"
 			]
 
 			;-- extract the message
@@ -133,7 +130,7 @@ ledger: context [
 			to-bin32 idx
 		]
 		write-apdu data
-		data: read-apdu 10
+		data: read-apdu 1
 
 		if 40 < length? data [
 			;-- parse reply data
@@ -186,7 +183,7 @@ ledger: context [
 		]
 	]
 
-	close: does [hid/close dongle]
+	close: does [hid/close dongle dongle: none]
 ]
 
 ;ledger/connect

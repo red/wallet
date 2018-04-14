@@ -53,22 +53,36 @@ wallet: context [
 	token-contract: none
 
 	connected?: no
+	need-refresh?: no
+	page: 0
+
+	split-line: pad/with "" 54 #"-" 
 
 	process-events: does [loop 5 [do-events/no-wait]]
 
-	on-connect: func [face event /local addresses addr n amount][
+	connect-device: func [/prev /next /local addresses addr n amount][
 		either ledger/connect [
-			face/enabled?: no
 			process-events
 			connected?: yes
 			dev/text: "Ledger Nano S"
-			addresses: make block! 10
-			n: 0
+			addresses: clear []
+			if next [page: page + 1]
+			if prev [page: page - 1]
+			n: page * 5
+			append addresses split-line
 			loop 5 [
 				addr: Ledger/get-address n
-				unless addr [
-					view/flags unlock-dev-dlg 'modal
-					face/enabled?: yes
+				either addr [
+					if need-refresh? [
+						need-refresh?: no
+						usb-device/rate: none
+					]
+				][
+					unless need-refresh? [
+						view/flags unlock-dev-dlg 'modal
+					]
+					usb-device/rate: 0:0:3
+					need-refresh?: yes
 					exit
 				]
 				amount: either token-contract [
@@ -77,11 +91,11 @@ wallet: context [
 					eth/get-balance network addr
 				]
 				append addresses rejoin [addr "   " amount]
+				append addresses split-line
 				addr-list/data: addresses
 				process-events
 				n: n + 1
 			]
-			face/enabled?: yes
 		][
 			dev/text: "<No Device>"
 		]
@@ -105,15 +119,14 @@ wallet: context [
 		net-name: pick face/data idx - 1 * 2 + 1
 		network:  pick networks idx
 		explorer: pick explorers idx
-		if connected? [on-connect face event]
-		connect-btn/enabled?: yes
+		if connected? [connect-device]
 	]
 
 	on-select-token: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		token-name: pick face/data idx - 1 * 2 + 1
 		token-contract: select contracts token-name
-		if connected? [on-connect face event]
+		if connected? [connect-device]
 	]
 
 	notify-user: does [
@@ -188,6 +201,25 @@ wallet: context [
 		unview
 	]
 
+	on-select-addr: func [face event][
+		btn-send/enabled?: face/selected % 2 = 0
+	]
+
+	on-more-addr: func [face event][
+		unless connected? [exit]
+		connect-device/next
+		if page > 0 [btn-prev/enabled?: yes]
+	]
+
+	on-prev-addr: func [face event][
+		unless connected? [exit]
+		if page = 1 [
+			btn-prev/enabled?: no
+			process-events
+		]
+		connect-device/prev
+	]
+
 	send-dialog: layout [
 		title "Send Ether & Tokens"
 		style label: text 100 middle
@@ -216,12 +248,13 @@ wallet: context [
 
 	ui: layout [
 		title "Red Wallet"
-		text 60 "Device:" dev: text 120 "<No Device>"
-		drop-list 70x24 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
-		button 66x25 "Send" :on-send
-		drop-list 48x24 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
+		text 60 "Device:" dev: text 160 "<No Device>"
+		btn-send: button 66 "Send" :on-send disabled
+		drop-list 48 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
+		drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
 		return
-		addr-list: text-list font list-font 530x200
+		addr-list: text-list :on-select-addr font list-font 450x200 return
+		pad 300x0 btn-prev: button "Prev" disabled :on-prev-addr button "More" :on-more-addr
 	]
 
 	unlock-dev-dlg: layout [
@@ -231,7 +264,14 @@ wallet: context [
 		pad 260x10 button "OK" [unview]
 	]
 
-	device-support?: func [
+	contract-data-dlg: layout [
+		title "Set Contract data to YES"
+		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
+		return
+		pad 220x10 button "OK" [unview]
+	]
+
+	support-device?: func [
 		vendor-id	[integer!]
 		product-id	[integer!]
 		return:		[logic!]
@@ -243,19 +283,28 @@ wallet: context [
 	]
 
 	monitor-devices: does [
-		append ui/pane make face! [
-			type: 'usb-device offset: 0x0 size: 10x10
+		append ui/pane usb-device: make face! [
+			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
 				on-up: func [face [object!] event [event!]][
-					if device-support? face/data/1 face/data/2 [
-						on-connect face event
+					if support-device? face/data/1 face/data/2 [
+						connect-device
 					]
 				]
 				on-down: func [face [object!] event [event!]][
-					if device-support? face/data/1 face/data/2 [
+					if support-device? face/data/1 face/data/2 [
 						connected?: no
+						ledger/close
 						dev/text: "<No Device>"
 					]
+				]
+				on-time: func [face event][
+					unless need-refresh? [face/rate: none]
+					if connected? [
+						connected?: no
+						ledger/close
+					]
+					connect-device
 				]
 			]
 		]
@@ -265,10 +314,6 @@ wallet: context [
 		ui/actors: make object! [
 			on-close: func [face event][
 				ledger/close
-			]
-			on-created: func [face event][
-				none
-				;on-connect face event		;-- too slow
 			]
 		]
 	]
