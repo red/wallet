@@ -27,7 +27,7 @@ eth: context [
 		mul256 n GWei-ratio
 	]
 
-	pad64: func [data [string! binary!] /local c len n][
+	pad64: function [data [string! binary!]][
 		n: length? data
 		either binary? data [c: #{00} len: 32][c: #"0" len: 64]
 		if n < len [
@@ -36,7 +36,7 @@ eth: context [
 		data
 	]
 
-	parse-balance: func [amount [string!] /local n][
+	parse-balance: function [amount][
 		either (length? amount) % 2 <> 0 [
 			poke amount 2 #"0"
 			n: 1
