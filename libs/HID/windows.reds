@@ -13,8 +13,8 @@ Red/System [
 
 hid: context [
 	#define MAX_STRING_WCHARS				00000FFFh
-	;#define FILE_SHARE_READ                 00000001h  
-	;#define FILE_SHARE_WRITE                00000002h 
+	;#define FILE_SHARE_READ                 00000001h
+	;#define FILE_SHARE_WRITE                00000002h
 	;#define GENERIC_READ                    80000000h
 	;#define GENERIC_WRITE                   40000000h
 	#define FILE_FLAG_OVERLAPPED            40000000h
@@ -30,7 +30,7 @@ hid: context [
 	;#define MIN(x y) (either x > y [y] [x])
 
 	;--extract the short type data from integer!
-	#define LOWORD(param) (param and FFFFh << 16 >> 16)   
+	#define LOWORD(param) (param and FFFFh << 16 >> 16)
 	#define HIWORD(param) (param >> 16)
 
 
@@ -78,7 +78,7 @@ hid: context [
 		last-error-num 			[integer!]
 		read-pending 			[logic!]
 		read-buf 				[c-string!]
-		ol        				[overlapped-struct value] 
+		ol        				[overlapped-struct value]
 	]
 	hid-device-info: alias struct! [
 		path 				[c-string!]
@@ -105,7 +105,7 @@ hid: context [
 		pad3									[integer!]
 		DevInst									[integer!]
 		reserved								[integer!]
-	]	
+	]
 	dev-interface-data: alias struct! [  ;--size: 28
 		cbSize									[integer!]
 		ClassGuid								[integer!]
@@ -119,7 +119,7 @@ hid: context [
 		cbSize									[integer!]
 		DevicePath								[c-string!]
 	]
-	
+
 	#import [
 		"hid.dll" stdcall [
 			HidD_GetAttributes: "HidD_GetAttributes" [
@@ -235,8 +235,8 @@ hid: context [
 					return:		[logic!]   ;integer!
 			]
 			CancelIo: "CancelIo" [
-				 hFile 		[int-ptr!]	
-				 return: 	[integer!]
+				hFile 		[int-ptr!]
+				return: 	[integer!]
 			]
 			WaitForSingleObject: "WaitForSingleObject" [
 				hHandle                 [integer!]
@@ -287,7 +287,7 @@ hid: context [
 				MemberIndex						[integer!]
 				DeviceInterfaceData				[dev-interface-data]
 				return: 						[logic!]
-			]	
+			]
 			SetupDiGetDeviceInterfaceDetail: "SetupDiGetDeviceInterfaceDetailA" [
 				DeviceInfoSet 					[int-ptr!]
 				DeviceInterfaceData				[dev-interface-data]
@@ -318,7 +318,7 @@ hid: context [
 				return: 						[logic!]
 		]
 		]
-		
+
 
 		LIBC-file cdecl [
 			wcsdup: "_wcsdup" [
@@ -358,12 +358,12 @@ hid: context [
 		]
 	]
 
-	
 
-	;init hid-device 
+
+	;init hid-device
 	new-hid-device: func [
 		return:  	[hid-device]
-		/local 
+		/local
 			dev 	[hid-device]
 	][
 		dev: as hid-device allocate size? hid-device
@@ -403,8 +403,8 @@ hid: context [
 		msg: declare c-string!
 		FormatMessage 4864 null GetLastError 1024 msg 0 null
 		;--get rid of the CR and LF that FormatMessage() sticks at the
-	   	;--end of the message.
-		ptr: msg 
+		;--end of the message.
+		ptr: msg
 		while [ptr/1 <> null-byte] [
 			if ptr/1 = #"^(0D)"  [
 				ptr/1: null-byte
@@ -414,7 +414,7 @@ hid: context [
 		]
 		;------
 		LocalFree device/last-error-str
-		device/last-error-str: as int-ptr! msg ;--maybe a fault 
+		device/last-error-str: as int-ptr! msg ;--maybe a fault
 
 	]
 
@@ -423,7 +423,7 @@ hid: context [
 		path 		[c-string!]
 		enumerate? 	[logic!]
 		return: 	[int-ptr!]
-		/local 
+		/local
 			handle 			[int-ptr!]
 			desired-access 	[integer!]
 			share-mode		[integer!]
@@ -435,7 +435,7 @@ hid: context [
 			desired-access: GENERIC_WRITE or GENERIC_READ
 			share-mode: FILE_SHARE_READ
 		]
-		
+
 		as int-ptr! CreateFileA
 						path
 						desired-access
@@ -450,12 +450,12 @@ hid: context [
 	enumerate: func [
 		id 		[integer!] ;vendor-id and product-id
 		return: [hid-device-info]
-		/local 
+		/local
 			res 				[logic!]
 			root				[hid-device-info]
 			cur-dev 			[hid-device-info]
 			devinterface-data 	[dev-interface-data value]
-			devinterface-detail	[dev-interface-detail] 
+			devinterface-detail	[dev-interface-detail]
 			devinfo-data 		[dev-info-data value]
 			device-info-set		[int-ptr!]
 			InterfaceClassGuid  [guid-struct value]
@@ -481,7 +481,7 @@ hid: context [
 			d 					[c-string!]
 			len1 				[integer!]
 			skip?				[logic!]
-	][	
+	][
 		;-- allocate mem for devinfo
 		root: null
 		cur-dev: null
@@ -501,9 +501,9 @@ hid: context [
 		devinfo-data/cbSize: size? dev-info-data
 		devinterface-data/cbSize: size? dev-interface-data
 		;--information for all the devices belonging to the HID class.
-		device-info-set: as int-ptr! 	SetupDiGetClassDevs InterfaceClassGuid 
-															null 
-															null 
+		device-info-set: as int-ptr! 	SetupDiGetClassDevs InterfaceClassGuid
+															null
+															null
 															(DIGCF_PRESENT or DIGCF_DEVICEINTERFACE)
 		;--Iterate over each device in the HID class, looking for the right one.
 		driver_name: as c-string! system/stack/allocate 64
@@ -512,25 +512,25 @@ hid: context [
 			write-handle: as int-ptr! INVALID-HANDLE-VALUE
 			required-size: 0
 			attrib: as HIDD-ATTRIBUTES allocate size? HIDD-ATTRIBUTES
-			res: SetupDiEnumDeviceInterfaces 	(as integer! device-info-set) 
-												null 
-												InterfaceClassGuid 
-												device-index 
-												devinterface-data 
+			res: SetupDiEnumDeviceInterfaces 	(as integer! device-info-set)
+												null
+												InterfaceClassGuid
+												device-index
+												devinterface-data
 			if res = false [
 				;-- A return of FALSE from this function means that there are no more devices.
 				break
 			]
-			res: SetupDiGetDeviceInterfaceDetail  	device-info-set 
-													devinterface-data 
-													null 
-													0 
-													:required-size 
+			res: SetupDiGetDeviceInterfaceDetail  	device-info-set
+													devinterface-data
+													null
+													0
+													:required-size
 													null
 			devinterface-detail: as dev-interface-detail allocate required-size
 			devinterface-detail/cbSize: 5
 			;--Get the detailed data for this device.
-			res: SetupDiGetDeviceInterfaceDetail device-info-set 
+			res: SetupDiGetDeviceInterfaceDetail device-info-set
 			devinterface-data devinterface-detail required-size null null ;have some mistakes
 			buffer: as c-string! :devinterface-detail/DevicePath
 			if res = false [
@@ -546,32 +546,32 @@ hid: context [
 					break
 				]
 
-				if false = SetupDiGetDeviceRegistryPropertyA 
+				if false = SetupDiGetDeviceRegistryPropertyA
 							(as integer! device-info-set)
-							devinfo-data 
-							7 
-							null 
-							driver_name 
-							256 
+							devinfo-data
+							7
+							null
+							driver_name
+							256
 							null [skip?: yes break]
 
 				if (strcmp driver_name "HIDClass") = 0 [
 					if SetupDiGetDeviceRegistryPropertyA
 							(as integer! device-info-set)
-							devinfo-data 
-							9 
-							null 
-							driver_name 
-							256 
+							devinfo-data
+							9
+							null
+							driver_name
+							256
 							null [break]
 				]
 				i: i + 1
 			]
 
-			
+
 			unless skip? [
 				;------------------------
-				;--open a handle to the device 
+				;--open a handle to the device
 				write-handle: open-device buffer true
 				;--check validity of write-handle
 				if write-handle = (as int-ptr! INVALID-HANDLE-VALUE) [
@@ -613,7 +613,7 @@ hid: context [
 						cur-dev/path/len1: null-byte
 					][
 						cur-dev/path: null
-						
+
 					]
 					;--serial number
 					res1: HidD_GetSerialNumberString write-handle wstr 1024
@@ -645,10 +645,10 @@ hid: context [
 					;--vid/pid
 					cur-dev/id: attrib/ID
 					;--release Number
-					cur-dev/release-number: attrib/VersionNumber			
+					cur-dev/release-number: attrib/VersionNumber
 					;--Interface Number.
 					cur-dev/interface-number: -1
-					
+
 					if as logic! cur-dev/path [
 						interface-component: declare c-string!
 						interface-component: strstr cur-dev/path "&mi_"
@@ -665,7 +665,7 @@ hid: context [
 				CloseHandle (as integer! write-handle)
 			]
 			free as byte-ptr! devinterface-detail
-			device-index: device-index + 1	
+			device-index: device-index + 1
 		]
 		;close the device information handle
 		SetupDiDestroyDeviceInfoList as integer! device-info-set
@@ -678,7 +678,7 @@ hid: context [
 			d 		[hid-device-info]
 			next 	[hid-device-info]
 	][
-		d: devs 
+		d: devs
 		while [as logic! d] [
 			next: d/next
 			free as byte-ptr! d/path
@@ -686,13 +686,13 @@ hid: context [
 			free as byte-ptr! d/manufacturer-string
 			free as byte-ptr! d/product-string
 			free as byte-ptr! d
-			d: next 
+			d: next
 		]
 	]
 
 	open: func [
 		vendor-id 		[integer!] ;vid
-		product-id 		[integer!] ;pid			
+		product-id 		[integer!] ;pid
 		serial-number	[c-string!]
 		return:			[int-ptr!]
 		/local
@@ -708,7 +708,7 @@ hid: context [
 		id: product-id * 65536 + vendor-id
 
 		devs: enumerate id
-		cur-dev: devs 
+		cur-dev: devs
 		while [cur-dev <> null] [
 			if cur-dev/id = id [
 				either as logic! serial-number [
@@ -717,7 +717,7 @@ hid: context [
 						path-to-open: cur-dev/path
 						break
 					]
-				][	
+				][
 					path-to-open: cur-dev/path
 					break
 				]
@@ -726,7 +726,7 @@ hid: context [
 		]
 
 		if path-to-open <> null [
-			;--open the device 
+			;--open the device
 			handle: open-path path-to-open ;--have not been defined
 		]
 
@@ -747,27 +747,27 @@ hid: context [
 	][
 		pp-data: 0
 		dev: new-hid-device
-		;--open a handle to the device 
+		;--open a handle to the device
 		dev/device-handle: open-device path false
 		;--check validity of write-handle
 		if (as integer! dev/device-handle) = INVALID-HANDLE-VALUE [
-			;--unabele to open the device 
+			;--unabele to open the device
 			register-error dev "CreateFile"  ;--have not been defined yet
-			free-hid-device dev 
+			free-hid-device dev
 			return null
 		]
 		;--set the input report buffer size to 64 reports
 		res: HidD_SetNumInputBuffers dev/device-handle 64
 		if res = false [
 			register-error dev "HidD_SetNumInputBuffers"
-			free-hid-device dev 
+			free-hid-device dev
 			return null
 		]
-		;--get the input report length for the device 
+		;--get the input report length for the device
 		res: HidD_GetPreparsedData dev/device-handle :pp-data
 		if res = false [
 			register-error dev  "HidD_GetPreparsedData"
-			free-hid-device dev 
+			free-hid-device dev
 			return null
 		]
 
@@ -780,7 +780,7 @@ hid: context [
 		dev/input-report-length: HIWORD(caps/ReportByteLength)
 		HidD_FreePreparsedData as int-ptr! pp-data
 		dev/read-buf: as c-string! allocate dev/input-report-length
-		dev 
+		dev
 	]
 
 	write: func [
@@ -795,12 +795,12 @@ hid: context [
 			ol 				[overlapped-struct value]
 			buf 			[byte-ptr!]
 			i 				[integer!]
-	][	
+	][
 		dev: as hid-device device
 		bytes-written: 0
-		set-memory as byte-ptr! :ol null-byte (size? ol)	
+		set-memory as byte-ptr! :ol null-byte (size? ol)
 		either length >= dev/output-report-length [
-			buf: data 
+			buf: data
 		][
 			buf:  allocate dev/output-report-length
 			copy-memory buf data length
@@ -814,7 +814,7 @@ hid: context [
 				register-error dev "WriteFile"
 				bytes-written: -1
 				if buf <> data  [
-					free buf 
+					free buf
 				]
 			]
 		]
@@ -846,15 +846,15 @@ hid: context [
 		dev: as hid-device device
 		bytes-read: 0
 		copy-len: 	0
-		
+
 		;--copy the handle for convenience
 		ev: dev/ol/hEvent
 		if dev/read-pending = false [
 			;--start an overlapped i/o read
 			dev/read-pending: true
 			set-memory as byte-ptr! dev/read-buf null-byte dev/input-report-length
-			ResetEvent ev 
-			res: ReadFile (as integer! dev/device-handle) 
+			ResetEvent ev
+			res: ReadFile (as integer! dev/device-handle)
 			as byte-ptr! dev/read-buf dev/input-report-length :bytes-read :dev/ol
 			if res = false [
 				if GetLastError <> ERROR_IO_PENDING [
@@ -892,7 +892,7 @@ hid: context [
 				][
 					copy-len: length
 				]
-				copy-memory data 
+				copy-memory data
 				((as byte-ptr! dev/read-buf) + 1) copy-len
 			][
 				;--copy the whole buffer ,report number and all
@@ -924,11 +924,11 @@ hid: context [
 	][
 		dev: as hid-device device
 		either dev/blocking [
-			a: -1 
+			a: -1
 		][
 			a: 0
 		]   ;compile error
-		b: read-timeout device data length a 
+		b: read-timeout device data length a
 		return b
 	]
 

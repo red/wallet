@@ -41,7 +41,7 @@ hid: context [
 			handle/box as-integer h
 		]
 	]
-	
+
 	read: routine [
 		dev		[handle!]
 		buffer	[binary!]
