@@ -47,7 +47,13 @@ eth: context [
 		n / 10000.0
 	]
 
-	get-balance-token: func [network [url!] contract [string!] address [string!] /local body url token-url params reply][
+	get-balance-token: func [
+		network		[url!]
+		contract	[string!]
+		address		[string!]
+		/local
+			body url token-url params reply
+	][
 		url: network
 		token-url: rejoin ["0x" contract]
 		params: make map! 4

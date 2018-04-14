@@ -56,7 +56,7 @@ wallet: context [
 
 	process-events: does [loop 5 [do-events/no-wait]]
 
-	on-connect: func [face [object!] event [event!] /local addresses addr n amount][
+	on-connect: func [face event /local addresses addr n amount][
 		either ledger/connect [
 			face/enabled?: no
 			process-events
@@ -217,10 +217,9 @@ wallet: context [
 	ui: layout [
 		title "Red Wallet"
 		text 60 "Device:" dev: text 120 "<No Device>"
-		drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
-		connect-btn: button 66 "Connect" :on-connect
-		button 66 "Send" :on-send
-		drop-list 48 data ["ETH" 1 "RED" 2] select 1 :on-select-token
+		drop-list 70x24 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
+		button 66x25 "Send" :on-send
+		drop-list 48x24 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
 		return
 		addr-list: text-list font list-font 530x200
 	]
@@ -232,16 +231,51 @@ wallet: context [
 		pad 260x10 button "OK" [unview]
 	]
 
+	device-support?: func [
+		vendor-id	[integer!]
+		product-id	[integer!]
+		return:		[logic!]
+	][
+		all [
+			vendor-id = ledger/vendor-id
+			product-id = ledger/product-id
+		]
+	]
+
+	monitor-devices: does [
+		append ui/pane make face! [
+			type: 'usb-device offset: 0x0 size: 10x10
+			actors: object [
+				on-up: func [face [object!] event [event!]][
+					if device-support? face/data/1 face/data/2 [
+						on-connect face event
+					]
+				]
+				on-down: func [face [object!] event [event!]][
+					if device-support? face/data/1 face/data/2 [
+						connected?: no
+						dev/text: "<No Device>"
+					]
+				]
+			]
+		]
+	]
+
 	setup-actors: does [
 		ui/actors: make object! [
 			on-close: func [face event][
 				ledger/close
+			]
+			on-created: func [face event][
+				none
+				;on-connect face event		;-- too slow
 			]
 		]
 	]
 
 	run: does [
 		setup-actors
+		monitor-devices
 		view ui
 	]
 ]

@@ -29,6 +29,9 @@ to-int16: func [b [binary!]][
 
 ledger: context [
 
+	vendor-id:			2C97h
+	product-id:			1
+
 	DEFAULT_CHANNEL:	0101h
 	TAG_APDU:			05h
 	PACKET_SIZE:		#either config/OS = 'Windows [65][64]
@@ -40,7 +43,7 @@ ledger: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open 2C97h 1	;-- vendor ID (2C97h) and product ID (01h) for the Nano S
+			dongle: hid/open vendor-id product-id
 		]
 		dongle
 	]
@@ -60,13 +63,16 @@ ledger: context [
 
 			;-- sanity check the frame
 			if DEFAULT_CHANNEL <> to-int16 data [
-				throw "APDU Wrong Channel"
+				return buffer
+				;throw "APDU Wrong Channel"
 			]
 			if TAG_APDU <> data/3 [
-				throw "APDU Wrong Tag"
+				return buffer
+				;throw "APDU Wrong Tag"
 			]
 			if idx <> to-int16 skip data 3 [
-				throw "APDU Wrong Sequence"
+				return buffer
+				;throw "APDU Wrong Sequence"
 			]
 
 			;-- extract the message
