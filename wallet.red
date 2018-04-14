@@ -103,14 +103,19 @@ wallet: context [
 		]
 	]
 
+	reset-sign-button: does [
+		btn-sign/enabled?: yes
+		btn-sign/offset/x: 200
+		btn-sign/size/x: 60
+		btn-sign/text: "Sign"
+	]
+
 	on-send: func [face [object!] event [event!]][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
 			gas-limit/text: either token-contract ["79510"]["21000"]
-			btn-sign/offset/x: 200
-			btn-sign/size/x: 60
-			btn-sign/text: "Sign"
+			reset-sign-button
 			label-unit/text: token-name
 			view/flags send-dialog 'modal
 		]
@@ -131,7 +136,24 @@ wallet: context [
 		if connected? [connect-device]
 	]
 
-	check-data: func [][
+	check-data: func [/local addr amount][
+		addr: addr-to/text
+		unless all [
+			addr/1 = #"0"
+			addr/2 = #"x"
+			debase/base skip addr 2 16
+		][
+			addr-to/text: "Wrong address"
+			return no
+		]
+		amount: attempt [to float! amount-field/text]
+		unless all [
+			amount
+			amount > 0.0001
+		][
+			amount-field/text: "Amount is too small"
+			return no
+		]
 		yes
 	]
 
@@ -160,6 +182,8 @@ wallet: context [
 	on-sign-tx: func [face [object!] event [event!] /local tx][
 		unless check-data [exit]
 
+		notify-user
+
 		either token-contract [
 			tx: reduce [
 				eth/get-nonce network addr-from/text	;-- nonce
@@ -184,10 +208,12 @@ wallet: context [
 			]
 		]
 
-		notify-user
 		signed-data: ledger/get-signed-data tx
 
-		if signed-data [
+		either all [
+			signed-data
+			binary? signed-data
+		][
 			info-from/text: addr-from/text
 			info-to/text: addr-to/text
 			info-amount/text: rejoin [amount-field/text " " token-name]
@@ -201,6 +227,12 @@ wallet: context [
 			info-nonce/text: mold tx/1
 			unview
 			view/flags confirm-sheet 'modal
+		][
+			if signed-data = 'token-error [
+				unview
+				view/flags contract-data-dlg 'modal
+			]
+			reset-sign-button
 		]
 	]
 
@@ -249,8 +281,8 @@ wallet: context [
 		title "Send Ether & Tokens"
 		style label: text 100 middle
 		label "From Address:"	addr-from:	  label 360 return
-		label "To Address:"		addr-to:	  field 360 return
-		label "Amount to Send:" amount-field: field 300 label-unit: label 50 return
+		label "To Address:"		addr-to:	  field 360 hint "0x0000000000000000000000000000000000000000" return
+		label "Amount to Send:" amount-field: field 300 hint "Not less than 0.0001" label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 360 "21" return
 		label "Gas Limit:"		gas-limit:	  field 360 "21000" return
 		pad 200x10 btn-sign: button 60 "Sign" :on-sign-tx
@@ -293,7 +325,7 @@ wallet: context [
 		title "Set Contract data to YES"
 		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
 		return
-		pad 220x10 button "OK" [unview]
+		pad 180x10 button "OK" [unview]
 	]
 
 	support-device?: func [
