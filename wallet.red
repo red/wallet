@@ -217,10 +217,10 @@ wallet: context [
 	ui: layout [
 		title "Red Wallet"
 		text 60 "Device:" dev: text 120 "<No Device>"
-		drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
-		connect-btn: button 66 "Connect" :on-connect
-		button 66 "Send" :on-send
-		drop-list 48 data ["ETH" 1 "RED" 2] select 1 :on-select-token
+		drop-list data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
+		connect-btn: button "Connect" :on-connect
+		button "Send" :on-send
+		drop-list 80 data ["ETH" 1 "RED" 2] select 1 :on-select-token
 		return
 		addr-list: text-list font list-font 530x200
 	]
