@@ -26,15 +26,15 @@ hid: context [
 	#define kCFNumberSInt32Type  				3
 	#define kCFStringEncodingUTF8				08000100h
 	#define HID_CFSTR(cStr)						[CFStringCreateWithCString 0 cStr kCFStringEncodingUTF8]
-	#define LOWORD(param) (param and FFFFh << 16 >> 16)   
+	#define LOWORD(param) (param and FFFFh << 16 >> 16)
 	#define HIWORD(param) (param >> 16)
 	#define WIDE_CHAR_SIZE						4
 	#define kIOHIDOptionsTypeSeizeDevice		1
 	#define kCFStringEncodingASCII				00000600h
-	#define kIOHIDReportTypeOutput 				1 
+	#define kIOHIDReportTypeOutput 				1
 	#define	ETIMEDOUT							60
-	
-	
+
+
 	hid_mgr: as int-ptr! 0
 	kCFStringEncodingUTF32LE: 1C000100h
 
@@ -59,7 +59,7 @@ hid: context [
 		interface-number	[integer!]
 		next				[hid-device-info]
 	]
-	
+
 	CFRange: alias struct! [
 		location 	[integer!]
 		length 		[integer!]
@@ -70,9 +70,9 @@ hid: context [
 		opaque1     [integer!]	;opaque size =24
 		opaque2		[integer!]
 		opaque3     [integer!]
-		opaque4		[integer!]   
+		opaque4		[integer!]
 		opaque5     [integer!]
-		opaque6		[integer!]    	       
+		opaque6		[integer!]
 	]
 
 	pthread_mutex_t: alias struct! [
@@ -80,14 +80,14 @@ hid: context [
 		opaque1     [integer!]	;opaque size =40
 		opaque2		[integer!]
 		opaque3     [integer!]
-		opaque4		[integer!]   
+		opaque4		[integer!]
 		opaque5     [integer!]
 		opaque6		[integer!]
 		opaque7     [integer!]
-		opaque8		[integer!]   
+		opaque8		[integer!]
 		opaque9     [integer!]
-		opaque10	[integer!]     
-	]	
+		opaque10	[integer!]
+	]
 	pthread_barrier_t: alias struct! [
 		mutex       [pthread_mutex_t value]
 		cond        [pthread_cond_t value]
@@ -133,7 +133,7 @@ hid: context [
 		hash 				[int-ptr!]
 		schedule 			[int-ptr!]
 		cancel 				[int-ptr!]
-		perform 			[int-ptr!]					
+		perform 			[int-ptr!]
 	]
 
 	#import [
@@ -234,7 +234,7 @@ hid: context [
 		"/System/Library/Frameworks/IOKit.framework/IOKit" cdecl [
 			IOHIDDeviceGetProperty: "IOHIDDeviceGetProperty" [
 				key 			[int-ptr!]
-				device 			[c-string!] 
+				device 			[c-string!]
 				return: 		[int-ptr!]
 			]
 			IOHIDDeviceGetService: "IOHIDDeviceGetService" [
@@ -342,7 +342,7 @@ hid: context [
 			]
 			CFSetGetValues: "CFSetGetValues" [
 				theSet 			[int-ptr!]
-				values 			[int-ptr!]	
+				values 			[int-ptr!]
 			]
 			CFGetTypeID: "CFGetTypeID" [
 				cf 			[int-ptr!]
@@ -409,18 +409,18 @@ hid: context [
 		tv 			[timeval!]
 		ts 			[timespec!]
 	][
-		ts/sec: tv/tv_sec 
+		ts/sec: tv/tv_sec
 		ts/nsec: 1000 * tv/tv_usec
 	]
-	
-	
+
+
 	pthread_barrier_init: func [
 		barrier 	[pthread_barrier_t]
 		count 		[integer!]
 		return: 	[integer!]
 	][
 		if count = 0 [
-			return -1			
+			return -1
 		]
 		if (pthread_mutex_init :barrier/mutex null) < 0 [
 			return -1
@@ -431,7 +431,7 @@ hid: context [
 		]
 		barrier/trip_count: count
 		barrier/count: 0
-		0 
+		0
 	]
 
 	pthread_barrier_destroy: func [
@@ -494,7 +494,7 @@ hid: context [
 		next 		[input_report]
 	][
 		if dev = null [
-		 	exit 
+			exit
 		]
 		;--delete any input reports still left over
 		rpt: dev/input_reports
@@ -505,7 +505,7 @@ hid: context [
 			rpt: next
 		]
 
-		;--free the string and report buffer. 
+		;--free the string and report buffer.
 		if dev/run_loop_mode <> null [
 			CFRelease dev/run_loop_mode
 		]
@@ -513,7 +513,7 @@ hid: context [
 			CFRelease dev/source
 		]
 		free as byte-ptr! dev/input_report_buf
-		
+
 		;--clean up the thread objects
 		pthread_barrier_destroy as pthread_barrier_t :dev/shutdown_barrier
 		pthread_barrier_destroy as pthread_barrier_t :dev/barrier
@@ -521,7 +521,7 @@ hid: context [
 		pthread_mutex_destroy :dev/mutex
 
 		;--free the structure itself
-		free as byte-ptr! dev 
+		free as byte-ptr! dev
 	]
 
 	hid-free-enumeration: func [
@@ -530,17 +530,17 @@ hid: context [
 			d 		[hid-device-info]
 			next 	[hid-device-info]
 	][
-		d: devs 
+		d: devs
 		while [d <> null] [
 			next: d/next
 			free as byte-ptr! d/path
 			free as byte-ptr! d/serial-number
 			free as byte-ptr! d/manufacturer-string
 			free as byte-ptr! d/product-string
-			free as byte-ptr! d 
-			d: next 
+			free as byte-ptr! d
+			d: next
 		]
-		
+
 	]
 
 	get_int_property: func [
@@ -556,8 +556,8 @@ hid: context [
 		if ref <> null [
 			if (CFGetTypeID ref) = CFNumberGetTypeID [
 				CFNumberGetValue 	ref
-			 	 					kCFNumberSInt32Type
-				  					:value
+									kCFNumberSInt32Type
+									:value
 			return value
 			]
 		]
@@ -581,7 +581,7 @@ hid: context [
 	get_max_report_length: func [
 		device 			[int-ptr!]
 		return: 		[integer!]
-	][ 
+	][
 		return get_int_property device as c-string! HID_CFSTR(kIOHIDMaxInputReportSizeKey)
 	]
 
@@ -592,10 +592,10 @@ hid: context [
 		len 		[integer!]
 		return: 	[integer!]
 		/local
-			cf-str 			[int-ptr!]	
+			cf-str 			[int-ptr!]
 			str_len 		[integer!]
 			used_buf_len	[integer!]
-			chars_copied	[integer!]	
+			chars_copied	[integer!]
 			range 			[CFRange value]
 			len1 			[integer!]
 	][
@@ -613,7 +613,7 @@ hid: context [
 			len: len - 1
 			range/location: 0
 			either str_len > len [
-				range/length: len 
+				range/length: len
 			][
 				range/length: str_len
 			]
@@ -622,7 +622,7 @@ hid: context [
 											kCFStringEncodingUTF32LE
 											#"?"
 											false
-											as byte-ptr! buf 
+											as byte-ptr! buf
 											len * WIDE_CHAR_SIZE
 											:used_buf_len
 			either chars_copied = len [
@@ -649,14 +649,14 @@ hid: context [
 			return -1
 		]
 	]
-	
+
 	get_serial_number: func [
 		device 		[int-ptr!]
 		buf 		[c-string!]
 		len 		[integer!]
 		return: 	[integer!]
 	][
-		return get_string_property device (as c-string! HID_CFSTR(kIOHIDSerialNumberKey)) buf len 
+		return get_string_property device (as c-string! HID_CFSTR(kIOHIDSerialNumberKey)) buf len
 	]
 
 	get_manufacturer_string: func [
@@ -664,8 +664,8 @@ hid: context [
 		buf 		[c-string!]
 		len 		[integer!]
 		return: 	[integer!]
-	][		
-		return get_string_property device as c-string! HID_CFSTR(kIOHIDManufacturerKey) buf len 
+	][
+		return get_string_property device as c-string! HID_CFSTR(kIOHIDManufacturerKey) buf len
 	]
 
 	get_product_string: func [
@@ -673,7 +673,7 @@ hid: context [
 		buf 		[c-string!]
 		len 		[integer!]
 	][
-		get_string_property device as c-string! HID_CFSTR(kIOHIDProductKey) buf len 	
+		get_string_property device as c-string! HID_CFSTR(kIOHIDProductKey) buf len
 	]
 
 	;--implementation of wcsdup() for mac
@@ -684,7 +684,7 @@ hid: context [
 			len		[integer!]
 			ret  	[c-string!]
 	][
-		len: wcslen s 
+		len: wcslen s
 		ret: as c-string! allocate (len + 1) * WIDE_CHAR_SIZE
 		wcscpy ret s
 	]
@@ -696,8 +696,8 @@ hid: context [
 		hid_mgr: IOHIDManagerCreate as int-ptr! kCFAllocatorDefault 0
 		if hid_mgr <> null [
 			IOHIDManagerSetDeviceMatching hid_mgr null
-			IOHIDManagerScheduleWithRunLoop hid_mgr 
-											CFRunLoopGetCurrent 
+			IOHIDManagerScheduleWithRunLoop hid_mgr
+											CFRunLoopGetCurrent
 											as int-ptr! kCFRunLoopDefaultMode
 			return 0
 		]
@@ -709,7 +709,7 @@ hid: context [
 		return: 	[integer!]
 	][
 		if hid_mgr = null [
-			return init_hid_manager 
+			return init_hid_manager
 		]
 		return 0
 	]
@@ -724,7 +724,7 @@ hid: context [
 		]
 		0
 	]
-	
+
 	process_pending_events: func [
 		/local
 			res  [integer!]
@@ -741,7 +741,7 @@ hid: context [
 		vendor-id	[integer!]
 		product-id 	[integer!]
 		return: 	[hid-device-info]
-		/local 
+		/local
 			root 			[hid-device-info]
 			cur_dev 		[hid-device-info]
 			num_devices		[integer!]
@@ -770,7 +770,7 @@ hid: context [
 		;--give the iohidmanager a chance to updata itself
 		process_pending_events
 
-		;--get a list of the devices 
+		;--get a list of the devices
 		IOHIDManagerSetDeviceMatching hid_mgr null
 		device_set: IOHIDManagerCopyDevices hid_mgr
 
@@ -785,16 +785,16 @@ hid: context [
 		while [i < (num_devices + 1)] [
 			dev: as int-ptr! device_array/i
 			if dev = null [
-				continue 
+				continue
 			]
-			dev_vid: get_vendor_id dev 
-			dev_pid: get_product_id dev 
+			dev_vid: get_vendor_id dev
+			dev_pid: get_product_id dev
 
 			;--check the vid/pid against the arguments
 
 			if all [
 				any [vendor-id = 0  vendor-id = dev_vid]
-				any [product-id = 0  product-id = dev_pid] 
+				any [product-id = 0  product-id = dev_pid]
 			][
 				;--vid/pid match create the record
 				tmp: as hid-device-info allocate size? hid-device-info
@@ -804,39 +804,39 @@ hid: context [
 					root: tmp
 				]
 				cur_dev: tmp
-			
-			
+
+
 			;--get the usage page and usage for this device
 			x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
 			y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
-			cur_dev/usage: x << 16 or y  
+			cur_dev/usage: x << 16 or y
 			;--fill out the record
 			cur_dev/next: null
 
 			;--fill in the path (ioservice plane)
 			iokit_dev: IOHIDDeviceGetService dev
-			res: IORegistryEntryGetPath iokit_dev 
+			res: IORegistryEntryGetPath iokit_dev
 										kIOServicePlane  ;--have not defined
 										path
 			cur_dev/path: either res = 0 [strdup path][strdup ""]
-	
+
 			;--serial number
 			get_serial_number dev buf BUF_LEN
 			cur_dev/serial-number: dup_wcs buf
 			;--manufacturer and product strings
 			get_manufacturer_string dev buf BUF_LEN
-			cur_dev/manufacturer-string: dup_wcs buf 
+			cur_dev/manufacturer-string: dup_wcs buf
 			get_product_string dev buf BUF_LEN
-			cur_dev/product-string: dup_wcs buf 
+			cur_dev/product-string: dup_wcs buf
 
 			;--vip/pid
 			cur_dev/id: dev_vid << 16 or dev_pid
-			;--release number 
-			cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)							 
+			;--release number
+			cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
 			;--interface number
 			cur_dev/interface-number: -1
 		]
-			i: i + 1	
+			i: i + 1
 		]
 
 		free as byte-ptr! device_array
@@ -860,7 +860,7 @@ hid: context [
 		path_to_open: null
 		handle: null
 		devs: enumerate 0 0
-		cur_dev: devs 
+		cur_dev: devs
 		while [cur_dev <> null] [
 			if all [HIWORD(cur_dev/id) = vendor-id  LOWORD(cur_dev/id) = product-id] [
 				either serial-number <> null [
@@ -878,8 +878,8 @@ hid: context [
 		if path_to_open <> null [
 			handle: open_path path_to_open
 		]
-		hid-free-enumeration devs 
-		as int-ptr! handle	
+		hid-free-enumeration devs
+		as int-ptr! handle
 	]
 
 	open_path: func [
@@ -902,7 +902,7 @@ hid: context [
 		]
 		entry: IORegistryEntryFromPath as int-ptr! kIOMasterPortDefault path
 		if entry = null [
-			;--path was not valid 
+			;--path was not valid
 			;--return_error
 			if dev/device_handle <> null [
 				CFRelease dev/device_handle
@@ -910,8 +910,8 @@ hid: context [
 			if entry <> null [
 				IOObjectRelease entry
 			]
-			free-hid-device dev 
-			return null	
+			free-hid-device dev
+			return null
 			;--return_error
 		]
 		;--create and IOGIDDevice for entry
@@ -924,21 +924,21 @@ hid: context [
 			if entry <> null [
 				IOObjectRelease entry
 			]
-			free-hid-device dev 
-			return null	
+			free-hid-device dev
+			return null
 			;--return_error
 		]
 		;--open the IOHIDDevice
 		ret: IOHIDDeviceOpen dev/device_handle kIOHIDOptionsTypeSeizeDevice
 		either ret = 0 	[ ;--return success
-			;--create the buffers for receiving data 
+			;--create the buffers for receiving data
 			dev/max_input_report_len: get_max_report_length dev/device_handle
 			dev/input_report_buf:  as c-string! allocate dev/max_input_report_len
 			set-memory as byte-ptr! dev/input_report_buf null-byte dev/max_input_report_len
 			;--create the run loop mode for this device.
 			;--printing the reference seems to work
 			sprintf [str "HIDAPI_%p" dev/device_handle]
-			dev/run_loop_mode: CFStringCreateWithCString 	0 
+			dev/run_loop_mode: CFStringCreateWithCString 	0
 															str
 															kCFStringEncodingASCII
 			;--attach the device to a run loop
@@ -946,21 +946,21 @@ hid: context [
 													as byte-ptr! dev/input_report_buf
 													dev/max_input_report_len
 													as int-ptr! :hid_report_callback
-													as int-ptr! dev 
-			
+													as int-ptr! dev
+
 			IOHIDDeviceRegisterRemovalCallback 	dev/device_handle
 												as int-ptr! :hid_device_removal_callback
-												as int-ptr! dev 
+												as int-ptr! dev
 
 			;--start the read thread
-			b: pthread_create :dev/thread  
-										null	
+			b: pthread_create :dev/thread
+										null
 										as int-ptr! :read_thread
-										as int-ptr! dev 	
+										as int-ptr! dev
 			;--wait here for the read thread to be initialized
 			pthread_barrier_wait as pthread_barrier_t :dev/barrier
 			IOObjectRelease entry
-			return dev 									
+			return dev
 		][
 			if dev/device_handle <> null [
 				CFRelease dev/device_handle
@@ -968,11 +968,11 @@ hid: context [
 			if entry <> null [
 				IOObjectRelease entry
 			]
-			free-hid-device dev 
-			return null	
+			free-hid-device dev
+			return null
 		]
 
-		
+
 	]
 
 	hid_device_removal_callback: func [
@@ -1003,8 +1003,8 @@ hid: context [
 			cur 		[input_report]
 			num_queued	[integer!]
 	][
-		dev: as hid-device context   
-		;--make a new input report object 
+		dev: as hid-device context
+		;--make a new input report object
 		rpt: as input_report allocate size? input_report
 		rpt/data: allocate report_length
 		memcpy rpt/data report report_length
@@ -1013,18 +1013,18 @@ hid: context [
 
 		;--lock this section
 		pthread_mutex_lock :dev/mutex
-		;--attach the new report object to the end of the list 
+		;--attach the new report object to the end of the list
 		either dev/input_reports = null [
 			dev/input_reports: rpt
 		][
 			;--find the end of the list and attach
-			cur: dev/input_reports 
+			cur: dev/input_reports
 			num_queued: 0
 			while [cur/next <> null] [
-				cur: cur/next 
+				cur: cur/next
 				num_queued: num_queued + 1
 			]
-			cur/next: rpt 
+			cur/next: rpt
 
 			if num_queued > 30 [
 				return_data dev null 0
@@ -1034,8 +1034,8 @@ hid: context [
 		pthread_cond_signal :dev/condition
 
 		;--unclock
-		pthread_mutex_unlock :dev/mutex 
-		
+		pthread_mutex_unlock :dev/mutex
+
 	]
 
 	return_data: func [
@@ -1043,17 +1043,17 @@ hid: context [
 		data 		[byte-ptr!]
 		length		[integer!]
 		return: 	[integer!]
-		/local 
+		/local
 			rpt		[input_report]
 			len 	[integer!]
 	][
 		rpt: dev/input_reports
 		len: either length < rpt/len [length][rpt/len]
-		memcpy data rpt/data len 
-		dev/input_reports: rpt/next 
-		free rpt/data 
-		free as byte-ptr! rpt 
-		len 
+		memcpy data rpt/data len
+		dev/input_reports: rpt/next
+		free rpt/data
+		free as byte-ptr! rpt
+		len
 	]
 
 	read_thread: func [
@@ -1066,7 +1066,7 @@ hid: context [
 			ctx 	[CFRunLoopSourceContext value]
 			a		[integer!]
 
-	][	
+	][
 		code: 0
 		dev: as hid-device param
 		;--move the device's  run loop to this thread
@@ -1077,7 +1077,7 @@ hid: context [
 		;--stop when hid_close is called
 		set-memory as byte-ptr! ctx null-byte size? CFRunLoopSourceContext
 		ctx/version: 0
-		ctx/info: as int-ptr! dev 
+		ctx/info: as int-ptr! dev
 		ctx/perform: as int-ptr! :perform_signal_callback
 		dev/source: CFRunLoopSourceCreate as int-ptr! kCFAllocatorDefault 0 as int-ptr! :ctx
 		CFRunLoopAddSource  CFRunLoopGetCurrent dev/source dev/run_loop_mode
@@ -1108,7 +1108,7 @@ hid: context [
 		pthread_mutex_unlock :dev/mutex
 		pthread_barrier_wait as pthread_barrier_t  :dev/shutdown_barrier
 
-		null		
+		null
 	]
 
 	perform_signal_callback: func [
@@ -1117,7 +1117,7 @@ hid: context [
 		/local
 			dev 	[hid-device]
 	][
-		dev: as hid-device context 
+		dev: as hid-device context
 		CFRunLoopStop dev/run_loop
 	]
 
@@ -1142,7 +1142,7 @@ hid: context [
 		/local
 			data_to_send 	[byte-ptr!]
 			length_to_send 	[integer!]
-			res 			[integer!] 		
+			res 			[integer!]
 	][
 		if dev/disconnected <> 0 [
 			return -1
@@ -1159,17 +1159,17 @@ hid: context [
 		if dev/disconnected = 0 [
 			res: IOHIDDeviceSetReport 	dev/device_handle
 										type
-										as integer! data/1 
+										as integer! data/1
 										data_to_send
 										length_to_send
-			
+
 			either res = 0 [ ;--means success
 				return length
 			][
-				return -1 
+				return -1
 			]
 		]
-		return -1 
+		return -1
 	]
 
 	read: func [
@@ -1223,7 +1223,7 @@ hid: context [
 			return bytes_read
 			;--unlock section
 		]
-		case [ 
+		case [
 			milliseconds = -1 [
 				res: cond_wait dev :dev/condition :dev/mutex
 				either res = 0 [
@@ -1232,9 +1232,9 @@ hid: context [
 					bytes_read: -1
 				]
 			]
-			milliseconds > 0 [ 
+			milliseconds > 0 [
 				gettimeofday  tv  0
-				TIMEVAL_TO_TIMESPEC tv ts 
+				TIMEVAL_TO_TIMESPEC tv ts
 				ts/sec: ts/sec + (milliseconds / 1000)
 				ts/nsec: ts/nsec + ((milliseconds % 1000) * 1000000)
 				if ts/nsec >= 1000000000 [
@@ -1265,11 +1265,11 @@ hid: context [
 			res 	[integer!]
 	][
 		while [dev/input_reports = null] [
-			res: pthread_cond_wait cond mutex 
+			res: pthread_cond_wait cond mutex
 			if res <> 0 [return res ]
 			if  any [dev/shutdown_thread <> 0 dev/disconnected <> 0][return -1]
 		]
-		0	
+		0
 	]
 
 	cond_timedwait: func [
@@ -1278,7 +1278,7 @@ hid: context [
 		mutex		[int-ptr!]
 		abstime 	[timespec!]
 		return: 	[integer!]
-		/local 
+		/local
 			res 	[integer!]
 	][
 		while [dev/input_reports = null] [
@@ -1304,7 +1304,7 @@ hid: context [
 													as int-ptr! dev
 			IOHIDDeviceRegisterRemovalCallback	dev/device_handle
 												null
-												as int-ptr! dev 	
+												as int-ptr! dev
 			IOHIDDeviceUnscheduleFromRunLoop	dev/device_handle
 												dev/run_loop
 												dev/run_loop_mode
@@ -1334,9 +1334,9 @@ hid: context [
 		]
 		pthread_mutex_unlock :dev/mutex
 		CFRelease dev/device_handle
-		free_hid_device dev 
+		free_hid_device dev
 	]
-	
+
 	free_hid_device: func [
 		dev 	[hid-device]
 		/local
@@ -1353,7 +1353,7 @@ hid: context [
 		]
 
 		;--free the string and report buffer. the check for null
-		;--is necessary here as CFRelease doesn't handle null like 
+		;--is necessary here as CFRelease doesn't handle null like
 		;--free and others do
 		if dev/run_loop_mode <> null [
 			CFRelease dev/run_loop_mode
@@ -1370,6 +1370,6 @@ hid: context [
 		pthread_mutex_destroy :dev/mutex
 
 		;--free the structure itself
-		free as byte-ptr! dev 
+		free as byte-ptr! dev
 	]
 ]

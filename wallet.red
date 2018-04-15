@@ -15,6 +15,7 @@ Red [
 
 #include %libs/int256.red
 #include %libs/json.red
+#include %libs/rpc.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/Ledger/ledger.red
@@ -27,9 +28,9 @@ wallet: context [
 	signed-data: none
 
 	networks: [
-		https://eth.red-lang.org/v1/jsonrpc/mainnet
-		https://eth.red-lang.org/v1/jsonrpc/rinkeby
-		https://eth.red-lang.org/v1/jsonrpc/kovan
+		https://eth.red-lang.org/mainnet
+		https://eth.red-lang.org/rinkeby
+		https://eth.red-lang.org/kovan
 	]
 
 	explorers: [
@@ -236,23 +237,11 @@ wallet: context [
 		]
 	]
 
-	on-confirm: func [face [object!] event [event!] /local url data body reply][
-		url: network
-		data: rejoin ["0x" enbase/base signed-data 16]
-		body: #(
-			jsonrpc: "2.0"
-			id: 57386342
-			method: "eth_sendRawTransaction"
-		)
-		body/params: reduce [data]
-		reply: json/decode write url compose [
-			POST [
-				Content-Type: "application/json"
-				Accept: "application/json"
-			]
-			(to-binary json/encode body)
+	on-confirm: func [face [object!] event [event!] /local result][
+		result: rpc network 'eth_sendRawTransaction reduce [
+			rejoin ["0x" enbase/base signed-data 16]
 		]
-		browse rejoin [explorer reply/result]
+		browse rejoin [explorer result]
 		unview
 	]
 
