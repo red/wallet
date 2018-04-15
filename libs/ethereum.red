@@ -16,7 +16,6 @@ eth: context [
 	GWei-ratio: to-i256 100000
 
 	eth-to-wei: func [eth /local n][
-		abc: 2
 		if string? eth [eth: to float! eth]
 		n: to-i256 to integer! eth * 10000
 		mul256 n ETH-ratio
@@ -47,48 +46,24 @@ eth: context [
 		n / 10000.0
 	]
 
-	get-balance-token: func [network [url!] contract [string!] address [string!] /local body url token-url params reply][
-		url: network
+	get-balance-token: func [network [url!] contract [string!] address [string!] /local token-url params][
 		token-url: rejoin ["0x" contract]
 		params: make map! 4
 		params/to: token-url
 		params/data: rejoin ["0x70a08231" pad64 copy skip address 2]
-
-		body: #(
-			jsonrpc: "2.0"
-			id: 57386342
-			method: "eth_call"
-		)
-		body/params: reduce [params "latest"]
-		reply: json/decode write url compose [
-			POST
-			[
-				Content-Type: "application/json"
-				Accept: "application/json"
-			]
-			(to-binary json/encode body)
-		]
-		parse-balance reply/result
+		parse-balance rpc network 'eth_call reduce [params 'latest]
 	]
 
-	get-balance: func [network [url!] address [string!] /local url data n][
-		url: replace rejoin [
-			network {/eth_getBalance?params=["address","latest"]}
-		] "address" address
-		data: json/decode read url
-		parse-balance data/result
+	get-balance: func [network [url!] address [string!]][
+		parse-balance rpc network 'eth_getBalance reduce [address 'latest]
 	]
 
-	get-nonce: function [network [url!] address [string!]][
-		url: replace rejoin [
-			network
-			{/eth_getTransactionCount?params=["address", "pending"]}
-		] "address" address
-		data: json/decode read url
-		either (length? data/result) % 2 <> 0 [
-			poke data/result 2 #"0"
+	get-nonce: func [network [url!] address [string!] /local n result][
+		result: rpc network 'eth_getTransactionCount reduce [address 'pending]
+		either (length? result) % 2 <> 0 [
+			poke result 2 #"0"
 			n: 1
 		][n: 2]
-		to integer! debase/base skip data/result n 16
+		to integer! debase/base skip result n 16
 	]
 ]

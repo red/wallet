@@ -41,7 +41,7 @@ hid: context [
 			handle/box as-integer h
 		]
 	]
-	
+
 	read: routine [
 		dev		[handle!]
 		buffer	[binary!]
@@ -55,7 +55,7 @@ hid: context [
 		p: (as byte-ptr! s/offset) + buffer/head
 		sz: hid/read-timeout as int-ptr! dev/value p s/size timeout
 		either sz = -1 [
-			probe "read error"
+			;probe "read error"
 			stack/set-last none-value
 		][
 			s/tail: as cell! (p + sz)
@@ -69,9 +69,9 @@ hid: context [
 			sz	[integer!]
 	][
 		sz: hid/write as int-ptr! dev/value binary/rs-head data binary/rs-length? data
-		if sz = -1 [
-			probe "write error"
-		]
+		;if sz = -1 [
+		;	probe "write error"
+		;]
 	]
 
 	close: routine [

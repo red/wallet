@@ -15,6 +15,7 @@ Red [
 
 #include %libs/int256.red
 #include %libs/json.red
+#include %libs/rpc.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/Ledger/ledger.red
@@ -27,9 +28,9 @@ wallet: context [
 	signed-data: none
 
 	networks: [
-		https://eth.red-lang.org/v1/jsonrpc/mainnet
-		https://eth.red-lang.org/v1/jsonrpc/rinkeby
-		https://eth.red-lang.org/v1/jsonrpc/kovan
+		https://eth.red-lang.org/mainnet
+		https://eth.red-lang.org/rinkeby
+		https://eth.red-lang.org/kovan
 	]
 
 	explorers: [
@@ -53,22 +54,37 @@ wallet: context [
 	token-contract: none
 
 	connected?: no
+	need-refresh?: no
+	page: 0
+
+	split-line: pad/with "" 54 #"-" 
 
 	process-events: does [loop 5 [do-events/no-wait]]
 
-	on-connect: func [face [object!] event [event!] /local addresses addr n amount][
+	connect-device: func [/prev /next /local addresses addr n amount][
+		update-ui no
 		either ledger/connect [
-			face/enabled?: no
 			process-events
 			connected?: yes
 			dev/text: "Ledger Nano S"
-			addresses: make block! 10
-			n: 0
+			addresses: clear []
+			if next [page: page + 1]
+			if prev [page: page - 1]
+			n: page * 5
+			append addresses split-line
 			loop 5 [
 				addr: Ledger/get-address n
-				unless addr [
-					view/flags unlock-dev-dlg 'modal
-					face/enabled?: yes
+				either addr [
+					if need-refresh? [
+						need-refresh?: no
+						usb-device/rate: none
+					]
+				][
+					unless need-refresh? [
+						view/flags unlock-dev-dlg 'modal
+					]
+					usb-device/rate: 0:0:3
+					need-refresh?: yes
 					exit
 				]
 				amount: either token-contract [
@@ -77,14 +93,22 @@ wallet: context [
 					eth/get-balance network addr
 				]
 				append addresses rejoin [addr "   " amount]
+				append addresses split-line
 				addr-list/data: addresses
 				process-events
 				n: n + 1
 			]
-			face/enabled?: yes
+			update-ui yes
 		][
 			dev/text: "<No Device>"
 		]
+	]
+
+	reset-sign-button: does [
+		btn-sign/enabled?: yes
+		btn-sign/offset/x: 200
+		btn-sign/size/x: 60
+		btn-sign/text: "Sign"
 	]
 
 	on-send: func [face [object!] event [event!]][
@@ -92,9 +116,7 @@ wallet: context [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
 			gas-limit/text: either token-contract ["79510"]["21000"]
-			btn-sign/offset/x: 200
-			btn-sign/size/x: 60
-			btn-sign/text: "Sign"
+			reset-sign-button
 			label-unit/text: token-name
 			view/flags send-dialog 'modal
 		]
@@ -105,18 +127,53 @@ wallet: context [
 		net-name: pick face/data idx - 1 * 2 + 1
 		network:  pick networks idx
 		explorer: pick explorers idx
-		if connected? [on-connect face event]
-		connect-btn/enabled?: yes
+		if connected? [connect-device]
 	]
 
 	on-select-token: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		token-name: pick face/data idx - 1 * 2 + 1
 		token-contract: select contracts token-name
-		if connected? [on-connect face event]
+		if connected? [connect-device]
+	]
+
+	check-data: func [/local addr amount][
+		addr: addr-to/text
+		unless all [
+			addr/1 = #"0"
+			addr/2 = #"x"
+			debase/base skip addr 2 16
+		][
+			addr-to/text: "Wrong address"
+			return no
+		]
+		amount: attempt [to float! amount-field/text]
+		unless all [
+			amount
+			amount > 0.0001
+		][
+			amount-field/text: "Amount is too small"
+			return no
+		]
+		yes
+	]
+
+	update-ui: func [enabled? [logic!]][
+		btn-send/enabled?: all [
+			enabled?
+			addr-list/selected
+			addr-list/selected % 2 = 0
+		]
+		if page > 0 [btn-prev/enabled?: enabled?]
+		btn-more/enabled?: enabled?
+		net-list/enabled?: enabled?
+		token-list/enabled?: enabled?
+		process-events
 	]
 
 	notify-user: does [
+		btn-sign/enabled?: no
+		process-events
 		btn-sign/offset/x: 150
 		btn-sign/size/x: 200
 		btn-sign/text: "please check on your key"
@@ -124,6 +181,10 @@ wallet: context [
 	]
 
 	on-sign-tx: func [face [object!] event [event!] /local tx][
+		unless check-data [exit]
+
+		notify-user
+
 		either token-contract [
 			tx: reduce [
 				eth/get-nonce network addr-from/text	;-- nonce
@@ -148,10 +209,12 @@ wallet: context [
 			]
 		]
 
-		notify-user
 		signed-data: ledger/get-signed-data tx
 
-		if signed-data [
+		either all [
+			signed-data
+			binary? signed-data
+		][
 			info-from/text: addr-from/text
 			info-to/text: addr-to/text
 			info-amount/text: rejoin [amount-field/text " " token-name]
@@ -165,35 +228,50 @@ wallet: context [
 			info-nonce/text: mold tx/1
 			unview
 			view/flags confirm-sheet 'modal
+		][
+			if signed-data = 'token-error [
+				unview
+				view/flags contract-data-dlg 'modal
+			]
+			reset-sign-button
 		]
 	]
 
-	on-confirm: func [face [object!] event [event!] /local url data body reply][
-		url: network
-		data: rejoin ["0x" enbase/base signed-data 16]
-		body: #(
-			jsonrpc: "2.0"
-			id: 57386342
-			method: "eth_sendRawTransaction"
-		)
-		body/params: reduce [data]
-		reply: json/decode write url compose [
-			POST [
-				Content-Type: "application/json"
-				Accept: "application/json"
-			]
-			(to-binary json/encode body)
+	on-confirm: func [face [object!] event [event!] /local result][
+		result: rpc network 'eth_sendRawTransaction reduce [
+			rejoin ["0x" enbase/base signed-data 16]
 		]
-		browse rejoin [explorer reply/result]
+		browse rejoin [explorer result]
 		unview
+	]
+
+	copy-addr: func [][
+		if btn-send/enabled? [
+			write-clipboard copy/part pick addr-list/data addr-list/selected 42
+		]
+	]
+
+	on-more-addr: func [face event][
+		unless connected? [exit]
+		connect-device/next
+		if page > 0 [btn-prev/enabled?: yes]
+	]
+
+	on-prev-addr: func [face event][
+		unless connected? [exit]
+		if page = 1 [
+			btn-prev/enabled?: no
+			process-events
+		]
+		connect-device/prev
 	]
 
 	send-dialog: layout [
 		title "Send Ether & Tokens"
 		style label: text 100 middle
 		label "From Address:"	addr-from:	  label 360 return
-		label "To Address:"		addr-to:	  field 360 return
-		label "Amount to Send:" amount-field: field 300 label-unit: label 50 return
+		label "To Address:"		addr-to:	  field 360 hint "0x0000000000000000000000000000000000000000" return
+		label "Amount to Send:" amount-field: field 300 hint "Not less than 0.0001" label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 360 "21" return
 		label "Gas Limit:"		gas-limit:	  field 360 "21000" return
 		pad 200x10 btn-sign: button 60 "Sign" :on-sign-tx
@@ -216,13 +294,13 @@ wallet: context [
 
 	ui: layout [
 		title "Red Wallet"
-		text 60 "Device:" dev: text 120 "<No Device>"
-		drop-list data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
-		connect-btn: button "Connect" :on-connect
-		button "Send" :on-send
-		drop-list 80 data ["ETH" 1 "RED" 2] select 1 :on-select-token
+		text 60 "Device:" dev: text 160 "<No Device>"
+		btn-send: button 66 "Send" :on-send disabled
+		token-list: drop-list 48 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
+		net-list: drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
 		return
-		addr-list: text-list font list-font 530x200
+		addr-list: text-list font list-font 450x195 return
+		pad 300x0 btn-prev: button "Prev" disabled :on-prev-addr btn-more: button "More" :on-more-addr
 	]
 
 	unlock-dev-dlg: layout [
@@ -232,16 +310,78 @@ wallet: context [
 		pad 260x10 button "OK" [unview]
 	]
 
+	contract-data-dlg: layout [
+		title "Set Contract data to YES"
+		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
+		return
+		pad 180x10 button "OK" [unview]
+	]
+
+	support-device?: func [
+		vendor-id	[integer!]
+		product-id	[integer!]
+		return:		[logic!]
+	][
+		all [
+			vendor-id = ledger/vendor-id
+			product-id = ledger/product-id
+		]
+	]
+
+	monitor-devices: does [
+		append ui/pane usb-device: make face! [
+			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
+			actors: object [
+				on-up: func [face [object!] event [event!]][
+					if support-device? face/data/1 face/data/2 [
+						connect-device
+					]
+				]
+				on-down: func [face [object!] event [event!]][
+					if support-device? face/data/1 face/data/2 [
+						connected?: no
+						ledger/close
+						dev/text: "<No Device>"
+					]
+				]
+				on-time: func [face event][
+					unless need-refresh? [face/rate: none]
+					if connected? [
+						connected?: no
+						ledger/close
+					]
+					connect-device
+				]
+			]
+		]
+	]
+
 	setup-actors: does [
 		ui/actors: make object! [
 			on-close: func [face event][
 				ledger/close
 			]
 		]
+
+		addr-list/actors: make object! [
+			on-menu: func [face [object!] event [event!]][
+				switch event/picked [
+					copy	[copy-addr]
+				]
+			]
+			on-change: func [face event][
+				btn-send/enabled?: face/selected % 2 = 0
+			]
+		]
+
+		addr-list/menu: [
+			"Copy address"		copy
+		]
 	]
 
 	run: does [
 		setup-actors
+		monitor-devices
 		view ui
 	]
 ]
