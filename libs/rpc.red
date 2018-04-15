@@ -21,7 +21,7 @@ context [
 		params: none
 	)
 
-	set 'rpc func [network [url!] method [word!] params [none! block!] /local url][
+	set 'rpc-call func [network [url!] method [word!] params [none! block!] /local url][
 		body/method: method
 		body/params: params
 		select json/decode write network compose/only [

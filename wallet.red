@@ -238,7 +238,7 @@ wallet: context [
 	]
 
 	on-confirm: func [face [object!] event [event!] /local result][
-		result: rpc network 'eth_sendRawTransaction reduce [
+		result: rpc-call network 'eth_sendRawTransaction reduce [
 			rejoin ["0x" enbase/base signed-data 16]
 		]
 		browse rejoin [explorer result]

@@ -51,15 +51,15 @@ eth: context [
 		params: make map! 4
 		params/to: token-url
 		params/data: rejoin ["0x70a08231" pad64 copy skip address 2]
-		parse-balance rpc network 'eth_call reduce [params 'latest]
+		parse-balance rpc-call network 'eth_call reduce [params 'latest]
 	]
 
 	get-balance: func [network [url!] address [string!]][
-		parse-balance rpc network 'eth_getBalance reduce [address 'latest]
+		parse-balance rpc-call network 'eth_getBalance reduce [address 'latest]
 	]
 
 	get-nonce: func [network [url!] address [string!] /local n result][
-		result: rpc network 'eth_getTransactionCount reduce [address 'pending]
+		result: rpc-call network 'eth_getTransactionCount reduce [address 'pending]
 		either (length? result) % 2 <> 0 [
 			poke result 2 #"0"
 			n: 1
