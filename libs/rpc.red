@@ -8,7 +8,7 @@ context [
 		User-Agent: (
 			form reduce [
 				{Red Wallet version}
-				read %version.red
+				0.1.0	;read %version.red
 				{for} system/platform/OS
 			]
 		)
