@@ -36,6 +36,44 @@ eth: context [
 		data
 	]
 
+	headers: compose [
+		Content-Type: "application/json"
+		Accept: "application/json"
+		Cookie: (make string! 16)
+		User-Agent: (
+			form reduce [
+				{Red Wallet version}
+				#do keep [read %version.red]
+				{for} system/platform/OS
+			]
+		)
+	]
+
+	body: #(
+		jsonrpc: "2.0"
+		id: 1
+		method: none
+		params: none
+	)
+
+	cookie: func [str [string!]][
+		lowercase take/part enbase/base checksum str 'SHA256 16 16
+	]
+
+	call-rpc: func [network [url!] method [word!] params [none! block!] /local data][
+		body/method: method
+		body/params: params
+		data: json/encode body
+		select json/decode write network compose/only [
+			POST
+			(
+				headers/cookie: cookie data
+				headers
+			)
+			(to-binary data)
+		] 'result
+	]
+
 	parse-balance: function [amount][
 		either (length? amount) % 2 <> 0 [
 			poke amount 2 #"0"
@@ -51,15 +89,15 @@ eth: context [
 		params: make map! 4
 		params/to: token-url
 		params/data: rejoin ["0x70a08231" pad64 copy skip address 2]
-		parse-balance rpc-call network 'eth_call reduce [params 'latest]
+		parse-balance call-rpc network 'eth_call reduce [params 'latest]
 	]
 
 	get-balance: func [network [url!] address [string!]][
-		parse-balance rpc-call network 'eth_getBalance reduce [address 'latest]
+		parse-balance call-rpc network 'eth_getBalance reduce [address 'latest]
 	]
 
 	get-nonce: func [network [url!] address [string!] /local n result][
-		result: rpc-call network 'eth_getTransactionCount reduce [address 'pending]
+		result: call-rpc network 'eth_getTransactionCount reduce [address 'pending]
 		either (length? result) % 2 <> 0 [
 			poke result 2 #"0"
 			n: 1
