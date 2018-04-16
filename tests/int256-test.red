@@ -1,7 +1,7 @@
 Red []
 
-;#include %quick-test/quick-test.red
-#include %../int256.red
+#include %../../red/quick-test/quick-test.red
+#include %../libs/int256.red
 
 ~~~start-file~~~ "uint256"
 ===start-group=== "modulo"
@@ -16,11 +16,11 @@ Red []
 	--test-- "divide-1"
 		x: to-i256 #{01}
 		y: to-i256 #{00}
-		assert error? try [ div256 x y ]
+		--assert error? try [ div256 x y ]
 	--test-- "divide-2"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		assert error? try [ div256 x y ]
+		--assert error? try [ div256 x y ]
 	
 ===end-group===
 
