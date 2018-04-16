@@ -15,7 +15,6 @@ Red [
 
 #include %libs/int256.red
 #include %libs/json.red
-#include %libs/rpc.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/Ledger/ledger.red
@@ -235,7 +234,7 @@ wallet: context [
 	]
 
 	on-confirm: func [face [object!] event [event!] /local result][
-		result: rpc-call network 'eth_sendRawTransaction reduce [
+		result: eth/call-rpc network 'eth_sendRawTransaction reduce [
 			rejoin ["0x" enbase/base signed-data 16]
 		]
 		browse rejoin [explorer result]
