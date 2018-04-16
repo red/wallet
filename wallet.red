@@ -58,8 +58,6 @@ wallet: context [
 	page: 0
 	address-index: 0
 
-	split-line: pad/with "" 54 #"-" 
-
 	process-events: does [loop 5 [do-events/no-wait]]
 
 	connect-device: func [/prev /next /local addresses addr n amount][
@@ -72,7 +70,6 @@ wallet: context [
 			if next [page: page + 1]
 			if prev [page: page - 1]
 			n: page * 5
-			append addresses split-line
 			loop 5 [
 				addr: Ledger/get-address n
 				either addr [
@@ -94,7 +91,6 @@ wallet: context [
 					eth/get-balance network addr
 				]
 				append addresses rejoin [addr "   " amount]
-				append addresses split-line
 				addr-list/data: addresses
 				process-events
 				n: n + 1
@@ -371,8 +367,8 @@ wallet: context [
 				]
 			]
 			on-change: func [face event][
-				address-index: face/selected / 2 - 1
-				btn-send/enabled?: face/selected % 2 = 0
+				address-index: face/selected - 1
+				btn-send/enabled?: to-logic face/selected
 			]
 		]
 
