@@ -56,6 +56,7 @@ wallet: context [
 	connected?: no
 	need-refresh?: no
 	page: 0
+	address-index: 0
 
 	split-line: pad/with "" 54 #"-" 
 
@@ -209,7 +210,7 @@ wallet: context [
 			]
 		]
 
-		signed-data: ledger/get-signed-data tx
+		signed-data: ledger/get-signed-data address-index tx
 
 		either all [
 			signed-data
@@ -279,7 +280,7 @@ wallet: context [
 
 	confirm-sheet: layout [
 		title "Confirm Transaction"
-		style label: text 100 right bold
+		style label: text 120 right bold
 		style info: text 330 middle
 		label "From Address:" 	info-from:    info return
 		label "To Address:" 	info-to: 	  info return
@@ -370,6 +371,7 @@ wallet: context [
 				]
 			]
 			on-change: func [face event][
+				address-index: face/selected / 2 - 1
 				btn-send/enabled?: face/selected % 2 = 0
 			]
 		]
