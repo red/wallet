@@ -55,8 +55,7 @@ wallet: context [
 	connected?: no
 	need-refresh?: no
 	page: 0
-
-	split-line: pad/with "" 54 #"-"
+  address-index: 0
 
 	process-events: does [loop 5 [do-events/no-wait]]
 
@@ -70,7 +69,6 @@ wallet: context [
 			if next [page: page + 1]
 			if prev [page: page - 1]
 			n: page * 5
-			append addresses split-line
 			loop 5 [
 				addr: Ledger/get-address n
 				either addr [
@@ -92,7 +90,6 @@ wallet: context [
 					eth/get-balance network addr
 				]
 				append addresses rejoin [addr "   " amount]
-				append addresses split-line
 				addr-list/data: addresses
 				process-events
 				n: n + 1
@@ -208,7 +205,7 @@ wallet: context [
 			]
 		]
 
-		signed-data: ledger/get-signed-data tx
+		signed-data: ledger/get-signed-data address-index tx
 
 		either all [
 			signed-data
@@ -278,7 +275,7 @@ wallet: context [
 
 	confirm-sheet: layout [
 		title "Confirm Transaction"
-		style label: text 100 right bold
+		style label: text 120 right bold
 		style info: text 330 middle
 		label "From Address:" 	info-from:    info return
 		label "To Address:" 	info-to: 	  info return
@@ -369,7 +366,8 @@ wallet: context [
 				]
 			]
 			on-change: func [face event][
-				btn-send/enabled?: face/selected % 2 = 0
+				address-index: face/selected - 1
+				btn-send/enabled?: to-logic face/selected
 			]
 		]
 

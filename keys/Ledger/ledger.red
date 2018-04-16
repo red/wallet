@@ -172,8 +172,8 @@ ledger: context [
 		either 4 > length? signed [none][signed]
 	]
 
-	get-signed-data: func [tx /local signed][
-		signed: sign-eth-tx 0 tx
+	get-signed-data: func [idx tx /local signed][
+		signed: sign-eth-tx idx tx
 		either all [signed binary? signed][
 			append tx reduce [
 				copy/part signed 1

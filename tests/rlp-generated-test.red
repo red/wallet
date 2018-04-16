@@ -1,4 +1,9 @@
 Red []
+
+#include %../../red/quick-test/quick-test.red
+#include %../keys/Ledger/rlp.red
+#include %../libs/int256.red
+
 ~~~start-file~~~ "rlp - generated"
 
 ===start-group=== "encode"
