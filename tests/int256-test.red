@@ -11,6 +11,8 @@ Red []
 		z: to-i256 #{243CC367FFFF9D7401C3396F96D2EA286506E2B901B44B90874DD9CD57C520D5}
 		--assert z  = mod256 x  y
 ===end-group===
+
+===start-group=== "Divide"
 	--test-- "divide-1"
 		x: to-i256 #{01}
 		y: to-i256 #{00}
@@ -19,8 +21,6 @@ Red []
 		x: to-i256 #{00}
 		y: to-i256 #{00}
 		assert error? try [ div256 x y ]
-	
-===start-group=== "Divide"
 	
 ===end-group===
 
