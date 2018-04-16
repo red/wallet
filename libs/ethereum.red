@@ -42,9 +42,9 @@ eth: context [
 		Cookie: (make string! 16)
 		User-Agent: (
 			form reduce [
-				{Red Wallet version}
+				"Red Wallet version"
 				#do keep [read %version.red]
-				{for} system/platform/OS
+				"for" system/platform/OS
 			]
 		)
 	]
@@ -57,19 +57,17 @@ eth: context [
 	)
 
 	cookie: func [str [string!]][
-		lowercase take/part enbase/base checksum str 'SHA256 16 16
+		lowercase take/part enbase/base checksum str 'sha256 16 16
 	]
 
 	call-rpc: func [network [url!] method [word!] params [none! block!] /local data][
 		body/method: method
 		body/params: params
 		data: json/encode body
+		headers/cookie: cookie data
 		select json/decode write network compose/only [
 			POST
-			(
-				headers/cookie: cookie data
-				headers
-			)
+			(headers)
 			(to-binary data)
 		] 'result
 	]
