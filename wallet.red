@@ -55,7 +55,7 @@ wallet: context [
 	connected?: no
 	need-refresh?: no
 	page: 0
-  address-index: 0
+	address-index: 0
 
 	process-events: does [loop 5 [do-events/no-wait]]
 
