@@ -29,6 +29,9 @@ to-int16: func [b [binary!]][
 
 ledger: context [
 
+	vendor-id:			2C97h
+	product-id:			1
+
 	DEFAULT_CHANNEL:	0101h
 	TAG_APDU:			05h
 	PACKET_SIZE:		#either config/OS = 'Windows [65][64]
@@ -40,7 +43,7 @@ ledger: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open 2C97h 1	;-- vendor ID (2C97h) and product ID (01h) for the Nano S
+			dongle: hid/open vendor-id product-id
 		]
 		dongle
 	]
@@ -53,20 +56,20 @@ ledger: context [
 		clear buffer
 		until [
 			if none? hid/read dongle clear data-frame timeout * 1000 [
-				throw "Read Error"
+				return buffer
 			]
 
 			data: data-frame
 
 			;-- sanity check the frame
 			if DEFAULT_CHANNEL <> to-int16 data [
-				throw "APDU Wrong Channel"
+				return buffer
 			]
 			if TAG_APDU <> data/3 [
-				throw "APDU Wrong Tag"
+				return buffer
 			]
 			if idx <> to-int16 skip data 3 [
-				throw "APDU Wrong Sequence"
+				return buffer
 			]
 
 			;-- extract the message
@@ -127,7 +130,7 @@ ledger: context [
 			to-bin32 idx
 		]
 		write-apdu data
-		data: read-apdu 10
+		data: read-apdu 1
 
 		if 40 < length? data [
 			;-- parse reply data
@@ -165,22 +168,23 @@ ledger: context [
 			signed: read-apdu 300
 			tx-bin: skip tx-bin sz
 		]
+		if signed = #{6A80} [return 'token-error]
 		either 4 > length? signed [none][signed]
 	]
 
-	get-signed-data: func [tx /local signed][
-		signed: sign-eth-tx 0 tx
-		if signed [
+	get-signed-data: func [idx tx /local signed][
+		signed: sign-eth-tx idx tx
+		either all [signed binary? signed][
 			append tx reduce [
 				copy/part signed 1
 				copy/part next signed 32
 				copy/part skip signed 33 32
 			]
 			rlp/encode tx
-		]
+		][signed]
 	]
 
-	close: does [hid/close dongle]
+	close: does [hid/close dongle dongle: none]
 ]
 
 ;ledger/connect
