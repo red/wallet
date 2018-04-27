@@ -18,21 +18,37 @@ int256: context [
 		make vector! compose/only [integer! 16 (empty)]
 	]
 
-	set 'to-i256 function [value [integer! binary!] return: [vector!]][
-		either integer? value [
-			spec: reduce [0 0 0 0 0 0 0 0 0 0 0 0 0 0 value / 65536 value % 65536]
-		][
-			bin: tail value
-			spec: make block! 16
-
-			while [not head? bin][
-				bin: back bin
-				v: bin/1
-				unless head? bin [bin: back bin v: bin/1 << 8 + v]
-				insert spec v
+	set 'to-i256 function [value [integer! float! binary!] return: [vector!]][
+		switch/default type?/word value [
+			integer! [
+				spec: reduce [0 0 0 0 0 0 0 0 0 0 0 0 0 0 value / 65536 value % 65536]
 			]
-			insert/dup spec 0 16 - length? spec
-		]
+			float! [
+				spec: make block! 16
+
+				while [value <> 0.0][
+					n: value / 65536.0
+					v: to integer! value - n
+					if v > 32768 [v: v - 65536]
+					insert spec v
+					value: n
+				]
+				insert/dup spec 0 16 - length? spec
+			]
+			binary! [
+				bin: tail value
+				spec: make block! 16
+
+				while [not head? bin][
+					bin: back bin
+					v: bin/1
+					unless head? bin [bin: back bin v: bin/1 << 8 + v]
+					insert spec v
+				]
+				insert/dup spec 0 16 - length? spec
+			]
+		][print "to-i256 error: invalid type!"]
+		
 		make vector! compose/only [integer! 16 (spec)]
 	]
 
@@ -42,6 +58,20 @@ int256: context [
 		if negative? high [high: 65536 + high]
 		if negative? low: bigint/16 [low: 65536 + low]
 		high + low
+	]
+	
+	set 'i256-to-float function [bigint [vector!] return: [float!]][
+		res: 0.0
+		p: 1.0 
+		idx: 16
+		loop 16 [
+			v: bigint/:idx
+			if negative? v [v: 65536 + v]
+			res: v * p + res
+			p: p * 65536.0
+			idx: idx - 1
+		]
+		res
 	]
 
 	set 'i256-to-bin function [bigint [vector!] return: [binary!]][
