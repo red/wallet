@@ -25,10 +25,14 @@ int256: context [
 			]
 			float! [
 				spec: make block! 16
-
 				while [value <> 0.0][
-					n: value / 65536.0
-					v: to integer! value - n
+					v: to integer! either value < 65536.0 [
+						n: 0.0
+						value
+					][
+						n: round/floor value / 65536.0
+						value - (n * 65536.0)
+					]
 					if v > 32768 [v: v - 65536]
 					insert spec v
 					value: n
