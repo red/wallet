@@ -99,10 +99,9 @@ Red []
 	--test-- "fl-12" --assert 65536.0	== i256-to-float to-i256 65536
 	--test-- "fl-13" --assert 65537.0	== i256-to-float to-i256 65537
 
-	--test-- "fl-14" --assert 1000000.0	  == i256-to-float mul256 (to-i256 1000000)    to-i256 1000000
-	--test-- "fl-15" --assert 123456789.0 == i256-to-float mul256 (to-i256 123456789)  to-i256 123456789
-	--test-- "fl-16" --assert 123456789.0 == i256-to-float mul256 (to-i256 1000000000) to-i256 123456789
-
+	--test-- "fl-14" --assert (1000000.0 * 1000000.0) 	   = i256-to-float mul256 (to-i256 1000000) to-i256 1000000
+	--test-- "fl-15" --assert (123456789.0 * 123456789.0)  = i256-to-float mul256 (to-i256 123456789) to-i256 123456789
+	--test-- "fl-16" --assert (1000000000.0 * 123456789.0) = i256-to-float mul256 (to-i256 1000000000) to-i256 123456789
 
 	--test-- "fl-30" --assert 0.0		== i256-to-float to-i256 0.0
 	--test-- "fl-31" --assert 1.0		== i256-to-float to-i256 1.0
