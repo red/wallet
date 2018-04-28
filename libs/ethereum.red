@@ -12,19 +12,14 @@ Red [
 
 eth: context [
 
-	ETH-ratio:  to-i256 #{5AF3107A4000}
-	GWei-ratio: to-i256 100000
-
-	eth-to-wei: func [eth /local n][
+	eth-to-wei: func [eth][
 		if string? eth [eth: to float! eth]
-		n: to-i256 to integer! eth * 10000
-		mul256 n ETH-ratio
+		to-i256 eth * 1e18
 	]
 
-	gwei-to-wei: func [gwei /local n][
+	gwei-to-wei: func [gwei][
 		if string? gwei [gwei: to float! gwei]
-		n: to-i256 to integer! gwei * 10000
-		mul256 n GWei-ratio
+		to-i256 gwei * 1e9
 	]
 
 	pad64: function [data [string! binary!]][
@@ -43,7 +38,7 @@ eth: context [
 		User-Agent: (
 			form reduce [
 				"Red Wallet version"
-				#do keep [read %version.red]
+				"0.1.0" ;#do keep [read %version.red]
 				"for" system/platform/OS
 			]
 		)
@@ -78,8 +73,8 @@ eth: context [
 			n: 1
 		][n: 2]
 		n: to-i256 debase/base skip amount n 16
-		n: i256-to-int div256 n ETH-ratio
-		n / 10000.0
+		n: i256-to-float n
+		n / 1e18
 	]
 
 	get-balance-token: func [network [url!] contract [string!] address [string!] /local token-url params][

@@ -134,21 +134,19 @@ wallet: context [
 	]
 
 	check-data: func [/local addr amount][
-		addr: addr-to/text
+		addr: trim addr-to/text
 		unless all [
 			addr/1 = #"0"
 			addr/2 = #"x"
+			42 = length? addr
 			debase/base skip addr 2 16
 		][
-			addr-to/text: "Wrong address"
+			addr-to/text: copy "Wrong address"
 			return no
 		]
 		amount: attempt [to float! amount-field/text]
-		unless all [
-			amount
-			amount > 0.0001
-		][
-			amount-field/text: "Amount is too small"
+		unless amount [
+			amount-field/text: copy "Wrong amount"
 			return no
 		]
 		yes
