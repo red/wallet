@@ -20,6 +20,10 @@ Red [
 #include %keys/Ledger/ledger.red
 ;#include %trezor.red
 
+#system [
+	with gui [#include %libs/usb-monitor.reds]
+]
+
 wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
