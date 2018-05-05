@@ -51,13 +51,13 @@ int256: context [
 				]
 				insert/dup spec 0 16 - length? spec
 			]
-		][print "to-i256 error: invalid type!"]
+		][make error! "to-i256 error: invalid type!"]
 		
 		make vector! compose/only [integer! 16 (spec)]
 	]
 
 	set 'i256-to-int function [bigint [vector!] return: [integer!]][
-		repeat idx 12 [if (bigint/:idx) <> 0 [print "i256-to-int error!"]]
+		repeat idx 12 [if (bigint/:idx) <> 0 [make error! "i256-to-int error!"]]
 		high: bigint/15 << 16
 		if negative? high [high: 65536 + high]
 		if negative? low: bigint/16 [low: 65536 + low]
@@ -261,6 +261,9 @@ int256: context [
 	]
 
 	set 'div256 function [dividend [vector!] divisor [vector!] /rem return: [vector! block!]][
+		t: 0 repeat idx 16 [t: t + divisor/:idx]
+		if zero? t [cause-error 'math 'zero-divide []]
+		
 		q: make-i256
 		r: make-i256
 		repeat idx 16 [
