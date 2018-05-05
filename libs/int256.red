@@ -233,7 +233,7 @@ int256: context [
 			l: (as-integer pl/2) << 8 + as-integer pl/1
 			r: (as-integer pr/2) << 8 + as-integer pr/1
 			v: l - r - c								;-- borrowed carry bit
-			c: as-integer l < r
+			c: as-integer l < (r + c)
 			p/1: as-byte v
 			p/2: as-byte v >>> 8
 		]
