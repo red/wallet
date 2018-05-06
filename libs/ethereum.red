@@ -39,7 +39,7 @@ eth: context [
 			form reduce [
 				"Red Wallet version"
 				"0.1.0" ;#do keep [read %version.red]
-				"for" system/platform/OS
+				"for" system/platform
 			]
 		)
 	]
