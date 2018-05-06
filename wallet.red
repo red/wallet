@@ -14,7 +14,7 @@ Red [
 #do [debug?: yes]
 
 #include %libs/int256.red
-#include %libs/json.red
+#include %libs/JSON.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/Ledger/ledger.red
