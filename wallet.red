@@ -29,6 +29,7 @@ wallet: context [
 	list-font: make font! [name: get 'font-fixed size: 11]
 
 	signed-data: none
+	addr-per-page: 5
 
 	networks: [
 		https://eth.red-lang.org/mainnet
@@ -61,7 +62,12 @@ wallet: context [
 	page: 0
 	address-index: 0
 
-	process-events: does [loop 5 [do-events/no-wait]]
+	process-events: does [loop 10 [do-events/no-wait]]
+	
+	form-amount: func [value [float!]][
+		pos: find value: form value #"."
+		head insert/dup value #" " 5 - ((index? pos) - 1)
+	]
 
 	connect-device: func [/prev /next /local addresses addr n amount][
 		update-ui no
@@ -72,8 +78,9 @@ wallet: context [
 			addresses: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
-			n: page * 5
-			loop 5 [
+			n: page * addr-per-page
+			
+			loop addr-per-page [
 				addr: Ledger/get-address n
 				either addr [
 					if need-refresh? [
@@ -88,15 +95,20 @@ wallet: context [
 					need-refresh?: yes
 					exit
 				]
-				amount: either token-contract [
+				append addresses rejoin [addr "   <loading>"]
+				addr-list/data: addresses
+				process-events
+				n: n + 1
+			]
+			update-ui yes
+			foreach address addr-list/data [
+				addr: copy/part address find address space
+				replace address "<loading>" form-amount either token-contract [
 					eth/get-balance-token network token-contract addr
 				][
 					eth/get-balance network addr
 				]
-				append addresses rejoin [addr "   " amount]
-				addr-list/data: addresses
 				process-events
-				n: n + 1
 			]
 			update-ui yes
 		][
@@ -114,6 +126,7 @@ wallet: context [
 	on-send: func [face [object!] event [event!]][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
+			network-to/text: net-name
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
 			gas-limit/text: either token-contract ["79510"]["21000"]
 			reset-sign-button
@@ -267,6 +280,7 @@ wallet: context [
 	send-dialog: layout [
 		title "Send Ether & Tokens"
 		style label: text 100 middle
+		label "Network:"		network-to:	  label 360 return
 		label "From Address:"	addr-from:	  label 360 return
 		label "To Address:"		addr-to:	  field 360 hint "0x0000000000000000000000000000000000000000" return
 		label "Amount to Send:" amount-field: field 300 hint "Not less than 0.0001" label-unit: label 50 return
@@ -292,13 +306,18 @@ wallet: context [
 
 	ui: layout [
 		title "Red Wallet"
-		text 60 "Device:" dev: text 160 "<No Device>"
-		btn-send: button 66 "Send" :on-send disabled
-		token-list: drop-list 48 data ["ETH" 1 "RED" 2]  select 1 :on-select-token
-		net-list: drop-list 70 data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network
-		return
-		addr-list: text-list font list-font 450x195 return
-		pad 300x0 btn-prev: button "Prev" disabled :on-prev-addr btn-more: button "More" :on-more-addr
+		text 50 "Device:" dev: text 160 "<No Device>"
+		btn-send: button "Send" :on-send disabled
+		token-list: drop-list data ["ETH" 1 "RED" 2] 60 select 1 :on-select-token
+		net-list:   drop-list data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network return
+		
+		text bold "My Addresses" pad 260x0 
+		text bold "Balances" right return pad 0x-10
+		
+		addr-list: text-list font list-font 500x195 return pad 360x0 
+		
+		btn-prev: button "Prev" disabled :on-prev-addr 
+		btn-more: button "More" :on-more-addr
 	]
 
 	unlock-dev-dlg: layout [
