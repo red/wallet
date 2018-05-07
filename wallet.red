@@ -11,8 +11,6 @@ Red [
 	}
 ]
 
-#do [debug?: yes]
-
 #include %libs/int256.red
 #include %libs/JSON.red
 #include %libs/ethereum.red
@@ -44,10 +42,14 @@ wallet: context [
 	]
 
 	contracts: [
-		#either debug? [
-			"RED" "43df37f66b8b9fececcc3031c9c1d2511db17c42"	;-- RED token contract on Rinkeby
-		][
-			"RED" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"	;-- RED token contract on Mainnet
+		"ETH" [
+			"mainnet" #[none]
+			"Rinkeby" #[none]
+			"Kovan"	  #[none]
+		]
+		"RED" [
+			"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
+			"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
 		]
 	]
 
@@ -66,7 +68,7 @@ wallet: context [
 	
 	form-amount: func [value [float!]][
 		pos: find value: form value #"."
-		head insert/dup value #" " 5 - ((index? pos) - 1)
+		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
 	connect-device: func [/prev /next /local addresses addr n amount][
@@ -100,7 +102,7 @@ wallet: context [
 				process-events
 				n: n + 1
 			]
-			update-ui yes
+			update-ui no
 			foreach address addr-list/data [
 				addr: copy/part address find address space
 				replace address "<loading>" form-amount either token-contract [
@@ -137,16 +139,25 @@ wallet: context [
 
 	on-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
-		net-name: pick face/data idx - 1 * 2 + 1
-		network:  pick networks idx
-		explorer: pick explorers idx
+		
+		net-name: face/data/:idx
+		network:  networks/:idx
+		explorer: explorers/:idx
+		token-contract: contracts/:token-name/:net-name
+		
 		if connected? [connect-device]
 	]
 
-	on-select-token: func [face [object!] event [event!] /local idx][
+	on-select-token: func [face [object!] event [event!] /local idx net][
 		idx: face/selected
-		token-name: pick face/data idx - 1 * 2 + 1
-		token-contract: select contracts token-name
+		net: net-list/selected
+		token-name: face/data/:idx
+
+		net-list/data: extract contracts/:token-name 2
+		net: net-list/selected: either net > length? net-list/data [1][net]
+		net-name: net-list/data/:net
+		token-contract: contracts/:token-name/:net-name
+		
 		if connected? [connect-device]
 	]
 
@@ -170,11 +181,7 @@ wallet: context [
 	]
 
 	update-ui: func [enabled? [logic!]][
-		btn-send/enabled?: all [
-			enabled?
-			addr-list/selected
-			addr-list/selected % 2 = 0
-		]
+		btn-send/enabled?: all [enabled? addr-list/selected]
 		if page > 0 [btn-prev/enabled?: enabled?]
 		btn-more/enabled?: enabled?
 		net-list/enabled?: enabled?
@@ -308,8 +315,8 @@ wallet: context [
 		title "Red Wallet"
 		text 50 "Device:" dev: text 160 "<No Device>"
 		btn-send: button "Send" :on-send disabled
-		token-list: drop-list data ["ETH" 1 "RED" 2] 60 select 1 :on-select-token
-		net-list:   drop-list data ["mainnet" 1 "rinkeby" 2 "kovan" 3] select 2 :on-select-network return
+		token-list: drop-list data ["ETH" "RED"] 60 select 1 :on-select-token
+		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :on-select-network return
 		
 		text bold "My Addresses" pad 260x0 
 		text bold "Balances" right return pad 0x-10
