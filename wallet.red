@@ -125,7 +125,7 @@ wallet: context [
 		btn-sign/text: "Sign"
 	]
 
-	on-send: func [face [object!] event [event!]][
+	do-send: func [face [object!] event [event!]][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			network-to/text: net-name
@@ -137,7 +137,7 @@ wallet: context [
 		]
 	]
 
-	on-select-network: func [face [object!] event [event!] /local idx][
+	do-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		
 		net-name: face/data/:idx
@@ -148,7 +148,7 @@ wallet: context [
 		if connected? [connect-device]
 	]
 
-	on-select-token: func [face [object!] event [event!] /local idx net][
+	do-select-token: func [face [object!] event [event!] /local idx net][
 		idx: face/selected
 		net: net-list/selected
 		token-name: face/data/:idx
@@ -198,7 +198,7 @@ wallet: context [
 		process-events
 	]
 
-	on-sign-tx: func [face [object!] event [event!] /local tx][
+	do-sign-tx: func [face [object!] event [event!] /local tx][
 		unless check-data [exit]
 
 		notify-user
@@ -255,7 +255,7 @@ wallet: context [
 		]
 	]
 
-	on-confirm: func [face [object!] event [event!] /local result][
+	do-confirm: func [face [object!] event [event!] /local result][
 		result: eth/call-rpc network 'eth_sendRawTransaction reduce [
 			rejoin ["0x" enbase/base signed-data 16]
 		]
@@ -269,13 +269,13 @@ wallet: context [
 		]
 	]
 
-	on-more-addr: func [face event][
+	do-more-addr: func [face event][
 		unless connected? [exit]
 		connect-device/next
 		if page > 0 [btn-prev/enabled?: yes]
 	]
 
-	on-prev-addr: func [face event][
+	do-prev-addr: func [face event][
 		unless connected? [exit]
 		if page = 1 [
 			btn-prev/enabled?: no
@@ -293,7 +293,7 @@ wallet: context [
 		label "Amount to Send:" amount-field: field 300 hint "Not less than 0.0001" label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 360 "21" return
 		label "Gas Limit:"		gas-limit:	  field 360 "21000" return
-		pad 200x10 btn-sign: button 60 "Sign" :on-sign-tx
+		pad 200x10 btn-sign: button 60 "Sign" :do-sign-tx
 	]
 
 	confirm-sheet: layout [
@@ -308,23 +308,23 @@ wallet: context [
 		label "Gas Limit:" 		info-limit:	  info return
 		label "Max TX Fee:" 	info-fee:	  info return
 		label "Nonce:"			info-nonce:	  info return
-		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :on-confirm
+		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
 	]
 
 	ui: layout [
 		title "Red Wallet"
 		text 50 "Device:" dev: text 160 "<No Device>"
-		btn-send: button "Send" :on-send disabled
-		token-list: drop-list data ["ETH" "RED"] 60 select 1 :on-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :on-select-network return
+		btn-send: button "Send" :do-send disabled
+		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
+		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network return
 		
-		text bold "My Addresses" pad 260x0 
+		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 500x195 return pad 360x0 
+		addr-list: text-list font list-font 520x195 return pad 380x0 
 		
-		btn-prev: button "Prev" disabled :on-prev-addr 
-		btn-more: button "More" :on-more-addr
+		btn-prev: button "Prev" disabled :do-prev-addr 
+		btn-more: button "More" :do-more-addr
 	]
 
 	unlock-dev-dlg: layout [
