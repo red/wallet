@@ -90,7 +90,12 @@ eth: context [
 	]
 
 	get-nonce: func [network [url!] address [string!] /local n result][
-		result: call-rpc network 'eth_getTransactionCount reduce [address 'pending]
+		result: attempt [call-rpc network 'eth_getTransactionCount reduce [address 'pending]]
+		unless result [				;-- timeout, try again
+			result: attempt [call-rpc network 'eth_getTransactionCount reduce [address 'pending]]
+		]
+		unless result [return -1]
+
 		either (length? result) % 2 <> 0 [
 			poke result 2 #"0"
 			n: 1

@@ -71,7 +71,7 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
-	connect-device: func [/prev /next /local addresses addr n amount][
+	connect-device: func [/prev /next /local addresses addr n][
 		update-ui no
 		either ledger/connect [
 			process-events
@@ -198,31 +198,41 @@ wallet: context [
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local tx][
+	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount][
 		unless check-data [exit]
 
 		notify-user
 
+		price: eth/gwei-to-wei gas-price/text			;-- gas price
+		limit: to-integer gas-limit/text				;-- gas limit
+		amount: eth/eth-to-wei amount-field/text		;-- send amount
+		nonce: eth/get-nonce network addr-from/text		;-- nonce
+		if nonce = -1 [
+			unview
+			view/flags nonce-error-dlg 'modal
+			reset-sign-button
+		]
+
 		either token-contract [
 			tx: reduce [
-				eth/get-nonce network addr-from/text	;-- nonce
-				eth/gwei-to-wei gas-price/text			;-- gas-price
-				to-integer gas-limit/text				;-- gas-limit
+				nonce
+				price
+				limit
 				debase/base token-contract 16			;-- to address
 				eth/eth-to-wei 0						;-- value
 				rejoin [								;-- data
 					#{a9059cbb}		;-- method ID
 					debase/base eth/pad64 copy skip addr-to/text 2 16
-					eth/pad64 i256-to-bin eth/eth-to-wei amount-field/text
+					eth/pad64 i256-to-bin amount
 				]
 			]
 		][
 			tx: reduce [
-				eth/get-nonce network addr-from/text	;-- nonce
-				eth/gwei-to-wei gas-price/text			;-- gas-price
-				to-integer gas-limit/text				;-- gas-limit
+				nonce
+				price
+				limit
 				debase/base skip addr-to/text 2 16		;-- to address
-				eth/eth-to-wei amount-field/text		;-- value
+				amount
 				#{}										;-- data
 			]
 		]
@@ -290,7 +300,7 @@ wallet: context [
 		label "Network:"		network-to:	  label 360 return
 		label "From Address:"	addr-from:	  label 360 return
 		label "To Address:"		addr-to:	  field 360 hint "0x0000000000000000000000000000000000000000" return
-		label "Amount to Send:" amount-field: field 300 hint "Not less than 0.0001" label-unit: label 50 return
+		label "Amount to Send:" amount-field: field 300 hint "0.001" label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 360 "21" return
 		label "Gas Limit:"		gas-limit:	  field 360 "21000" return
 		pad 200x10 btn-sign: button 60 "Sign" :do-sign-tx
@@ -331,7 +341,7 @@ wallet: context [
 		title "Unlock your key"
 		text font-size 12 {Please open the Ethereum app on your Ledger key and set "Browser support" to "No".}
 		return
-		pad 260x10 button "OK" [unview]
+		pad 280x10 button "OK" [unview]
 	]
 
 	contract-data-dlg: layout [
@@ -339,6 +349,13 @@ wallet: context [
 		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
 		return
 		pad 180x10 button "OK" [unview]
+	]
+
+	nonce-error-dlg: layout [
+		title "Cannot get nonce"
+		text font-size 12 {Cannot get nonce, please try again.}
+		return
+		pad 110x10 button "OK" [unview]
 	]
 
 	support-device?: func [
