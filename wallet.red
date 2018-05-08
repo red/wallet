@@ -1,9 +1,10 @@
 Red [
-	Title:	"RED Wallet (Demo)"
-	Author: "Xie Qingtian"
-	File: 	%wallet.red
-	Needs:	View
-	Tabs: 	4
+	Title:	 "RED Wallet"
+	Author:  "Xie Qingtian"
+	File: 	 %wallet.red
+	Needs:	 View
+	Version: 0.1.0
+	Tabs: 	 4
 	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
 	License: {
 		Distributed under the Boost Software License, Version 1.0.
@@ -59,10 +60,10 @@ wallet: context [
 	token-name: "ETH"
 	token-contract: none
 
-	connected?: no
-	need-refresh?: no
-	page: 0
-	address-index: 0
+	connected?:		no
+	need-refresh?:	no
+	address-index:	0
+	page:			0
 
 	process-events: does [loop 10 [do-events/no-wait]]
 	
@@ -221,7 +222,7 @@ wallet: context [
 				debase/base token-contract 16			;-- to address
 				eth/eth-to-wei 0						;-- value
 				rejoin [								;-- data
-					#{a9059cbb}		;-- method ID
+					#{a9059cbb}							;-- method ID
 					debase/base eth/pad64 copy skip addr-to/text 2 16
 					eth/pad64 i256-to-bin amount
 				]
@@ -243,13 +244,13 @@ wallet: context [
 			signed-data
 			binary? signed-data
 		][
-			info-from/text: addr-from/text
-			info-to/text: addr-to/text
-			info-amount/text: rejoin [amount-field/text " " token-name]
-			info-network/text: net-name
-			info-price/text: rejoin [gas-price/text " Gwei"]
-			info-limit/text: gas-limit/text
-			info-fee/text: rejoin [
+			info-from/text:		addr-from/text
+			info-to/text:		addr-to/text
+			info-amount/text:	rejoin [amount-field/text " " token-name]
+			info-network/text:	net-name
+			info-price/text:	rejoin [gas-price/text " Gwei"]
+			info-limit/text:	gas-limit/text
+			info-fee/text:		rejoin [
 				mold (to float! gas-price/text) * (to float! gas-limit/text) / 1e9
 				" Ether"
 			]
