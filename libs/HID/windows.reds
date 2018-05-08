@@ -30,8 +30,8 @@ hid: context [
 	;#define MIN(x y) (either x > y [y] [x])
 
 	;--extract the short type data from integer!
-	#define LOWORD(param) (param and FFFFh << 16 >> 16)
-	#define HIWORD(param) (param >> 16)
+	#define HID_LOWORD(param) (param and FFFFh << 16 >> 16)
+	#define HID_HIWORD(param) (param >> 16)
 
 
 	;the hid header files aren't part of the sdk, we have to define
@@ -776,8 +776,8 @@ hid: context [
 			register-error dev "HidP_GetCaps"
 			HidD_FreePreparsedData as int-ptr! pp-data
 		]
-		dev/output-report-length: LOWORD(caps/ReportByteLength)
-		dev/input-report-length: HIWORD(caps/ReportByteLength)
+		dev/output-report-length: HID_LOWORD(caps/ReportByteLength)
+		dev/input-report-length: HID_HIWORD(caps/ReportByteLength)
 		HidD_FreePreparsedData as int-ptr! pp-data
 		dev/read-buf: as c-string! allocate dev/input-report-length
 		dev

@@ -394,7 +394,7 @@ wallet: context [
 				]
 			]
 			on-change: func [face event][
-				address-index: face/selected - 1
+				address-index: page * addr-per-page + face/selected - 1
 				btn-send/enabled?: to-logic face/selected
 			]
 		]
