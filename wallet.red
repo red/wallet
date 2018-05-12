@@ -305,20 +305,22 @@ wallet: context [
 
 	send-dialog: layout [
 		title "Send Ether & Tokens"
-		style label: text 100 middle
-		label "Network:"		network-to:	  label 360 return
-		label "From Address:"	addr-from:	  label 360 return
-		label "To Address:"		addr-to:	  field 360 hint "0x0000000000000000000000000000000000000000" return
+		style label: text  100 middle
+		style lbl:   text  360 middle font [name: font-fixed size: 10]
+		style field: field 360 font [name: font-fixed size: 10]
+		label "Network:"		network-to:	  lbl return
+		label "From Address:"	addr-from:	  lbl return
+		label "To Address:"		addr-to:	  field hint "0x0000000000000000000000000000000000000000" return
 		label "Amount to Send:" amount-field: field 300 hint "0.001" label-unit: label 50 return
-		label "Gas Price:"		gas-price:	  field 360 "21" return
-		label "Gas Limit:"		gas-limit:	  field 360 "21000" return
+		label "Gas Price:"		gas-price:	  field "21" return
+		label "Gas Limit:"		gas-limit:	  field "21000" return
 		pad 200x10 btn-sign: button 60 "Sign" :do-sign-tx
 	]
 
 	confirm-sheet: layout [
 		title "Confirm Transaction"
-		style label: text 120 right bold
-		style info: text 330 middle
+		style label: text 120 right bold 
+		style info: text 330 middle font [name: font-fixed size: 10]
 		label "From Address:" 	info-from:    info return
 		label "To Address:" 	info-to: 	  info return
 		label "Amount to Send:" info-amount:  info return
