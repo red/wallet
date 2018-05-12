@@ -78,6 +78,8 @@ wallet: context [
 			process-events
 			connected?: yes
 			dev/text: "Ledger Nano S"
+			info-msg/text: "Please wait while loading addresses..."
+			
 			addresses: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
@@ -91,9 +93,7 @@ wallet: context [
 						usb-device/rate: none
 					]
 				][
-					unless need-refresh? [
-						view/flags unlock-dev-dlg 'modal
-					]
+					unless need-refresh? [view/flags unlock-dev-dlg 'modal]
 					usb-device/rate: 0:0:3
 					need-refresh?: yes
 					exit
@@ -103,6 +103,7 @@ wallet: context [
 				process-events
 				n: n + 1
 			]
+			info-msg/text: "Please wait while loading balances..."
 			update-ui no
 			foreach address addr-list/data [
 				addr: copy/part address find address space
@@ -117,6 +118,7 @@ wallet: context [
 		][
 			dev/text: "<No Device>"
 		]
+		info-msg/text: ""
 	]
 
 	reset-sign-button: does [
@@ -335,7 +337,7 @@ wallet: context [
 	]
 
 	ui: layout compose [
-		title "Red Wallet"
+		title "RED Wallet"
 		text 50 "Device:" dev: text 135 "<No Device>"
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
@@ -346,8 +348,9 @@ wallet: context [
 		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 520x195 return middle pad 295x0 
+		addr-list: text-list font list-font 520x195 return middle
 		
+		info-msg: text 285x20 "Please plug your key..."
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
@@ -359,7 +362,7 @@ wallet: context [
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
-		text font-size 12 {Please unlock your Ledger key, open the Ethereum app (ensure "Browser support" = "No").}
+		text font-size 12 {Unlock your Ledger key, open the Ethereum app, ensure "Browser support" is "No".}
 		return
 		pad 280x10 button "OK" [unview]
 	]
@@ -403,6 +406,8 @@ wallet: context [
 						connected?: no
 						ledger/close
 						dev/text: "<No Device>"
+						info-msg/text: "Please plug your key..."
+						clear addr-list/data
 					]
 				]
 				on-time: func [face event][
