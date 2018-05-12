@@ -265,6 +265,9 @@ wallet: context [
 			]
 			reset-sign-button
 		]
+		clear addr-to/text
+		clear amount-field/text
+		gas-price/text: "21"
 	]
 
 	do-confirm: func [face [object!] event [event!] /local result][
