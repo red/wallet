@@ -145,8 +145,7 @@ wallet: context [
 		network:  networks/:idx
 		explorer: explorers/:idx
 		token-contract: contracts/:token-name/:net-name
-		
-		if connected? [list-addresses]
+		do-reload
 	]
 
 	do-select-token: func [face [object!] event [event!] /local idx net][
@@ -158,9 +157,10 @@ wallet: context [
 		net: net-list/selected: either net > length? net-list/data [1][net]
 		net-name: net-list/data/:net
 		token-contract: contracts/:token-name/:net-name
-		
-		if connected? [list-addresses]
+		do-reload
 	]
+	
+	do-reload: does [if connected? [list-addresses]]
 
 	check-data: func [/local addr amount][
 		addr: trim addr-to/text
@@ -181,13 +181,12 @@ wallet: context [
 		yes
 	]
 
-	update-ui: func [enabled? [logic!]][
+	update-ui: function [enabled? [logic!]][
 		btn-send/enabled?: all [enabled? addr-list/selected]
 		if page > 0 [btn-prev/enabled?: enabled?]
-		btn-more/enabled?:	 enabled?
-		net-list/enabled?:	 enabled?
-		token-list/enabled?: enabled?
-		page-info/enabled?:	 enabled?
+		foreach f [btn-more net-list token-list page-info btn-reload][
+			set in get f 'enabled? enabled?
+		]
 		process-events
 	]
 
@@ -337,15 +336,17 @@ wallet: context [
 
 	ui: layout compose [
 		title "Red Wallet"
-		text 50 "Device:" dev: text 160 "<No Device>"
+		text 50 "Device:" dev: text 135 "<No Device>"
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network return
+		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
+		btn-reload: button "Reload" :do-reload disabled
+		return
 		
 		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 520x195 return middle pad 270x0 
+		addr-list: text-list font list-font 520x195 return middle pad 295x0 
 		
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
@@ -358,7 +359,7 @@ wallet: context [
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
-		text font-size 12 {Please open the Ethereum app on your Ledger key and set "Browser support" to "No".}
+		text font-size 12 {Please unlock your Ledger key, open the Ethereum app (ensure "Browser support" = "No").}
 		return
 		pad 280x10 button "OK" [unview]
 	]
