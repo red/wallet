@@ -72,7 +72,7 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
-	connect-device: func [/prev /next /local addresses addr n][
+	list-addresses: func [/prev /next /local addresses addr n][
 		update-ui no
 		either ledger/connect [
 			process-events
@@ -98,7 +98,7 @@ wallet: context [
 					need-refresh?: yes
 					exit
 				]
-				append addresses rejoin [addr "   <loading>"]
+				append addresses rejoin [addr "      <loading>"]
 				addr-list/data: addresses
 				process-events
 				n: n + 1
@@ -106,7 +106,7 @@ wallet: context [
 			update-ui no
 			foreach address addr-list/data [
 				addr: copy/part address find address space
-				replace address "<loading>" form-amount either token-contract [
+				replace address "   <loading>" form-amount either token-contract [
 					eth/get-balance-token network token-contract addr
 				][
 					eth/get-balance network addr
@@ -146,7 +146,7 @@ wallet: context [
 		explorer: explorers/:idx
 		token-contract: contracts/:token-name/:net-name
 		
-		if connected? [connect-device]
+		if connected? [list-addresses]
 	]
 
 	do-select-token: func [face [object!] event [event!] /local idx net][
@@ -159,7 +159,7 @@ wallet: context [
 		net-name: net-list/data/:net
 		token-contract: contracts/:token-name/:net-name
 		
-		if connected? [connect-device]
+		if connected? [list-addresses]
 	]
 
 	check-data: func [/local addr amount][
@@ -184,9 +184,10 @@ wallet: context [
 	update-ui: func [enabled? [logic!]][
 		btn-send/enabled?: all [enabled? addr-list/selected]
 		if page > 0 [btn-prev/enabled?: enabled?]
-		btn-more/enabled?: enabled?
-		net-list/enabled?: enabled?
+		btn-more/enabled?:	 enabled?
+		net-list/enabled?:	 enabled?
 		token-list/enabled?: enabled?
+		page-info/enabled?:	 enabled?
 		process-events
 	]
 
@@ -282,7 +283,8 @@ wallet: context [
 
 	do-more-addr: func [face event][
 		unless connected? [exit]
-		connect-device/next
+		page-info/selected: page + 2					;-- page is zero-based
+		list-addresses/next
 		if page > 0 [btn-prev/enabled?: yes]
 	]
 
@@ -292,7 +294,13 @@ wallet: context [
 			btn-prev/enabled?: no
 			process-events
 		]
-		connect-device/prev
+		page-info/selected: page
+		list-addresses/prev
+	]
+	
+	do-page: func [face event][	
+		page: (to-integer pick face/data face/selected) - 1
+		list-addresses
 	]
 
 	send-dialog: layout [
@@ -322,7 +330,7 @@ wallet: context [
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
 	]
 
-	ui: layout [
+	ui: layout compose [
 		title "Red Wallet"
 		text 50 "Device:" dev: text 160 "<No Device>"
 		btn-send: button "Send" :do-send disabled
@@ -332,8 +340,13 @@ wallet: context [
 		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 520x195 return pad 380x0 
+		addr-list: text-list font list-font 520x195 return pad 270x0 
 		
+		text right 50 "Page:" 
+		page-info: drop-list 40 
+			data collect [repeat p 10 [keep form p]]
+			select (page + 1)
+			:do-page
 		btn-prev: button "Prev" disabled :do-prev-addr 
 		btn-more: button "More" :do-more-addr
 	]
@@ -376,7 +389,7 @@ wallet: context [
 			actors: object [
 				on-up: func [face [object!] event [event!]][
 					if support-device? face/data/1 face/data/2 [
-						connect-device
+						list-addresses
 					]
 				]
 				on-down: func [face [object!] event [event!]][
@@ -392,7 +405,7 @@ wallet: context [
 						connected?: no
 						ledger/close
 					]
-					connect-device
+					list-addresses
 				]
 			]
 		]
