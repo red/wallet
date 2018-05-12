@@ -345,9 +345,9 @@ wallet: context [
 		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 520x195 return pad 270x0 
+		addr-list: text-list font list-font 520x195 return middle pad 270x0 
 		
-		text right 50 "Page:" 
+		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
 			select (page + 1)
