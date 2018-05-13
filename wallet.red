@@ -367,7 +367,7 @@ wallet: context [
 		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 520x195 return middle
+		addr-list: text-list font list-font 520x100 return middle
 		
 		info-msg: text 285x20 "Please plug your key..."
 		text right 50 "Page:" tight
