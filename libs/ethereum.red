@@ -12,16 +12,21 @@ Red [
 
 eth: context [
 
-	eth-to-wei: func [eth /local n d scale][
-		if string? eth [eth: to float! eth]
-		n: 10
-		d: to-i256 n
+	eth-to-wei: func [eth /local cnt n d scale][
+		cnt: 0
 		scale: to-i256 #{0DE0B6B3A7640000}			;-- 1e18
-		while [eth < 1.0][
-			eth: eth * n
-			scale: div256 scale d
+		if string? eth [
+			if d: find/tail eth #"." [
+				cnt: length? d
+			]
+			eth: to float! eth
 		]
-		eth: to-i256 to-integer eth
+		if cnt > 0 [
+			n: power 10 cnt
+			eth: eth * n
+			scale: div256 scale to-i256 n
+		]
+		eth: to-i256 any [attempt [to-integer eth] eth]
 		mul256 eth scale
 	]
 
@@ -63,16 +68,20 @@ eth: context [
 		lowercase take/part enbase/base checksum str 'sha256 16 16
 	]
 
-	call-rpc: func [network [url!] method [word!] params [none! block!] /local data][
+	call-rpc: func [network [url!] method [word!] params [none! block!] /local data res][
 		body/method: method
 		body/params: params
 		data: json/encode body
 		headers/cookie: cookie data
-		select json/decode write network compose/only [
+		res: json/decode write network compose/only [
 			POST
 			(headers)
 			(to-binary data)
-		] 'result
+		]
+		unless data: select res 'result [			;-- error
+			data: select res 'error
+		]
+		data
 	]
 
 	parse-balance: function [amount][

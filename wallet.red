@@ -164,20 +164,26 @@ wallet: context [
 	
 	do-reload: does [if connected? [list-addresses]]
 
-	check-data: func [/local addr amount][
-		addr: trim addr-to/text
+	check-data: func [/local addr amount balance][
+		addr: trim any [addr-to/text ""]
 		unless all [
 			addr/1 = #"0"
 			addr/2 = #"x"
 			42 = length? addr
 			debase/base skip addr 2 16
 		][
-			addr-to/text: copy "Wrong address"
+			addr-to/text: copy "Invalid address"
 			return no
 		]
 		amount: attempt [to float! amount-field/text]
-		unless amount [
-			amount-field/text: copy "Wrong amount"
+		either all [amount amount > 0.0][
+			balance: to float! skip pick addr-list/data addr-list/selected 42
+			if amount > balance [
+				amount-field/text: copy "Insufficient Balance"
+				return no
+			]
+		][
+			amount-field/text: copy "Invalid amount"
 			return no
 		]
 		yes
@@ -282,8 +288,13 @@ wallet: context [
 		result: eth/call-rpc network 'eth_sendRawTransaction reduce [
 			rejoin ["0x" enbase/base signed-data 16]
 		]
-		browse rejoin [explorer result]
 		unview
+		either string? result [
+			browse rejoin [explorer result]
+		][							;-- error
+			tx-error/text: rejoin ["Error! Please try again^/^/" form result]
+			view/flags tx-error-dlg 'modal
+		]
 	]
 
 	copy-addr: func [][
@@ -387,6 +398,11 @@ wallet: context [
 		text font-size 12 {Cannot get nonce, please try again.}
 		return
 		pad 110x10 button "OK" [unview]
+	]
+
+	tx-error-dlg: layout [
+		title "Send Transaction Error"
+		tx-error: area 400x200
 	]
 
 	support-device?: func [
