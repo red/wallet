@@ -12,9 +12,17 @@ Red [
 
 eth: context [
 
-	eth-to-wei: func [eth][
+	eth-to-wei: func [eth /local n d scale][
 		if string? eth [eth: to float! eth]
-		to-i256 eth * 1e18
+		n: 10
+		d: to-i256 n
+		scale: to-i256 #{0DE0B6B3A7640000}			;-- 1e18
+		while [eth < 1.0][
+			eth: eth * n
+			scale: div256 scale d
+		]
+		eth: to-i256 to-integer eth
+		mul256 eth scale
 	]
 
 	gwei-to-wei: func [gwei][

@@ -123,7 +123,7 @@ wallet: context [
 
 	reset-sign-button: does [
 		btn-sign/enabled?: yes
-		btn-sign/offset/x: 200
+		btn-sign/offset/x: 215
 		btn-sign/size/x: 60
 		btn-sign/text: "Sign"
 	]
@@ -195,7 +195,7 @@ wallet: context [
 	notify-user: does [
 		btn-sign/enabled?: no
 		process-events
-		btn-sign/offset/x: 150
+		btn-sign/offset/x: 145
 		btn-sign/size/x: 200
 		btn-sign/text: "please check on your key"
 		process-events
@@ -214,6 +214,13 @@ wallet: context [
 			unview
 			view/flags nonce-error-dlg 'modal
 			reset-sign-button
+		]
+
+		;-- Edge case: ledger key may locked in this moment
+		unless Ledger/get-address 0 [
+			reset-sign-button
+			view/flags unlock-dev-dlg 'modal
+			exit
 		]
 
 		either token-contract [
@@ -304,6 +311,7 @@ wallet: context [
 	
 	do-page: func [face event][	
 		page: (to-integer pick face/data face/selected) - 1
+		if zero? page [btn-prev/enabled?: no]
 		list-addresses
 	]
 
@@ -318,7 +326,7 @@ wallet: context [
 		label "Amount to Send:" amount-field: field 300 hint "0.001" label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field "21" return
 		label "Gas Limit:"		gas-limit:	  field "21000" return
-		pad 200x10 btn-sign: button 60 "Sign" :do-sign-tx
+		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
 	]
 
 	confirm-sheet: layout [
@@ -364,7 +372,7 @@ wallet: context [
 		title "Unlock your key"
 		text font-size 12 {Unlock your Ledger key, open the Ethereum app, ensure "Browser support" is "No".}
 		return
-		pad 280x10 button "OK" [unview]
+		pad 262x10 button "OK" [unview]
 	]
 
 	contract-data-dlg: layout [
