@@ -9,7 +9,8 @@ Red []
 	--test-- "add-1"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		--assert error? try [ add256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = add256 x  y
 
 	--test-- "add-2"
 		x: to-i256 #{00}
@@ -26,7 +27,8 @@ Red []
 	--test-- "add-4"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ add256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = add256 x  y
 
 	--test-- "add-5"
 		x: to-i256 #{00}
@@ -151,7 +153,8 @@ Red []
 	--test-- "add-25"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		--assert error? try [ add256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = add256 x  y
 
 	--test-- "add-26"
 		x: to-i256 #{00}
@@ -168,7 +171,8 @@ Red []
 	--test-- "add-28"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ add256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = add256 x  y
 
 	--test-- "add-29"
 		x: to-i256 #{00}
@@ -579,12 +583,14 @@ Red []
 	--test-- "add-97"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{00}
-		--assert error? try [ add256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = add256 x  y
 
 	--test-- "add-98"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{00}
-		--assert error? try [ add256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = add256 x  y
 
 	--test-- "add-99"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
@@ -3546,7 +3552,8 @@ Red []
 	--test-- "subtract-1"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		--assert error? try [ sub256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = sub256 x  y
 
 	--test-- "subtract-2"
 		x: to-i256 #{00}
@@ -3666,7 +3673,8 @@ Red []
 	--test-- "subtract-25"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		--assert error? try [ sub256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = sub256 x  y
 
 	--test-- "subtract-26"
 		x: to-i256 #{00}
@@ -4031,12 +4039,14 @@ Red []
 	--test-- "subtract-97"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{00}
-		--assert error? try [ sub256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = sub256 x  y
 
 	--test-- "subtract-98"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{00}
-		--assert error? try [ sub256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = sub256 x  y
 
 	--test-- "subtract-99"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
@@ -6846,252 +6856,302 @@ Red []
 	--test-- "multiply-1"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-2"
 		x: to-i256 #{00}
 		y: to-i256 #{01}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-3"
 		x: to-i256 #{00}
 		y: to-i256 #{02}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-4"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-5"
 		x: to-i256 #{00}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-6"
 		x: to-i256 #{00}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-7"
 		x: to-i256 #{00}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-8"
 		x: to-i256 #{00}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-9"
 		x: to-i256 #{00}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-10"
 		x: to-i256 #{00}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-11"
 		x: to-i256 #{00}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-12"
 		x: to-i256 #{00}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-13"
 		x: to-i256 #{00}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-14"
 		x: to-i256 #{00}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-15"
 		x: to-i256 #{00}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-16"
 		x: to-i256 #{00}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-17"
 		x: to-i256 #{00}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-18"
 		x: to-i256 #{00}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-19"
 		x: to-i256 #{00}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-20"
 		x: to-i256 #{00}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-21"
 		x: to-i256 #{00}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-22"
 		x: to-i256 #{00}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-23"
 		x: to-i256 #{00}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-24"
 		x: to-i256 #{00}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-25"
 		x: to-i256 #{00}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-26"
 		x: to-i256 #{00}
 		y: to-i256 #{01}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-27"
 		x: to-i256 #{00}
 		y: to-i256 #{02}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-28"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-29"
 		x: to-i256 #{00}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-30"
 		x: to-i256 #{00}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-31"
 		x: to-i256 #{00}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-32"
 		x: to-i256 #{00}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-33"
 		x: to-i256 #{00}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-34"
 		x: to-i256 #{00}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-35"
 		x: to-i256 #{00}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-36"
 		x: to-i256 #{00}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-37"
 		x: to-i256 #{00}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-38"
 		x: to-i256 #{00}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-39"
 		x: to-i256 #{00}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-40"
 		x: to-i256 #{00}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-41"
 		x: to-i256 #{00}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-42"
 		x: to-i256 #{00}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-43"
 		x: to-i256 #{00}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-44"
 		x: to-i256 #{00}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-45"
 		x: to-i256 #{00}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-46"
 		x: to-i256 #{00}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-47"
 		x: to-i256 #{00}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-48"
 		x: to-i256 #{00}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-49"
 		x: to-i256 #{01}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-50"
 		x: to-i256 #{01}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-51"
 		x: to-i256 #{01}
@@ -7102,7 +7162,8 @@ Red []
 	--test-- "multiply-52"
 		x: to-i256 #{01}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-53"
 		x: to-i256 #{01}
@@ -7227,12 +7288,14 @@ Red []
 	--test-- "multiply-73"
 		x: to-i256 #{02}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-74"
 		x: to-i256 #{02}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-75"
 		x: to-i256 #{02}
@@ -7366,17 +7429,20 @@ Red []
 	--test-- "multiply-97"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-98"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-99"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{01}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-100"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
@@ -7486,12 +7552,14 @@ Red []
 	--test-- "multiply-121"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-122"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-123"
 		x: to-i256 #{6AC1F425FF4780EB}
@@ -7617,12 +7685,14 @@ Red []
 	--test-- "multiply-145"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-146"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-147"
 		x: to-i256 #{B8672F8CEEBC1448}
@@ -7748,12 +7818,14 @@ Red []
 	--test-- "multiply-169"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-170"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-171"
 		x: to-i256 #{077EFF20CCC389}
@@ -7879,12 +7951,14 @@ Red []
 	--test-- "multiply-193"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-194"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-195"
 		x: to-i256 #{4D65AACBFFC11E85}
@@ -8010,12 +8084,14 @@ Red []
 	--test-- "multiply-217"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-218"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-219"
 		x: to-i256 #{2591CB4F3C7053C0}
@@ -8141,12 +8217,14 @@ Red []
 	--test-- "multiply-241"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-242"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-243"
 		x: to-i256 #{17A3809065865081}
@@ -8272,12 +8350,14 @@ Red []
 	--test-- "multiply-265"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-266"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-267"
 		x: to-i256 #{2FAEBFCC634E1E47}
@@ -8403,12 +8483,14 @@ Red []
 	--test-- "multiply-289"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-290"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-291"
 		x: to-i256 #{5876AAEDAB7479FC}
@@ -8534,12 +8616,14 @@ Red []
 	--test-- "multiply-313"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-314"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-315"
 		x: to-i256 #{65928D86EF7F7D19}
@@ -8665,12 +8749,14 @@ Red []
 	--test-- "multiply-337"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-338"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-339"
 		x: to-i256 #{89EFE4B2D8A7D514}
@@ -8796,12 +8882,14 @@ Red []
 	--test-- "multiply-361"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-362"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-363"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
@@ -8918,12 +9006,14 @@ Red []
 	--test-- "multiply-385"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-386"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-387"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
@@ -9040,12 +9130,14 @@ Red []
 	--test-- "multiply-409"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-410"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-411"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -9162,12 +9254,14 @@ Red []
 	--test-- "multiply-433"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-434"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-435"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
@@ -9284,12 +9378,14 @@ Red []
 	--test-- "multiply-457"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-458"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-459"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
@@ -9406,12 +9502,14 @@ Red []
 	--test-- "multiply-481"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-482"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-483"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -9528,12 +9626,14 @@ Red []
 	--test-- "multiply-505"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-506"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-507"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
@@ -9649,12 +9749,14 @@ Red []
 	--test-- "multiply-529"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-530"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-531"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
@@ -9771,12 +9873,14 @@ Red []
 	--test-- "multiply-553"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-554"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-555"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -9893,12 +9997,14 @@ Red []
 	--test-- "multiply-577"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-578"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
 		y: to-i256 #{00}
-		--assert error? try [ mul256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mul256 x  y
 
 	--test-- "multiply-579"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
@@ -10017,342 +10123,410 @@ Red []
 	--test-- "divide-1"
 		x: to-i256 #{00}
 		y: to-i256 #{01}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-2"
 		x: to-i256 #{00}
 		y: to-i256 #{02}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-3"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-4"
 		x: to-i256 #{00}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-5"
 		x: to-i256 #{00}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-6"
 		x: to-i256 #{00}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-7"
 		x: to-i256 #{00}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-8"
 		x: to-i256 #{00}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-9"
 		x: to-i256 #{00}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-10"
 		x: to-i256 #{00}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-11"
 		x: to-i256 #{00}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-12"
 		x: to-i256 #{00}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-13"
 		x: to-i256 #{00}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-14"
 		x: to-i256 #{00}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-15"
 		x: to-i256 #{00}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-16"
 		x: to-i256 #{00}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-17"
 		x: to-i256 #{00}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-18"
 		x: to-i256 #{00}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-19"
 		x: to-i256 #{00}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-20"
 		x: to-i256 #{00}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-21"
 		x: to-i256 #{00}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-22"
 		x: to-i256 #{00}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-23"
 		x: to-i256 #{00}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-24"
 		x: to-i256 #{00}
 		y: to-i256 #{01}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-25"
 		x: to-i256 #{00}
 		y: to-i256 #{02}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-26"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-27"
 		x: to-i256 #{00}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-28"
 		x: to-i256 #{00}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-29"
 		x: to-i256 #{00}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-30"
 		x: to-i256 #{00}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-31"
 		x: to-i256 #{00}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-32"
 		x: to-i256 #{00}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-33"
 		x: to-i256 #{00}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-34"
 		x: to-i256 #{00}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-35"
 		x: to-i256 #{00}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-36"
 		x: to-i256 #{00}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-37"
 		x: to-i256 #{00}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-38"
 		x: to-i256 #{00}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-39"
 		x: to-i256 #{00}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-40"
 		x: to-i256 #{00}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-41"
 		x: to-i256 #{00}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-42"
 		x: to-i256 #{00}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-43"
 		x: to-i256 #{00}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-44"
 		x: to-i256 #{00}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-45"
 		x: to-i256 #{00}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-46"
 		x: to-i256 #{00}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-47"
 		x: to-i256 #{01}
 		y: to-i256 #{02}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-48"
 		x: to-i256 #{01}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-49"
 		x: to-i256 #{01}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-50"
 		x: to-i256 #{01}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-51"
 		x: to-i256 #{01}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-52"
 		x: to-i256 #{01}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-53"
 		x: to-i256 #{01}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-54"
 		x: to-i256 #{01}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-55"
 		x: to-i256 #{01}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-56"
 		x: to-i256 #{01}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-57"
 		x: to-i256 #{01}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-58"
 		x: to-i256 #{01}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-59"
 		x: to-i256 #{01}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-60"
 		x: to-i256 #{01}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-61"
 		x: to-i256 #{01}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-62"
 		x: to-i256 #{01}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-63"
 		x: to-i256 #{01}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-64"
 		x: to-i256 #{01}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-65"
 		x: to-i256 #{01}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-66"
 		x: to-i256 #{01}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-67"
 		x: to-i256 #{01}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-68"
 		x: to-i256 #{01}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-69"
 		x: to-i256 #{02}
@@ -10363,112 +10537,134 @@ Red []
 	--test-- "divide-70"
 		x: to-i256 #{02}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-71"
 		x: to-i256 #{02}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-72"
 		x: to-i256 #{02}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-73"
 		x: to-i256 #{02}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-74"
 		x: to-i256 #{02}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-75"
 		x: to-i256 #{02}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-76"
 		x: to-i256 #{02}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-77"
 		x: to-i256 #{02}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-78"
 		x: to-i256 #{02}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-79"
 		x: to-i256 #{02}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-80"
 		x: to-i256 #{02}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-81"
 		x: to-i256 #{02}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-82"
 		x: to-i256 #{02}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-83"
 		x: to-i256 #{02}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-84"
 		x: to-i256 #{02}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-85"
 		x: to-i256 #{02}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-86"
 		x: to-i256 #{02}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-87"
 		x: to-i256 #{02}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-88"
 		x: to-i256 #{02}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-89"
 		x: to-i256 #{02}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-90"
 		x: to-i256 #{02}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-91"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{01}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		--assert z  = div256 x  y
 
 	--test-- "divide-92"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
@@ -10611,12 +10807,14 @@ Red []
 	--test-- "divide-115"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-116"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-117"
 		x: to-i256 #{6AC1F425FF4780EB}
@@ -10663,57 +10861,68 @@ Red []
 	--test-- "divide-124"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-125"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-126"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-127"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-128"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-129"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-130"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-131"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-132"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-133"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-134"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-135"
 		x: to-i256 #{B8672F8CEEBC1448}
@@ -10730,7 +10939,8 @@ Red []
 	--test-- "divide-137"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-138"
 		x: to-i256 #{B8672F8CEEBC1448}
@@ -10789,52 +10999,62 @@ Red []
 	--test-- "divide-147"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-148"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-149"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-150"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-151"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-152"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-153"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-154"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-155"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-156"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-157"
 		x: to-i256 #{077EFF20CCC389}
@@ -10851,102 +11071,122 @@ Red []
 	--test-- "divide-159"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-160"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-161"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-162"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-163"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-164"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-165"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-166"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-167"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-168"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-169"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-170"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-171"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-172"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-173"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-174"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-175"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-176"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-177"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-178"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-179"
 		x: to-i256 #{4D65AACBFFC11E85}
@@ -10963,17 +11203,20 @@ Red []
 	--test-- "divide-181"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-182"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-183"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-184"
 		x: to-i256 #{4D65AACBFFC11E85}
@@ -11002,67 +11245,80 @@ Red []
 	--test-- "divide-188"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-189"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-190"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-191"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-192"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-193"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-194"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-195"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-196"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-197"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-198"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-199"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-200"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-201"
 		x: to-i256 #{2591CB4F3C7053C0}
@@ -11079,17 +11335,20 @@ Red []
 	--test-- "divide-203"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-204"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-205"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-206"
 		x: to-i256 #{2591CB4F3C7053C0}
@@ -11100,7 +11359,8 @@ Red []
 	--test-- "divide-207"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-208"
 		x: to-i256 #{2591CB4F3C7053C0}
@@ -11111,72 +11371,86 @@ Red []
 	--test-- "divide-209"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-210"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-211"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-212"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-213"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-214"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-215"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-216"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-217"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-218"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-219"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-220"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-221"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-222"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-223"
 		x: to-i256 #{17A3809065865081}
@@ -11193,17 +11467,20 @@ Red []
 	--test-- "divide-225"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-226"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-227"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-228"
 		x: to-i256 #{17A3809065865081}
@@ -11214,82 +11491,98 @@ Red []
 	--test-- "divide-229"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-230"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-231"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-232"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-233"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-234"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-235"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-236"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-237"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-238"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-239"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-240"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-241"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-242"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-243"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-244"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-245"
 		x: to-i256 #{2FAEBFCC634E1E47}
@@ -11306,17 +11599,20 @@ Red []
 	--test-- "divide-247"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-248"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-249"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-250"
 		x: to-i256 #{2FAEBFCC634E1E47}
@@ -11327,7 +11623,8 @@ Red []
 	--test-- "divide-251"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-252"
 		x: to-i256 #{2FAEBFCC634E1E47}
@@ -11344,67 +11641,80 @@ Red []
 	--test-- "divide-254"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-255"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-256"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-257"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-258"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-259"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-260"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-261"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-262"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-263"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-264"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-265"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-266"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-267"
 		x: to-i256 #{5876AAEDAB7479FC}
@@ -11421,17 +11731,20 @@ Red []
 	--test-- "divide-269"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-270"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-271"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-272"
 		x: to-i256 #{5876AAEDAB7479FC}
@@ -11466,62 +11779,74 @@ Red []
 	--test-- "divide-277"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-278"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-279"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-280"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-281"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-282"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-283"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-284"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-285"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-286"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-287"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-288"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-289"
 		x: to-i256 #{65928D86EF7F7D19}
@@ -11538,17 +11863,20 @@ Red []
 	--test-- "divide-291"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-292"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-293"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-294"
 		x: to-i256 #{65928D86EF7F7D19}
@@ -11589,57 +11917,68 @@ Red []
 	--test-- "divide-300"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-301"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-302"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-303"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-304"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-305"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-306"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-307"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-308"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-309"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-310"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-311"
 		x: to-i256 #{89EFE4B2D8A7D514}
@@ -11656,7 +11995,8 @@ Red []
 	--test-- "divide-313"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-314"
 		x: to-i256 #{89EFE4B2D8A7D514}
@@ -11667,7 +12007,8 @@ Red []
 	--test-- "divide-315"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-316"
 		x: to-i256 #{89EFE4B2D8A7D514}
@@ -11714,52 +12055,62 @@ Red []
 	--test-- "divide-323"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-324"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-325"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-326"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-327"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-328"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-329"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-330"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-331"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-332"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-333"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
@@ -11776,7 +12127,8 @@ Red []
 	--test-- "divide-335"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-336"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
@@ -11871,7 +12223,8 @@ Red []
 	--test-- "divide-351"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-352"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
@@ -11888,7 +12241,8 @@ Red []
 	--test-- "divide-354"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-355"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
@@ -11905,7 +12259,8 @@ Red []
 	--test-- "divide-357"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-358"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
@@ -11970,32 +12325,38 @@ Red []
 	--test-- "divide-368"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-369"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-370"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-371"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-372"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-373"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-374"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
@@ -12006,12 +12367,14 @@ Red []
 	--test-- "divide-375"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-376"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-377"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -12028,7 +12391,8 @@ Red []
 	--test-- "divide-379"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-380"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -12093,7 +12457,8 @@ Red []
 	--test-- "divide-390"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-391"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -12104,7 +12469,8 @@ Red []
 	--test-- "divide-392"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-393"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -12121,7 +12487,8 @@ Red []
 	--test-- "divide-395"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-396"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -12132,12 +12499,14 @@ Red []
 	--test-- "divide-397"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-398"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-399"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
@@ -12154,7 +12523,8 @@ Red []
 	--test-- "divide-401"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-402"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
@@ -12219,7 +12589,8 @@ Red []
 	--test-- "divide-412"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-413"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
@@ -12248,7 +12619,8 @@ Red []
 	--test-- "divide-417"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-418"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
@@ -12265,7 +12637,8 @@ Red []
 	--test-- "divide-420"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-421"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
@@ -12282,7 +12655,8 @@ Red []
 	--test-- "divide-423"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-424"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
@@ -12347,7 +12721,8 @@ Red []
 	--test-- "divide-434"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-435"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
@@ -12358,22 +12733,26 @@ Red []
 	--test-- "divide-436"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-437"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-438"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-439"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-440"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
@@ -12384,12 +12763,14 @@ Red []
 	--test-- "divide-441"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-442"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-443"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -12406,7 +12787,8 @@ Red []
 	--test-- "divide-445"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-446"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -12471,7 +12853,8 @@ Red []
 	--test-- "divide-456"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-457"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -12482,12 +12865,14 @@ Red []
 	--test-- "divide-458"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-459"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-460"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -12498,7 +12883,8 @@ Red []
 	--test-- "divide-461"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-462"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -12509,12 +12895,14 @@ Red []
 	--test-- "divide-463"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-464"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-465"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
@@ -12531,7 +12919,8 @@ Red []
 	--test-- "divide-467"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-468"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
@@ -12644,7 +13033,8 @@ Red []
 	--test-- "divide-486"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-487"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
@@ -12661,7 +13051,8 @@ Red []
 	--test-- "divide-489"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-490"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
@@ -12726,47 +13117,56 @@ Red []
 	--test-- "divide-500"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-501"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-502"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-503"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-504"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-505"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-506"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-507"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-508"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-509"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -12783,7 +13183,8 @@ Red []
 	--test-- "divide-511"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-512"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -12848,7 +13249,8 @@ Red []
 	--test-- "divide-522"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-523"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -12865,7 +13267,8 @@ Red []
 	--test-- "divide-525"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-526"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -12882,7 +13285,8 @@ Red []
 	--test-- "divide-528"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-529"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -12893,7 +13297,8 @@ Red []
 	--test-- "divide-530"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-531"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
@@ -12910,7 +13315,8 @@ Red []
 	--test-- "divide-533"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ div256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = div256 x  y
 
 	--test-- "divide-534"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
@@ -13032,232 +13438,278 @@ Red []
 	--test-- "modulo-1"
 		x: to-i256 #{00}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-2"
 		x: to-i256 #{00}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-3"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-4"
 		x: to-i256 #{00}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-5"
 		x: to-i256 #{00}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-6"
 		x: to-i256 #{00}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-7"
 		x: to-i256 #{00}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-8"
 		x: to-i256 #{00}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-9"
 		x: to-i256 #{00}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-10"
 		x: to-i256 #{00}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-11"
 		x: to-i256 #{00}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-12"
 		x: to-i256 #{00}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-13"
 		x: to-i256 #{00}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-14"
 		x: to-i256 #{00}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-15"
 		x: to-i256 #{00}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-16"
 		x: to-i256 #{00}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-17"
 		x: to-i256 #{00}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-18"
 		x: to-i256 #{00}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-19"
 		x: to-i256 #{00}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-20"
 		x: to-i256 #{00}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-21"
 		x: to-i256 #{00}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-22"
 		x: to-i256 #{00}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-23"
 		x: to-i256 #{00}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-24"
 		x: to-i256 #{00}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-25"
 		x: to-i256 #{00}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-26"
 		x: to-i256 #{00}
 		y: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-27"
 		x: to-i256 #{00}
 		y: to-i256 #{6AC1F425FF4780EB}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-28"
 		x: to-i256 #{00}
 		y: to-i256 #{B8672F8CEEBC1448}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-29"
 		x: to-i256 #{00}
 		y: to-i256 #{077EFF20CCC389}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-30"
 		x: to-i256 #{00}
 		y: to-i256 #{4D65AACBFFC11E85}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-31"
 		x: to-i256 #{00}
 		y: to-i256 #{2591CB4F3C7053C0}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-32"
 		x: to-i256 #{00}
 		y: to-i256 #{17A3809065865081}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-33"
 		x: to-i256 #{00}
 		y: to-i256 #{2FAEBFCC634E1E47}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-34"
 		x: to-i256 #{00}
 		y: to-i256 #{5876AAEDAB7479FC}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-35"
 		x: to-i256 #{00}
 		y: to-i256 #{65928D86EF7F7D19}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-36"
 		x: to-i256 #{00}
 		y: to-i256 #{89EFE4B2D8A7D514}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-37"
 		x: to-i256 #{00}
 		y: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-38"
 		x: to-i256 #{00}
 		y: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-39"
 		x: to-i256 #{00}
 		y: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-40"
 		x: to-i256 #{00}
 		y: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-41"
 		x: to-i256 #{00}
 		y: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-42"
 		x: to-i256 #{00}
 		y: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-43"
 		x: to-i256 #{00}
 		y: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-44"
 		x: to-i256 #{00}
 		y: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-45"
 		x: to-i256 #{00}
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-46"
 		x: to-i256 #{00}
 		y: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-47"
 		x: to-i256 #{01}
@@ -13394,7 +13846,8 @@ Red []
 	--test-- "modulo-69"
 		x: to-i256 #{02}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-70"
 		x: to-i256 #{02}
@@ -13525,7 +13978,8 @@ Red []
 	--test-- "modulo-91"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-92"
 		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
@@ -13656,7 +14110,8 @@ Red []
 	--test-- "modulo-113"
 		x: to-i256 #{6AC1F425FF4780EB}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-114"
 		x: to-i256 #{6AC1F425FF4780EB}
@@ -13787,12 +14242,14 @@ Red []
 	--test-- "modulo-135"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-136"
 		x: to-i256 #{B8672F8CEEBC1448}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-137"
 		x: to-i256 #{B8672F8CEEBC1448}
@@ -13917,7 +14374,8 @@ Red []
 	--test-- "modulo-157"
 		x: to-i256 #{077EFF20CCC389}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-158"
 		x: to-i256 #{077EFF20CCC389}
@@ -14048,7 +14506,8 @@ Red []
 	--test-- "modulo-179"
 		x: to-i256 #{4D65AACBFFC11E85}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-180"
 		x: to-i256 #{4D65AACBFFC11E85}
@@ -14179,12 +14638,14 @@ Red []
 	--test-- "modulo-201"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-202"
 		x: to-i256 #{2591CB4F3C7053C0}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-203"
 		x: to-i256 #{2591CB4F3C7053C0}
@@ -14309,7 +14770,8 @@ Red []
 	--test-- "modulo-223"
 		x: to-i256 #{17A3809065865081}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-224"
 		x: to-i256 #{17A3809065865081}
@@ -14440,7 +14902,8 @@ Red []
 	--test-- "modulo-245"
 		x: to-i256 #{2FAEBFCC634E1E47}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-246"
 		x: to-i256 #{2FAEBFCC634E1E47}
@@ -14571,12 +15034,14 @@ Red []
 	--test-- "modulo-267"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-268"
 		x: to-i256 #{5876AAEDAB7479FC}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-269"
 		x: to-i256 #{5876AAEDAB7479FC}
@@ -14701,7 +15166,8 @@ Red []
 	--test-- "modulo-289"
 		x: to-i256 #{65928D86EF7F7D19}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-290"
 		x: to-i256 #{65928D86EF7F7D19}
@@ -14832,12 +15298,14 @@ Red []
 	--test-- "modulo-311"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-312"
 		x: to-i256 #{89EFE4B2D8A7D514}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-313"
 		x: to-i256 #{89EFE4B2D8A7D514}
@@ -14962,12 +15430,14 @@ Red []
 	--test-- "modulo-333"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-334"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-335"
 		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
@@ -15092,7 +15562,8 @@ Red []
 	--test-- "modulo-355"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-356"
 		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
@@ -15223,7 +15694,8 @@ Red []
 	--test-- "modulo-377"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-378"
 		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
@@ -15354,7 +15826,8 @@ Red []
 	--test-- "modulo-399"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-400"
 		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
@@ -15485,12 +15958,14 @@ Red []
 	--test-- "modulo-421"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-422"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-423"
 		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
@@ -15615,7 +16090,8 @@ Red []
 	--test-- "modulo-443"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-444"
 		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
@@ -15746,12 +16222,14 @@ Red []
 	--test-- "modulo-465"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-466"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-467"
 		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
@@ -15876,7 +16354,8 @@ Red []
 	--test-- "modulo-487"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-488"
 		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
@@ -16007,12 +16486,14 @@ Red []
 	--test-- "modulo-509"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-510"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		y: to-i256 #{02}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-511"
 		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
@@ -16137,7 +16618,8 @@ Red []
 	--test-- "modulo-531"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
 		y: to-i256 #{01}
-		--assert error? try [ mod256 x  y ]
+		z: to-i256 #{00}
+		--assert z  = mod256 x  y
 
 	--test-- "modulo-532"
 		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
@@ -19867,6 +20349,287 @@ Red []
 		y: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
 		z: false
 		--assert z  = lesser-or-equal256? x  y
+
+===end-group===
+
+===start-group=== "to-i256"
+	--test-- "to-i256-1"
+		x: to-i256 #{00}
+		y: 0.0
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-2"
+		x: to-i256 #{00}
+		y: 0.0
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-3"
+		x: to-i256 #{01}
+		y: 1.0
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-4"
+		x: to-i256 #{02}
+		y: 2.0
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-5"
+		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		y: 1.157920892373162e+77
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-6"
+		x: to-i256 #{6AC1F425FF4780EB}
+		y: 7.692698082559361e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-7"
+		x: to-i256 #{B8672F8CEEBC1448}
+		y: 1.328764150792717e+19
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-8"
+		x: to-i256 #{077EFF20CCC389}
+		y: 2.109959069025161e+15
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-9"
+		x: to-i256 #{4D65AACBFFC11E85}
+		y: 5.577051506714157e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-10"
+		x: to-i256 #{2591CB4F3C7053C0}
+		y: 2.707168392203228e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-11"
+		x: to-i256 #{17A3809065865081}
+		y: 1.7033464417431268e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-12"
+		x: to-i256 #{2FAEBFCC634E1E47}
+		y: 3.4358944502905646e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-13"
+		x: to-i256 #{5876AAEDAB7479FC}
+		y: 6.374470260350024e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-14"
+		x: to-i256 #{65928D86EF7F7D19}
+		y: 7.319067955113721e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-15"
+		x: to-i256 #{89EFE4B2D8A7D514}
+		y: 9.939414359420164e+18
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-16"
+		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
+		y: 4.853940916655719e+76
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-17"
+		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
+		y: 3.171266970767153e+75
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-18"
+		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
+		y: 1.6255696756767824e+76
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-19"
+		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
+		y: 3.6292041164746845e+76
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-20"
+		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
+		y: 9.847446434378146e+75
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-21"
+		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
+		y: 1.138778567254299e+76
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-22"
+		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
+		y: 8.011389638558939e+76
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-23"
+		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
+		y: 2.117638164155805e+75
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-24"
+		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
+		y: 3.2473195786729375e+76
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+	--test-- "to-i256-25"
+		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
+		y: 1.0520817173704268e+77
+		--assert (lesser-or-equal256? x  to-i256 y) 
+		 and (lesser-or-equal256? to-i256 y x) 
+
+===end-group===
+
+===start-group=== "i256-to-float"
+	--test-- "i256-to-float-1"
+		x: to-i256 #{00}
+		y: 0.0
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-2"
+		x: to-i256 #{00}
+		y: 0.0
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-3"
+		x: to-i256 #{01}
+		y: 1.0
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-4"
+		x: to-i256 #{02}
+		y: 2.0
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-5"
+		x: to-i256 #{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+		y: 1.157920892373162e+77
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-6"
+		x: to-i256 #{6AC1F425FF4780EB}
+		y: 7.692698082559361e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-7"
+		x: to-i256 #{B8672F8CEEBC1448}
+		y: 1.328764150792717e+19
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-8"
+		x: to-i256 #{077EFF20CCC389}
+		y: 2.109959069025161e+15
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-9"
+		x: to-i256 #{4D65AACBFFC11E85}
+		y: 5.577051506714157e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-10"
+		x: to-i256 #{2591CB4F3C7053C0}
+		y: 2.707168392203228e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-11"
+		x: to-i256 #{17A3809065865081}
+		y: 1.7033464417431268e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-12"
+		x: to-i256 #{2FAEBFCC634E1E47}
+		y: 3.4358944502905646e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-13"
+		x: to-i256 #{5876AAEDAB7479FC}
+		y: 6.374470260350024e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-14"
+		x: to-i256 #{65928D86EF7F7D19}
+		y: 7.319067955113721e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-15"
+		x: to-i256 #{89EFE4B2D8A7D514}
+		y: 9.939414359420164e+18
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-16"
+		x: to-i256 #{6B5054FE5032B165AF6A8B928648C9D43456FB8B718620FCE0CC4DEA3AC5929C}
+		y: 4.853940916655719e+76
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-17"
+		x: to-i256 #{0702DF9D88CF598EABA3C232E9F96A446AD47CD7750B5FD78F064BE96E4242F1}
+		y: 3.171266970767153e+75
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-18"
+		x: to-i256 #{23F065F7F06AADDE32B6C760C7448456CCFD988DB749D7E9F7DFFD89CD818407}
+		y: 1.6255696756767824e+76
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-19"
+		x: to-i256 #{503C913F17C1CB3DB13C0E1684A5A539E05B0A01DD71F780E504F13CD442F8D1}
+		y: 3.6292041164746845e+76
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-20"
+		x: to-i256 #{15C57508D460E2D809FF7E8D45E69A732B7A01AF0F2A8FEAE0CDF279ABA7B9C8}
+		y: 9.847446434378146e+75
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-21"
+		x: to-i256 #{192D421E97D324476BCDB583ABF185C6F5383F95696AEE31887D85393292B203}
+		y: 1.138778567254299e+76
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-22"
+		x: to-i256 #{B11EDBC44A252B1850C5A1F12461FC2BAFBE864CC8874C1AD5AA0734699C2550}
+		y: 8.011389638558939e+76
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-23"
+		x: to-i256 #{04AE8A6D08BF7373C00975299FC06DD2FD26000FA91F6C40BF87C8C44C6A3019}
+		y: 2.117638164155805e+75
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-24"
+		x: to-i256 #{47CB2D6F7235DEE2CA0E35D738DD27871A6D051A12C7FE9972A9266878200416}
+		y: 3.2473195786729375e+76
+		--assert strict-equal? i256-to-float x y 
+
+	--test-- "i256-to-float-25"
+		x: to-i256 #{E899B709189EBEC34B2A4BE7E743447E49ABA5171E96ED7D21498D648659409B}
+		y: 1.0520817173704268e+77
+		--assert strict-equal? i256-to-float x y 
 
 ===end-group===
 
