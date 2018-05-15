@@ -12,12 +12,17 @@ Red [
 #include %keys/Ledger/ledger.red
 
 key: context [
-    devs: none
+    none-dev: ["<No Device>" []]
+    devs: copy none-dev
 
     ledger-dev: "Ledger Nano S"
 
     get-devs: func[][
-        devs: reduce [ledger-dev ledger/get-devs]
+        if devs <> none-dev [
+            clear devs
+            devs: append devs none-dev
+        ]
+        devs: append devs reduce [ledger-dev ledger/get-devs]
     ]
 
 	connect: func [dev [string!] serial-num [string!]][
