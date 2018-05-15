@@ -492,7 +492,7 @@ hid: context [
 					cur_dev/path: either dev_path <> null [strdup dev_path][null]
 
 					;--vid/pid
-					cur_dev/id: dev_vid << 16 or dev_pid
+					cur_dev/id: dev_pid << 16 or dev_vid
 
 					;--serial number
 					cur_dev/serial-number: utf8_to_wchar_t serial_number_utf8
@@ -598,7 +598,7 @@ hid: context [
 			tmp			[integer!]
 	][
 		blk: block/push-only* 4
-		id: product-id * 65536 + vendor-id
+		id: product-id << 16 or vendor-id
 		cur-dev: enumerate id
 
 		while [cur-dev <> null] [

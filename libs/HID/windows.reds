@@ -702,7 +702,7 @@ hid: context [
 			tmp			[integer!]
 	][
 		blk: block/push-only* 4
-		id: product-id * 65536 + vendor-id
+		id: product-id << 16 or vendor-id
 		cur-dev: enumerate id
 
 		while [cur-dev <> null] [

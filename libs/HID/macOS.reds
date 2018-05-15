@@ -831,7 +831,7 @@ hid: context [
 			cur_dev/product-string: dup_wcs buf
 
 			;--vip/pid
-			cur_dev/id: dev_vid << 16 or dev_pid
+			cur_dev/id: dev_pid << 16 or dev_vid
 			;--release number
 			cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
 			;--interface number
@@ -859,7 +859,7 @@ hid: context [
 			tmp			[integer!]
 	][
 		blk: block/push-only* 4
-		id: product-id * 65536 + vendor-id
+		id: product-id << 16 or vendor-id
 		cur-dev: enumerate id
 
 		while [cur-dev <> null] [
