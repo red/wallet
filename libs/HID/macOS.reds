@@ -909,7 +909,7 @@ hid: context [
 		as int-ptr! handle
 	]
 
-	open_path: func [
+	open-path: func [
 		path		[c-string!]
 		return: 	[hid-device]
 		/local

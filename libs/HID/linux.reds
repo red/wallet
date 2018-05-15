@@ -568,7 +568,7 @@ hid: context [
 		root 
 	]
 
-	free_enumeration: func [
+	hid-free-enumeration: func [
 		devs 		[hid-device-info]
 		/local
 			d 		[hid-device-info]
@@ -648,7 +648,7 @@ hid: context [
 		as int-ptr! handle
 	]
 
-	open_path: func [
+	open-path: func [
 		path			[c-string!]
 		return: 		[hid_device]
 		/local
