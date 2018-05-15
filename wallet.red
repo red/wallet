@@ -85,7 +85,7 @@ wallet: context [
 			n: page * addr-per-page
 			
 			loop addr-per-page [
-				addr: Ledger/get-address n
+				addr: ledger/get-address n
 				either addr [
 					if need-refresh? [
 						need-refresh?: no
