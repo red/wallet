@@ -855,9 +855,11 @@ hid: context [
 			blk			[red-block!]
 			cur-dev		[hid-device-info]
 			ser			[c-string!]
+			id 			[integer!]
 			tmp			[integer!]
 	][
 		blk: block/push-only* 4
+		id: product-id * 65536 + vendor-id
 		cur-dev: enumerate id
 
 		while [cur-dev <> null] [
@@ -879,7 +881,6 @@ hid: context [
 			path-to-open	[c-string!]
 			handle 			[hid-device]
 			tmp				[integer!]
-			id 				[integer!]
 	][
 		path-to-open: null
 		handle: null
