@@ -202,7 +202,7 @@ wallet: context [
 		process-events
 		btn-sign/offset/x: 145
 		btn-sign/size/x: 200
-		btn-sign/text: "please check on your key"
+		btn-sign/text: "Please check on your key"
 		process-events
 	]
 
@@ -368,7 +368,7 @@ wallet: context [
 		
 		addr-list: text-list font list-font 520x100 return middle
 		
-		info-msg: text 285x20 "Please plug your key..."
+		info-msg: text 285x20 "Please plug in your key..."
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
@@ -387,7 +387,7 @@ wallet: context [
 
 	contract-data-dlg: layout [
 		title "Set Contract data to YES"
-		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
+		text font-size 12 {Please set "Contract data" to "Yes" in the Ethereum app's settings.}
 		return
 		pad 180x10 button "OK" [unview]
 	]
@@ -429,7 +429,7 @@ wallet: context [
 						connected?: no
 						ledger/close
 						dev/text: "<No Device>"
-						info-msg/text: "Please plug your key..."
+						info-msg/text: "Please plug in your key..."
 						clear addr-list/data
 					]
 				]
