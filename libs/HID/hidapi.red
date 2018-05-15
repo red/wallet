@@ -29,14 +29,22 @@ Red [
 ]
 
 hid: context [
-
-	open: routine [
+	get-devs: routine [
 		vendor_id	[integer!]
 		product_id	[integer!]
+		return:		[block!]
+		/local
+
+	][
+		hid/get-devs vendor_id product_id
+	]
+
+	open: routine [
+		serial-num	[string!]
 		/local
 			h		[int-ptr!]
 	][
-		h: hid/open vendor_id product_id null
+		h: hid/open unicode/to-utf16 serial-num
 		either null? h [stack/set-last none-value][
 			handle/box as-integer h
 		]

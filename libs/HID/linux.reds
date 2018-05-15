@@ -21,6 +21,8 @@ hid: context [
 	#define LOWORD(param) (param and FFFFh << 16 >> 16)   
 	#define HIWORD(param) (param >> 16)
 
+	root: declare hid-device-info
+
 	;--usb hid device property names
 	device_string_names: ["manufacturer" "product"	"serial"]
 	hid-device-info: alias struct! [
@@ -385,7 +387,6 @@ hid: context [
 			enumerate 				[int-ptr!]
 			devices 				[int-ptr!]
 			dev_list_entry			[int-ptr!]
-			root 					[hid-device-info]
 			cur_dev 				[hid-device-info]
 			prev_dev				[hid-device-info]
 			sysfs_path				[c-string!]
@@ -585,44 +586,65 @@ hid: context [
 		]	
 	]
 
-	open: func [
-		vendor_id		[integer!]
-		product_id		[integer!]
-		serial-number	[c-string!]
-		return: 		[int-ptr!]
+	get-devs: func [
+		vendor-id 		[integer!] ;vid
+		product-id 		[integer!] ;pid
+		return:			[block!]
 		/local
-			devs 			[hid-device-info]
-			cur_dev			[hid-device-info]
-			path_to_open	[c-string!]
-			handle			[hid_device]
+			blk			[red-block!]
+			cur-dev		[hid-device-info]
+			ser			[c-string!]
+			tmp			[integer!]
+	][
+		blk: block/push-only* 4
+		cur-dev: enumerate id
+
+		while [cur-dev <> null] [
+			tmp: strcmp ser "null"
+			if all [tmp <> 0 cur-dev/id = id] [
+				ser: cur-dev/serial-number
+				block/rs-append blk string/load ser utf16-length? as byte-ptr! ser UTF-16LE
+			]
+			cur-dev: cur-dev/next
+		]
+		blk
+	]
+
+	open: func [
+		serial-number	[c-string!]
+		return:			[int-ptr!]
+		/local
+			cur-dev			[hid-device-info]
+			path-to-open	[c-string!]
+			handle 			[hid-device]
+			tmp				[integer!]
 			id 				[integer!]
 	][
-		path_to_open: null
+		path-to-open: null
 		handle: null
 
-		devs: enumerate vendor_id product_id
-		id: vendor_id << 16 + product_id
-		cur_dev: devs 
-		while [cur_dev <> null] [
-			if cur_dev/id = id [
-				either serial-number <> null [
-					if (wcscmp serial-number cur_dev/serial-number) = 0 [
-						path_to_open: cur_dev/path
-						break
-					]
-				][
-					path_to_open: cur_dev/path
+		cur-dev: root
+		while [cur-dev <> null] [
+			either as logic! serial-number [
+				tmp: wcscmp serial-number cur-dev/serial-number
+				if tmp = 0 [
+					path-to-open: cur-dev/path
 					break
 				]
-
+			][
+				path-to-open: cur-dev/path
+				break
 			]
-			cur_dev: cur_dev/next
+			cur-dev: cur-dev/next
 		]
-		if path_to_open <> null [
-			handle: open_path path_to_open
+
+		if path-to-open <> null [
+			;--open the device
+			handle: open-path path-to-open ;--have not been defined
 		]
-		free_enumeration devs 
-		as int-ptr! handle		
+
+		hid-free-enumeration root
+		as int-ptr! handle
 	]
 
 	open_path: func [

@@ -33,6 +33,7 @@ hid: context [
 	#define HID_LOWORD(param) (param and FFFFh << 16 >> 16)
 	#define HID_HIWORD(param) (param >> 16)
 
+	root: declare hid-device-info
 
 	;the hid header files aren't part of the sdk, we have to define
 	;all this stuff here. In C'lookup_functions(). the func pointers
@@ -452,7 +453,6 @@ hid: context [
 		return: [hid-device-info]
 		/local
 			res 				[logic!]
-			root				[hid-device-info]
 			cur-dev 			[hid-device-info]
 			devinterface-data 	[dev-interface-data value]
 			devinterface-detail	[dev-interface-detail]
@@ -690,37 +690,54 @@ hid: context [
 		]
 	]
 
-	open: func [
+	get-devs: func [
 		vendor-id 		[integer!] ;vid
 		product-id 		[integer!] ;pid
+		return:			[block!]
+		/local
+			blk			[red-block!]
+			cur-dev		[hid-device-info]
+			ser			[c-string!]
+			tmp			[integer!]
+	][
+		blk: block/push-only* 4
+		cur-dev: enumerate id
+
+		while [cur-dev <> null] [
+			tmp: strcmp ser "null"
+			if all [tmp <> 0 cur-dev/id = id] [
+				ser: cur-dev/serial-number
+				block/rs-append blk string/load ser utf16-length? as byte-ptr! ser UTF-16LE
+			]
+			cur-dev: cur-dev/next
+		]
+		blk
+	]
+
+	open: func [
 		serial-number	[c-string!]
 		return:			[int-ptr!]
 		/local
-		devs 			[hid-device-info]
-		cur-dev			[hid-device-info]
-		path-to-open	[c-string!]
-		handle 			[hid-device]
-		tmp				[integer!]
-		id 				[integer!]
+			cur-dev			[hid-device-info]
+			path-to-open	[c-string!]
+			handle 			[hid-device]
+			tmp				[integer!]
+			id 				[integer!]
 	][
 		path-to-open: null
 		handle: null
-		id: product-id * 65536 + vendor-id
 
-		devs: enumerate id
-		cur-dev: devs
+		cur-dev: root
 		while [cur-dev <> null] [
-			if cur-dev/id = id [
-				either as logic! serial-number [
-					tmp: wcscmp serial-number cur-dev/serial-number
-					if tmp = 0 [
-						path-to-open: cur-dev/path
-						break
-					]
-				][
+			either as logic! serial-number [
+				tmp: wcscmp serial-number cur-dev/serial-number
+				if tmp = 0 [
 					path-to-open: cur-dev/path
 					break
 				]
+			][
+				path-to-open: cur-dev/path
+				break
 			]
 			cur-dev: cur-dev/next
 		]
@@ -730,7 +747,7 @@ hid: context [
 			handle: open-path path-to-open ;--have not been defined
 		]
 
-		hid-free-enumeration devs  ;--have not been defined
+		hid-free-enumeration root
 		as int-ptr! handle
 	]
 

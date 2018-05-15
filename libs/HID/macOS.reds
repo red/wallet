@@ -35,6 +35,8 @@ hid: context [
 	#define	ETIMEDOUT							60
 
 
+	root: declare hid-device-info
+
 	hid_mgr: as int-ptr! 0
 	kCFStringEncodingUTF32LE: 1C000100h
 
@@ -742,7 +744,6 @@ hid: context [
 		product-id 	[integer!]
 		return: 	[hid-device-info]
 		/local
-			root 			[hid-device-info]
 			cur_dev 		[hid-device-info]
 			num_devices		[integer!]
 			i 				[integer!]
@@ -846,39 +847,64 @@ hid: context [
 	]
 
 
-	open: func [
-		vendor-id 		[integer!]
-		product-id		[integer!]
-		serial-number 	[c-string!]
-		return: 		[int-ptr!]
+	get-devs: func [
+		vendor-id 		[integer!] ;vid
+		product-id 		[integer!] ;pid
+		return:			[block!]
 		/local
-			devs 			[hid-device-info]
-			cur_dev 		[hid-device-info]
-			path_to_open 	[c-string!]
-			handle 			[hid-device]
+			blk			[red-block!]
+			cur-dev		[hid-device-info]
+			ser			[c-string!]
+			tmp			[integer!]
 	][
-		path_to_open: null
+		blk: block/push-only* 4
+		cur-dev: enumerate id
+
+		while [cur-dev <> null] [
+			tmp: strcmp ser "null"
+			if all [tmp <> 0 cur-dev/id = id] [
+				ser: cur-dev/serial-number
+				block/rs-append blk string/load ser utf16-length? as byte-ptr! ser UTF-16LE
+			]
+			cur-dev: cur-dev/next
+		]
+		blk
+	]
+
+	open: func [
+		serial-number	[c-string!]
+		return:			[int-ptr!]
+		/local
+			cur-dev			[hid-device-info]
+			path-to-open	[c-string!]
+			handle 			[hid-device]
+			tmp				[integer!]
+			id 				[integer!]
+	][
+		path-to-open: null
 		handle: null
-		devs: enumerate 0 0
-		cur_dev: devs
-		while [cur_dev <> null] [
-			if all [HIWORD(cur_dev/id) = vendor-id  LOWORD(cur_dev/id) = product-id] [
-				either serial-number <> null [
-					if 0 = wcscmp serial-number cur_dev/serial-number [
-						path_to_open: cur_dev/path
-						break
-					]
-				][
-					path_to_open: cur_dev/path
+
+		cur-dev: root
+		while [cur-dev <> null] [
+			either as logic! serial-number [
+				tmp: wcscmp serial-number cur-dev/serial-number
+				if tmp = 0 [
+					path-to-open: cur-dev/path
 					break
 				]
+			][
+				path-to-open: cur-dev/path
+				break
 			]
-			cur_dev: cur_dev/next
+			cur-dev: cur-dev/next
 		]
-		if path_to_open <> null [
-			handle: open_path path_to_open
+
+		if path-to-open <> null [
+			;--open the device
+			handle: open-path path-to-open ;--have not been defined
 		]
-		hid-free-enumeration devs
+
+		hid-free-enumeration root
 		as int-ptr! handle
 	]
 
