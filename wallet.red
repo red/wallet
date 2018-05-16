@@ -2,6 +2,7 @@ Red [
 	Title:	 "RED Wallet"
 	Author:  "Xie Qingtian"
 	File: 	 %wallet.red
+	Icon:	 %assets/RED-token.ico
 	Needs:	 View
 	Version: 0.1.0
 	Tabs: 	 4
