@@ -842,6 +842,7 @@ hid: context [
 			copy-len	[integer!]
 			res 		[logic!]
 			ev 			[integer!] ;---handle
+			tm			[integer!]
 	][
 		dev: as hid-device device
 		bytes-read: 0
@@ -869,10 +870,14 @@ hid: context [
 
 		if milliseconds >= 0 [
 			;--see if there is any data yet
-			if 0 <> WaitForSingleObject ev milliseconds [
-				;--there was no data this time.return zero bytes available
-				return 0
+			tm: 0
+			while [tm < milliseconds][
+				if zero? WaitForSingleObject ev 100 [break]
+				gui/do-events yes
+				tm: tm + 100
 			]
+			;--there was no data this time.return zero bytes available
+			if tm >= milliseconds [return 0]
 		]
 
 		res: GetOverlappedResult dev/device-handle as overlapped-struct :dev/ol :bytes-read true

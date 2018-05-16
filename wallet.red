@@ -61,7 +61,6 @@ wallet: context [
 	token-contract: none
 
 	connected?:		no
-	need-refresh?:	no
 	address-index:	0
 	page:			0
 
@@ -75,11 +74,11 @@ wallet: context [
 	list-addresses: func [/prev /next /local addresses addr n][
 		update-ui no
 		either ledger/connect [
-			process-events
+			usb-device/rate: none
 			connected?: yes
 			dev/text: "Ledger Nano S"
-			info-msg/text: "Please wait while loading addresses..."
-			
+			process-events
+
 			addresses: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
@@ -87,15 +86,17 @@ wallet: context [
 			
 			loop addr-per-page [
 				addr: Ledger/get-address n
-				either addr [
-					if need-refresh? [
-						need-refresh?: no
-						usb-device/rate: none
-					]
+				either string? addr [
+					info-msg/text: "Please wait while loading addresses..."
 				][
-					unless need-refresh? [view/flags unlock-dev-dlg 'modal]
-					usb-device/rate: 0:0:3
-					need-refresh?: yes
+					info-msg/text: case [
+						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
+						addr = 'locked [
+							usb-device/rate: 0:0:3
+							"Please unlock your key"
+						]
+						true [{Please open the "Ethereum" application}]
+					]
 					exit
 				]
 				append addresses rejoin [addr "      <loading>"]
@@ -114,11 +115,11 @@ wallet: context [
 				]
 				process-events
 			]
+			info-msg/text: ""
 			update-ui yes
 		][
 			dev/text: "<No Device>"
 		]
-		info-msg/text: ""
 	]
 
 	reset-sign-button: does [
@@ -272,6 +273,8 @@ wallet: context [
 			info-nonce/text: mold tx/1
 			unview
 			view/flags confirm-sheet 'modal
+			clear addr-to/text
+			clear amount-field/text
 		][
 			if signed-data = 'token-error [
 				unview
@@ -279,9 +282,6 @@ wallet: context [
 			]
 			reset-sign-button
 		]
-		clear addr-to/text
-		clear amount-field/text
-		gas-price/text: "21"
 	]
 
 	do-confirm: func [face [object!] event [event!] /local result][
@@ -369,7 +369,7 @@ wallet: context [
 		
 		addr-list: text-list font list-font 520x100 return middle
 		
-		info-msg: text 285x20 "Please plug your key..."
+		info-msg: text 285x20
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
@@ -427,19 +427,16 @@ wallet: context [
 				]
 				on-down: func [face [object!] event [event!]][
 					if support-device? face/data/1 face/data/2 [
+						face/rate: none
 						connected?: no
 						ledger/close
 						dev/text: "<No Device>"
-						info-msg/text: "Please plug your key..."
+						info-msg/text: ""
 						clear addr-list/data
 					]
 				]
 				on-time: func [face event][
-					unless need-refresh? [face/rate: none]
-					if connected? [
-						connected?: no
-						ledger/close
-					]
+					if connected? [face/rate: none]
 					list-addresses
 				]
 			]
