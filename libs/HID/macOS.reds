@@ -11,6 +11,9 @@ Red/System [
 	}
 ]
 hid: context [
+
+	#include %common.red
+
 	#define	EINVAL		22		;/* Invalid argument */
 	#define kIOHIDSerialNumberKey               "SerialNumber"
 	#define kIOHIDManufacturerKey               "Manufacturer"
@@ -35,8 +38,6 @@ hid: context [
 	#define	ETIMEDOUT							60
 
 
-	root: declare hid-device-info
-
 	hid_mgr: as int-ptr! 0
 	kCFStringEncodingUTF32LE: 1C000100h
 
@@ -48,18 +49,6 @@ hid: context [
 	timespec!: alias struct! [
 		sec    [integer!] ;Seconds
 		nsec   [integer!] ;Nanoseconds
-	]
-
-	hid-device-info: alias struct! [
-		path 				[c-string!]
-		id 					[integer!] ;vendor-id and product-id
-		serial-number 		[c-string!]
-		manufacturer-string [c-string!]
-		product-string 		[c-string!]
-		usage 				[integer!] ;usage-page and usage
-		release-number		[integer!]
-		interface-number	[integer!]
-		next				[hid-device-info]
 	]
 
 	CFRange: alias struct! [
@@ -526,25 +515,6 @@ hid: context [
 		free as byte-ptr! dev
 	]
 
-	hid-free-enumeration: func [
-		devs 		[hid-device-info]
-		/local
-			d 		[hid-device-info]
-			next 	[hid-device-info]
-	][
-		d: devs
-		while [d <> null] [
-			next: d/next
-			free as byte-ptr! d/path
-			free as byte-ptr! d/serial-number
-			free as byte-ptr! d/manufacturer-string
-			free as byte-ptr! d/product-string
-			free as byte-ptr! d
-			d: next
-		]
-
-	]
-
 	get_int_property: func [
 		device 			[int-ptr!]
 		key				[c-string!]
@@ -844,69 +814,6 @@ hid: context [
 		CFRelease device_set
 
 		return root
-	]
-
-
-	get-devs: func [
-		vendor-id 		[integer!] ;vid
-		product-id 		[integer!] ;pid
-		return:			[block!]
-		/local
-			blk			[red-block!]
-			cur-dev		[hid-device-info]
-			ser			[c-string!]
-			id 			[integer!]
-			tmp			[integer!]
-	][
-		blk: block/push-only* 4
-		id: product-id << 16 or vendor-id
-		cur-dev: enumerate id
-
-		while [cur-dev <> null] [
-			tmp: strcmp ser "null"
-			if all [tmp <> 0 cur-dev/id = id] [
-				ser: cur-dev/serial-number
-				block/rs-append blk string/load ser utf16-length? as byte-ptr! ser UTF-16LE
-			]
-			cur-dev: cur-dev/next
-		]
-		blk
-	]
-
-	open: func [
-		serial-number	[c-string!]
-		return:			[int-ptr!]
-		/local
-			cur-dev			[hid-device-info]
-			path-to-open	[c-string!]
-			handle 			[hid-device]
-			tmp				[integer!]
-	][
-		path-to-open: null
-		handle: null
-
-		cur-dev: root
-		while [cur-dev <> null] [
-			either as logic! serial-number [
-				tmp: wcscmp serial-number cur-dev/serial-number
-				if tmp = 0 [
-					path-to-open: cur-dev/path
-					break
-				]
-			][
-				path-to-open: cur-dev/path
-				break
-			]
-			cur-dev: cur-dev/next
-		]
-
-		if path-to-open <> null [
-			;--open the device
-			handle: open-path path-to-open ;--have not been defined
-		]
-
-		hid-free-enumeration root
-		as int-ptr! handle
 	]
 
 	open-path: func [

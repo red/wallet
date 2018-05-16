@@ -20,7 +20,7 @@ key: context [
     get-devs: func[][
         if devs <> none-dev [
             clear devs
-            devs: append devs none-dev
+            devs: copy none-dev
         ]
         devs: append devs reduce [ledger-dev ledger/get-devs]
     ]
