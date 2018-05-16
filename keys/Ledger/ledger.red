@@ -28,6 +28,7 @@ to-int16: func [b [binary!]][
 ]
 
 ledger: context [
+	name: "Ledger Nano S"
 
 	vendor-id:			2C97h
 	product-id:			1

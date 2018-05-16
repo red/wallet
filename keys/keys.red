@@ -10,25 +10,44 @@ Red [
 ]
 
 #include %keys/Ledger/ledger.red
+#include %keys/Trezor/trezor.red
 
 key: context [
 	none-dev: ["<No Device>" []]
 	devs: copy none-dev
 
-	ledger-dev: "Ledger Nano S"
+	support?: func [
+		vendor-id	[integer!]
+		product-id	[integer!]
+		return:		[logic!]
+	][
+		any [
+			all [
+				vendor-id = ledger/vendor-id
+				product-id = ledger/product-id
+			]
+			all [
+				vendor-id = trezor/vendor-id
+				product-id = trezor/product-id
+			]
+		]
+	]
 
 	get-devs: func[][
 		if devs <> none-dev [
 			clear devs
 			devs: copy none-dev
 		]
-		devs: append devs reduce [ledger-dev ledger/get-devs]
+		devs: append devs reduce [ledger/name ledger/get-devs]
 	]
 
 	connect: func [dev [string!] serial-num [string!]][
 		case dev [
-			ledger-dev [
+			ledger/name [
 				ledger/connect serial-num
+			]
+			trezor/name [
+				stack/set-last none-value
 			]
 			true [stack/set-last none-value]
 		]
