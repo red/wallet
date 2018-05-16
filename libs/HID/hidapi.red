@@ -30,13 +30,12 @@ Red [
 
 hid: context [
 	get-devs: routine [
-		vendor_id	[integer!]
-		product_id	[integer!]
+		ids			[block!]
 		return:		[block!]
 		/local
 
 	][
-		hid/get-devs vendor_id product_id
+		hid/get-devs ids
 	]
 
 	open: routine [

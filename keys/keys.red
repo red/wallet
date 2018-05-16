@@ -16,6 +16,11 @@ key: context [
 	none-dev: ["<No Device>" []]
 	devs: copy none-dev
 
+	clear-devs: does [
+		clear devs
+		devs: copy none-dev
+	]
+
 	support?: func [
 		vendor-id	[integer!]
 		product-id	[integer!]
@@ -34,10 +39,7 @@ key: context [
 	]
 
 	get-devs: func[][
-		if devs <> none-dev [
-			clear devs
-			devs: copy none-dev
-		]
+		if devs <> none-dev [clear-devs]
 		devs: append devs reduce [ledger/name ledger/get-devs]
 	]
 
@@ -52,4 +54,16 @@ key: context [
 			true [stack/set-last none-value]
 		]
 	]
+
+	close: func [dev [string!][
+		case dev [
+			ledger/name [
+				ledger/close
+			]
+			trezor/name [
+				stack/set-last none-value
+			]
+		]
+	]
+
 ]

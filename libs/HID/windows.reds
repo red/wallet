@@ -13,7 +13,7 @@ Red/System [
 
 hid: context [
 
-	#include %common.red
+	#include %common.reds
 
 	#define MAX_STRING_WCHARS				00000FFFh
 	;#define FILE_SHARE_READ                 00000001h
@@ -439,8 +439,8 @@ hid: context [
 
 	;--hid_enumerate function
 	enumerate: func [
-		id 		[integer!] ;vendor-id and product-id
-		return: [hid-device-info]
+		ids 		[red-block!]
+		return:		[hid-device-info]
 		/local
 			res 				[logic!]
 			cur-dev 			[hid-device-info]
@@ -572,7 +572,7 @@ hid: context [
 				;--Get the Vendor ID and Product ID for this device.
 				attrib/Size: size? HIDD-ATTRIBUTES
 				HidD_GetAttributes write-handle attrib
-				if any [id = 0 attrib/ID = id][
+				if [id-verified? attrib/ID ids][
 					tmp: as hid-device-info allocate size? hid-device-info
 
 					;--vid/pid match . create the record

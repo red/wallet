@@ -12,7 +12,7 @@ Red/System [
 ]
 hid: context [
 
-	#include %common.red
+	#include %common.reds
 
 	#define	EINVAL		22		;/* Invalid argument */
 	#define kIOHIDSerialNumberKey               "SerialNumber"
@@ -710,8 +710,7 @@ hid: context [
 
 	;--hid_enumerate func
 	enumerate: func [
-		vendor-id	[integer!]
-		product-id 	[integer!]
+		ids			[integer!]
 		return: 	[hid-device-info]
 		/local
 			cur_dev 		[hid-device-info]
@@ -763,10 +762,8 @@ hid: context [
 
 			;--check the vid/pid against the arguments
 
-			if all [
-				any [vendor-id = 0  vendor-id = dev_vid]
-				any [product-id = 0  product-id = dev_pid]
-			][
+			id: dev_pid << 16 or dev_vid
+			if [id-verified? id ids][
 				;--vid/pid match create the record
 				tmp: as hid-device-info allocate size? hid-device-info
 				either cur_dev <> null [
@@ -777,36 +774,36 @@ hid: context [
 				cur_dev: tmp
 
 
-			;--get the usage page and usage for this device
-			x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
-			y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
-			cur_dev/usage: x << 16 or y
-			;--fill out the record
-			cur_dev/next: null
+				;--get the usage page and usage for this device
+				x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
+				y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
+				cur_dev/usage: x << 16 or y
+				;--fill out the record
+				cur_dev/next: null
 
-			;--fill in the path (ioservice plane)
-			iokit_dev: IOHIDDeviceGetService dev
-			res: IORegistryEntryGetPath iokit_dev
-										kIOServicePlane  ;--have not defined
-										path
-			cur_dev/path: either res = 0 [strdup path][strdup ""]
+				;--fill in the path (ioservice plane)
+				iokit_dev: IOHIDDeviceGetService dev
+				res: IORegistryEntryGetPath iokit_dev
+											kIOServicePlane  ;--have not defined
+											path
+				cur_dev/path: either res = 0 [strdup path][strdup ""]
 
-			;--serial number
-			get_serial_number dev buf BUF_LEN
-			cur_dev/serial-number: dup_wcs buf
-			;--manufacturer and product strings
-			get_manufacturer_string dev buf BUF_LEN
-			cur_dev/manufacturer-string: dup_wcs buf
-			get_product_string dev buf BUF_LEN
-			cur_dev/product-string: dup_wcs buf
+				;--serial number
+				get_serial_number dev buf BUF_LEN
+				cur_dev/serial-number: dup_wcs buf
+				;--manufacturer and product strings
+				get_manufacturer_string dev buf BUF_LEN
+				cur_dev/manufacturer-string: dup_wcs buf
+				get_product_string dev buf BUF_LEN
+				cur_dev/product-string: dup_wcs buf
 
-			;--vip/pid
-			cur_dev/id: dev_pid << 16 or dev_vid
-			;--release number
-			cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
-			;--interface number
-			cur_dev/interface-number: -1
-		]
+				;--vip/pid
+				cur_dev/id: id
+				;--release number
+				cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
+				;--interface number
+				cur_dev/interface-number: -1
+			]
 			i: i + 1
 		]
 

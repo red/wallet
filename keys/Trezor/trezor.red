@@ -9,10 +9,28 @@ Red [
 	}
 ]
 
-ledger: context [
+trezor: context [
 	name: "Trezor"
 
-	vendor-id:			534ch
+	vendor-id:			534Ch
 	product-id:			1
 
+	dongle: none
+
+	get-devs: func [
+		return:		[block!]
+	][
+		hid/get-devs vendor-id product-id
+	]
+
+	connect: func [serial-num [string!]][
+		unless dongle [
+			dongle: hid/open serial-num
+		]
+		dongle
+	]
+
+
+	close: does [hid/close dongle dongle: none]
 ]
+

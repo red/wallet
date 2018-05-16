@@ -13,7 +13,7 @@ Red/System [
 
 hid: context [
 
-	#include %common.red
+	#include %common.reds
 
 	;--symbolic names for the properties above
 	#define DEVICE_STRING_MANUFACTURER  0
@@ -369,8 +369,7 @@ hid: context [
 	]
 
 	enumerate: func [
-		vendor_id 		[integer!]
-		product_id 		[integer!]
+		ids 			[red-block!]
 		return: 		[hid-device-info]
 		/local 	
 			udev 					[int-ptr!]
@@ -388,6 +387,7 @@ hid: context [
 			intf_dev 				[int-ptr!]
 			dev_vid					[integer!]
 			dev_pid 				[integer!]
+			id						[integer!]
 			serial_number_utf8		[c-string!]
 			product_name_utf8		[c-string!]
 			bus_type				[integer!]
@@ -464,10 +464,8 @@ hid: context [
 					udev_device_unref raw_dev 
 					;--go to next
 				]
-				if all [
-					any [vendor_id = 0  vendor_id = dev_vid]	
-					any [product_id = 0 product_id = dev_pid]
-					][
+				id: dev_pid << 16 or dev_vid
+				if [id-verified? id ids][
 					tmp: as hid-device-info allocate size? hid-device-info
 					either cur_dev <> null [
 						cur_dev/next: tmp
@@ -482,7 +480,7 @@ hid: context [
 					cur_dev/path: either dev_path <> null [strdup dev_path][null]
 
 					;--vid/pid
-					cur_dev/id: dev_pid << 16 or dev_vid
+					cur_dev/id: id
 
 					;--serial number
 					cur_dev/serial-number: utf8_to_wchar_t serial_number_utf8
