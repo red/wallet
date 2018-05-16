@@ -177,7 +177,7 @@ wallet: context [
 		dev-name: face/data/:idx
 		i: 1
 		devs: key/devs
-		loop [
+		while [true] [
 			item: devs/:i
 			if item == none [
 				clear serialnum-list/data
@@ -505,7 +505,7 @@ wallet: context [
 	setup-actors: does [
 		ui/actors: make object! [
 			on-close: func [face event][
-				ledger/close
+				key/close
 			]
 		]
 

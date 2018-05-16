@@ -9,8 +9,8 @@ Red [
 	}
 ]
 
-#include %keys/Ledger/ledger.red
-#include %keys/Trezor/trezor.red
+#include %Ledger/ledger.red
+#include %Trezor/trezor.red
 
 key: context [
 	no-dev: "<No Device>"
@@ -42,7 +42,7 @@ key: context [
 		if devs = [] [return [no-dev]]
 		i: 1
 		unique collect [
-			loop [
+			while [true] [
 				id: devs/:i
 				j: i + 1
 				ser: devs/:j
@@ -60,14 +60,14 @@ key: context [
 	]
 
 	connect: func [name [string!] serial-num [string!]][
-		case name [
+		switch name [
 			ledger/name [
 				ledger/connect serial-num
 			]
 			trezor/name [
 				trezor/connect serial-num
 			]
-			true [stack/set-last none-value]
+			default [none]
 		]
 	]
 
@@ -77,7 +77,7 @@ key: context [
 	]
 
 	close-by-name: func [name [string!]][
-		case name [
+		switch name [
 			ledger/name [
 				ledger/close
 			]
@@ -88,7 +88,7 @@ key: context [
 	]
 
 	close-by-id: func [id [integer!]][
-		case id [
+		switch id [
 			ledger/id [
 				ledger/close
 			]
