@@ -10,6 +10,7 @@ Red/System [
 ]
 
 root: declare hid-device-info
+enum-freed?: true
 
 hid-device-info: alias struct! [
 	path 				[c-string!]
@@ -38,6 +39,7 @@ hid-free-enumeration: func [
 		free as byte-ptr! d
 		d: next
 	]
+	enum-freed?: true
 ]
 
 id-verified?: func [
@@ -81,6 +83,7 @@ enum-devs: func [
 ][
 	blk: block/push-only* 4
 	cur-dev: enumerate ids
+	enum-freed?: false
 
 	while [cur-dev <> null] [
 		ser: cur-dev/serial-number

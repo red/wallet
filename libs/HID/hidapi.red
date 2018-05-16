@@ -35,6 +35,7 @@ hid: context [
 		/local
 
 	][
+		if not hid/enum-freed? [free-enum]
 		hid/enum-devs ids
 	]
 
@@ -48,6 +49,8 @@ hid: context [
 		/local
 			h		[int-ptr!]
 	][
+		if hid/enum-freed? [stack/set-last none-value]
+
 		h: hid/open id unicode/to-utf16 serial-num
 		either null? h [stack/set-last none-value][
 			handle/box as-integer h
