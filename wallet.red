@@ -73,9 +73,14 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
-	enum-devs: func [][
+	enum-devs: does [
 		key/enum-devs
-		dev-list
+		dev-list/data: key/get-names
+		dev-list/selected: 1
+		if key/devs = [] [
+			info-msg/text: "Please plug in your key..."
+			clear addr-list/data
+		]
 	]
 
 	list-addresses: func [/prev /next /local addresses addr n][
@@ -437,36 +442,42 @@ wallet: context [
 	]
 
 	support-device?: func [
-		vendor-id	[integer!]
-		product-id	[integer!]
+		id			[integer!]
 		return:		[logic!]
 	][
-		key/support? vendor-id product-id
+		key/support? id
 	]
 
-	monitor-devices: does [
+	monitor-devices: func [/local id][
 		append ui/pane usb-device: make face! [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
 				on-up: func [face [object!] event [event!]][
-					if support-device? face/data/1 face/data/2 [
+					id: face/data/2 << 16 or face/data/1
+					if support-device? id [
+						;-- when plug in a new device, we don't known it's serial number, so reset all devices
+						connected?: no
+						key/close
+						enum-devs
 						list-addresses
 					]
 				]
 				on-down: func [face [object!] event [event!]][
-					if support-device? face/data/1 face/data/2 [
+					id: face/data/2 << 16 or face/data/1
+					if support-device? id [
+						;-- when plug out a device, we don't knwon it's serial number, so reset all devices also
 						connected?: no
-						ledger/close
-						dev/text: "<No Device>"
-						info-msg/text: "Please plug your key..."
-						clear addr-list/data
+						key/close
+						enum-devs
+						list-addresses
 					]
 				]
 				on-time: func [face event][
 					unless need-refresh? [face/rate: none]
 					if connected? [
 						connected?: no
-						ledger/close
+						key/close
+						enum-devs
 					]
 					list-addresses
 				]

@@ -22,23 +22,13 @@ key: context [
 	]
 
 	support?: func [
-		vendor-id	[integer!]
-		product-id	[integer!]
+		id			[integer!]
 		return:		[logic!]
 	][
-		any [
-			all [
-				vendor-id = ledger/vendor-id
-				product-id = ledger/product-id
-			]
-			all [
-				vendor-id = trezor/vendor-id
-				product-id = trezor/product-id
-			]
-		]
+		any [id = ledger/id id = trezor/id]
 	]
 
-	enum-devs: func [/local ids] [
+	enum-devs: func [/local ids][
 		if devs <> [] [clear-devs]
 		ids: copy []
 		append ids ledger/id
@@ -48,7 +38,7 @@ key: context [
 
 	free-enum: does [hid/free-enum]
 
-	get-names: func [/local i j id ser] [
+	get-names: func [/local i j id ser][
 		if devs = [] [return [no-dev]]
 		i: 1
 		unique collect [
@@ -75,21 +65,36 @@ key: context [
 				ledger/connect serial-num
 			]
 			trezor/name [
-				stack/set-last none-value
+				trezor/connect serial-num
 			]
 			true [stack/set-last none-value]
 		]
 	]
 
-	close: func [dev [string!][
+	close: does [
+		ledger/close
+		trezor/close
+	]
+
+	close-by-name: func [dev [string!]][
 		case dev [
 			ledger/name [
 				ledger/close
 			]
 			trezor/name [
-				stack/set-last none-value
+				trezor/close
 			]
 		]
 	]
 
+	close-by-id: func [id [integer!]][
+		case id [
+			ledger/id [
+				ledger/close
+			]
+			trezor/name [
+				trezor/close
+			]
+		]
+	]
 ]

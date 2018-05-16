@@ -186,7 +186,12 @@ ledger: context [
 		][signed]
 	]
 
-	close: does [hid/close dongle dongle: none]
+	close: does [
+		if dongle <> none [
+			hid/close dongle 
+			dongle: none
+		]
+	]
 ]
 
 ;ledger/connect
