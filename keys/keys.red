@@ -48,21 +48,23 @@ key: context [
 
 	free-enum: does [hid/free-enum]
 
-	get-names: func [/local i item] [
+	get-names: func [/local i j id ser] [
 		if devs = [] [return [no-dev]]
 		i: 1
-		collect [
+		unique collect [
 			loop [
-				item: devs/:i
-				if item == none [break]
-				if type? item = integer! [
-					case item [
-						ledger/id	[keep ledger/name]
-						trezor/id	[keep trezor/name]
+				id: devs/:i
+				j: i + 1
+				ser: devs/:j
+				if any [id = none ser = none] [break]
+				either all [type? id = integer! type? ser = string!] [
+					case id [
+						ledger/id	[keep rejoin [ledger/name ":" ser]]
+						trezor/id	[keep rejoin [trezor/name ":" ser]]
 						true		[keep no-dev]
 					]
-				]
-				i: i + 1
+				][break]
+				i: i + 2
 			]
 		]
 	]

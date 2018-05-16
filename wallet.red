@@ -16,7 +16,7 @@ Red [
 #include %libs/JSON.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
-#include %keys/Ledger/ledger.red
+#include %keys/keys.red
 
 #system [
 	with gui [#include %libs/usb-monitor.reds]
@@ -59,6 +59,8 @@ wallet: context [
 	token-name: "ETH"
 	token-contract: none
 
+	last-dev: none
+	last-ser: none
 	connected?:		no
 	need-refresh?:	no
 	address-index:	0
@@ -71,12 +73,20 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
+	enum-devs: func [][
+		key/enum-devs
+		dev-list
+	]
+
 	list-addresses: func [/prev /next /local addresses addr n][
 		update-ui no
+
 		either ledger/connect [
 			process-events
 			connected?: yes
-			dev/text: "Ledger Nano S"
+			key/clear-devs
+			dev-list/data: key/get-names
+			dev-list/selected: 1
 			info-msg/text: "Please wait while loading addresses..."
 			
 			addresses: clear []
@@ -136,6 +146,27 @@ wallet: context [
 			reset-sign-button
 			label-unit/text: token-name
 			view/flags send-dialog 'modal
+		]
+	]
+
+	do-select-dev: func [face [object!] event [event!] /local idx dev-name i devs item][
+		idx: face/selected
+
+		dev-name: face/data/:idx
+		i: 1
+		devs: key/devs
+		loop [
+			item: devs/:i
+			if item == none [
+				clear serialnum-list/data
+				break
+			]
+			if item = dev-name [
+				i: i + 1
+				serialnum-list/data: devs/:i
+				break
+			]
+			i: i + 2
 		]
 	]
 
@@ -356,7 +387,8 @@ wallet: context [
 
 	ui: layout compose [
 		title "RED Wallet"
-		text 50 "Device:" dev: text 135 "<No Device>"
+		text 50 "Device:"
+		dev-list: drop-list data key/get-names 135 select 1 :do-select-dev
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
 		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
@@ -409,10 +441,7 @@ wallet: context [
 		product-id	[integer!]
 		return:		[logic!]
 	][
-		all [
-			vendor-id = ledger/vendor-id
-			product-id = ledger/product-id
-		]
+		key/support? vendor-id product-id
 	]
 
 	monitor-devices: does [

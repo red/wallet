@@ -710,7 +710,7 @@ hid: context [
 
 	;--hid_enumerate func
 	enumerate: func [
-		ids			[integer!]
+		ids			[red-block!]
 		return: 	[hid-device-info]
 		/local
 			cur_dev 		[hid-device-info]
