@@ -201,8 +201,8 @@ wallet: context [
 		btn-sign/enabled?: no
 		process-events
 		btn-sign/offset/x: 145
-		btn-sign/size/x: 200
-		btn-sign/text: "Please check on your key"
+		btn-sign/size/x: 225
+		btn-sign/text: "Confirm the transaction on your Ledger"
 		process-events
 	]
 
