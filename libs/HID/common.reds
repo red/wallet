@@ -95,6 +95,7 @@ enum-devs: func [
 ]
 
 open: func [
+	id				[integer!]
 	serial-number	[c-string!]
 	return:			[int-ptr!]
 	/local
@@ -108,9 +109,9 @@ open: func [
 
 	cur-dev: root
 	while [cur-dev <> null] [
-		either serial-number <> null [
+		either all [serial-number <> null id <> 0] [
 			tmp: wcscmp serial-number cur-dev/serial-number
-			if tmp = 0 [
+			if all [tmp = 0 cur-dev/id = id] [
 				path-to-open: cur-dev/path
 				break
 			]

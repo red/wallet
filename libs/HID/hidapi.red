@@ -43,11 +43,12 @@ hid: context [
 	]
 
 	open: routine [
+		id			[integer!]
 		serial-num	[string!]
 		/local
 			h		[int-ptr!]
 	][
-		h: hid/open unicode/to-utf16 serial-num
+		h: hid/open id unicode/to-utf16 serial-num
 		either null? h [stack/set-last none-value][
 			handle/box as-integer h
 		]
