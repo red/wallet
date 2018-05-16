@@ -29,13 +29,17 @@ Red [
 ]
 
 hid: context [
-	get-devs: routine [
+	enum-devs: routine [
 		ids			[block!]
 		return:		[block!]
 		/local
 
 	][
-		hid/get-devs ids
+		hid/enum-devs ids
+	]
+
+	free-enum: routine [][
+		hid/hid-free-enumeration
 	]
 
 	open: routine [

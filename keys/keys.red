@@ -13,12 +13,12 @@ Red [
 #include %keys/Trezor/trezor.red
 
 key: context [
-	none-dev: ["<No Device>" []]
-	devs: copy none-dev
+	no-dev: "<No Device>"
+	devs: []
 
 	clear-devs: does [
 		clear devs
-		devs: copy none-dev
+		devs: copy []
 	]
 
 	support?: func [
@@ -38,9 +38,33 @@ key: context [
 		]
 	]
 
-	get-devs: func[][
-		if devs <> none-dev [clear-devs]
-		devs: append devs reduce [ledger/name ledger/get-devs]
+	enum-devs: func [/local ids] [
+		if devs <> [] [clear-devs]
+		ids: copy []
+		append ids ledger/id
+		append ids trezor/id
+		devs: hid/enum-devs ids
+	]
+
+	free-enum: does [hid/free-enum]
+
+	get-names: func [/local i item] [
+		if devs = [] [return [no-dev]]
+		i: 1
+		collect [
+			loop [
+				item: devs/:i
+				if item == none [break]
+				if type? item = integer! [
+					case item [
+						ledger/id	[keep ledger/name]
+						trezor/id	[keep trezor/name]
+						true		[keep no-dev]
+					]
+				]
+				i: i + 1
+			]
+		]
 	]
 
 	connect: func [dev [string!] serial-num [string!]][

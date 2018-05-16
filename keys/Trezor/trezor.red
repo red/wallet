@@ -14,14 +14,9 @@ trezor: context [
 
 	vendor-id:			534Ch
 	product-id:			1
+	id: product-id << 16 or vendor-id
 
 	dongle: none
-
-	get-devs: func [
-		return:		[block!]
-	][
-		hid/get-devs vendor-id product-id
-	]
 
 	connect: func [serial-num [string!]][
 		unless dongle [

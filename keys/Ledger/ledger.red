@@ -32,6 +32,7 @@ ledger: context [
 
 	vendor-id:			2C97h
 	product-id:			1
+	id: product-id << 16 or vendor-id
 
 	DEFAULT_CHANNEL:	0101h
 	TAG_APDU:			05h
@@ -41,12 +42,6 @@ ledger: context [
 	dongle: none
 	buffer:		make binary! MAX_APDU_SIZE
 	data-frame: make binary! PACKET_SIZE
-
-	get-devs: func [
-		return:		[block!]
-	][
-		hid/get-devs vendor-id product-id
-	]
 
 	connect: func [serial-num [string!]][
 		unless dongle [

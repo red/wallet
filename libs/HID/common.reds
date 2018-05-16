@@ -70,14 +70,13 @@ id-verified?: func [
 	false
 ]
 
-get-devs: func [
+enum-devs: func [
 	ids				[red-block!]
 	return:			[red-block!]
 	/local
 		blk			[red-block!]
 		cur-dev		[hid-device-info]
 		ser			[c-string!]
-		id 			[integer!]
 		tmp			[integer!]
 ][
 	blk: block/push-only* 4
@@ -86,7 +85,8 @@ get-devs: func [
 	while [cur-dev <> null] [
 		ser: cur-dev/serial-number
 		tmp: strcmp ser "null"
-		if all [ser <> null tmp <> 0 cur-dev/id = id] [
+		if all [ser <> null tmp <> 0] [
+			block/rs-append blk integer/push cur-dev/id
 			block/rs-append blk string/load ser utf16-length? as byte-ptr! ser UTF-16LE
 		]
 		cur-dev: cur-dev/next
