@@ -83,15 +83,33 @@ wallet: context [
 		]
 	]
 
-	list-addresses: func [/prev /next /local addresses addr n][
+	get-cur-dev: func [
+		return:			[block!]
+		/local
+			index
+			devs
+	][
+		index: dev-list/selected
+		devs: dev-list/data
+		split devs/:index ":"
+	]
+
+	list-addresses: func [
+		/prev /next 
+		/local
+			dev name sernum
+			addresses addr n
+	][
 		update-ui no
 
-		either ledger/connect [
+		dev: get-cur-dev
+		name: dev/1
+		sernum: dev/2
+
+		either key/connect name sernum [
 			process-events
 			connected?: yes
-			key/clear-devs
-			dev-list/data: key/get-names
-			dev-list/selected: 1
+
 			info-msg/text: "Please wait while loading addresses..."
 			
 			addresses: clear []
@@ -130,9 +148,8 @@ wallet: context [
 			]
 			update-ui yes
 		][
-			dev/text: "<No Device>"
+			info-msg/text: "This device can't be recognized"
 		]
-		info-msg/text: ""
 	]
 
 	reset-sign-button: does [

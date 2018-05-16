@@ -59,8 +59,8 @@ key: context [
 		]
 	]
 
-	connect: func [dev [string!] serial-num [string!]][
-		case dev [
+	connect: func [name [string!] serial-num [string!]][
+		case name [
 			ledger/name [
 				ledger/connect serial-num
 			]
@@ -76,8 +76,8 @@ key: context [
 		trezor/close
 	]
 
-	close-by-name: func [dev [string!]][
-		case dev [
+	close-by-name: func [name [string!]][
+		case name [
 			ledger/name [
 				ledger/close
 			]
