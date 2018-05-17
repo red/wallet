@@ -28,12 +28,9 @@ key: context [
 		any [id = ledger/id id = trezor/id]
 	]
 
-	enum-devs: func [/local ids][
+	enum-devs: does [
 		if devs <> [] [clear-devs]
-		ids: copy []
-		append ids ledger/id
-		append ids trezor/id
-		devs: hid/enum-devs ids
+		devs: hid/enum-devs reduce [ledger/id trezor/id]
 	]
 
 	free-enum: does [hid/free-enum]
