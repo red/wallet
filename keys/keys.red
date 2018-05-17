@@ -25,7 +25,9 @@ key: context [
 		id			[integer!]
 		return:		[logic!]
 	][
-		any [id = ledger/id id = trezor/id]
+		if id = ledger/id [return true]
+		if id = trezor/id [return true]
+		false
 	]
 
 	enum-devs: does [
@@ -35,7 +37,7 @@ key: context [
 
 	free-enum: does [hid/free-enum]
 
-	get-names: func [/local i j id ser][
+	get-names: func [/local i j id ser cond1 cond2][
 		if devs = [] [return reduce [no-dev]]
 		i: 1
 		unique collect [
@@ -43,12 +45,15 @@ key: context [
 				id: devs/:i
 				j: i + 1
 				ser: devs/:j
-				if any [id = none ser = none] [break]
-				either all [type? id = integer! type? ser = string!] [
-					switch id [
-						ledger/id	[keep rejoin [ledger/name ":" ser]]
-						trezor/id	[keep rejoin [trezor/name ":" ser]]
-						default		[keep no-dev]
+				if id = none [break]
+				if ser = none [break]
+				cond1: integer! = type? id
+				cond2: string! = type? ser
+				either all [cond1 cond2] [
+					case [
+						id = ledger/id	[keep rejoin [ledger/name ":" ser]]
+						id = trezor/id	[keep rejoin [trezor/name ":" ser]]
+						true			[keep no-dev]
 					]
 				][break]
 				i: i + 2
@@ -58,14 +63,10 @@ key: context [
 
 	connect: func [name [string! none!] serial-num [string! none!]][
 		if name = none [return none]
-		switch name [
-			ledger/name [
-				ledger/connect serial-num
-			]
-			trezor/name [
-				trezor/connect serial-num
-			]
-			default [none]
+		case [
+			name = ledger/name [ledger/connect serial-num]
+			name = trezor/name [trezor/connect serial-num]
+			true [none]
 		]
 	]
 
@@ -75,24 +76,16 @@ key: context [
 	]
 
 	close-by-name: func [name [string!]][
-		switch name [
-			ledger/name [
-				ledger/close
-			]
-			trezor/name [
-				trezor/close
-			]
+		case [
+			name = ledger/name [ledger/close]
+			name = trezor/name [trezor/close]
 		]
 	]
 
 	close-by-id: func [id [integer!]][
-		switch id [
-			ledger/id [
-				ledger/close
-			]
-			trezor/name [
-				trezor/close
-			]
+		case [
+			id = ledger/id [ledger/close]
+			id = trezor/name [trezor/close]
 		]
 	]
 ]
