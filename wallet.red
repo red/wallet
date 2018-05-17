@@ -221,6 +221,7 @@ wallet: context [
 			unview
 			view/flags nonce-error-dlg 'modal
 			reset-sign-button
+			exit
 		]
 
 		;-- Edge case: ledger key may locked in this moment
@@ -261,7 +262,7 @@ wallet: context [
 			binary? signed-data
 		][
 			info-from/text:		addr-from/text
-			info-to/text:		addr-to/text
+			info-to/text:		copy addr-to/text
 			info-amount/text:	rejoin [amount-field/text " " token-name]
 			info-network/text:	net-name
 			info-price/text:	rejoin [gas-price/text " Gwei"]
