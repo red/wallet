@@ -32,10 +32,7 @@ hid: context [
 	enum-devs: routine [
 		ids			[block!]
 		return:		[block!]
-		/local
-
 	][
-		if not hid/enum-freed? [free-enum]
 		hid/enum-devs ids
 	]
 

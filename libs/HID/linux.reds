@@ -12,9 +12,6 @@ Red/System [
 ]
 
 hid: context [
-
-	#include %common.reds
-
 	;--symbolic names for the properties above
 	#define DEVICE_STRING_MANUFACTURER  0
 	#define DEVICE_STRING_PRODUCT       1
@@ -25,7 +22,17 @@ hid: context [
 
 	;--usb hid device property names
 	device_string_names: ["manufacturer" "product"	"serial"]
-
+	hid-device-info: alias struct! [
+			path 				[c-string!]
+			id 					[integer!] ;vendor-id and product-id
+			serial-number 		[c-string!]
+			manufacturer-string [c-string!]
+			product-string 		[c-string!]
+			usage 				[integer!] ;usage-page and usage
+			release-number		[integer!]
+			interface-number	[integer!]
+			next				[hid-device-info]
+		]
 	pollfd: alias struct! [
 		fd 			[integer!]
 		events 		[integer!]  ;--events and revents
@@ -140,6 +147,10 @@ hid: context [
 			wcscmp: "wcscmp" [
 				str1 		[c-string!]
 				str2 		[c-string!]
+				return: 	[integer!]
+			]
+			wcslen: "wcslen" [
+				wcs   		[c-string!]
 				return: 	[integer!]
 			]
 			linux-open: "open" [
@@ -465,7 +476,7 @@ hid: context [
 					;--go to next
 				]
 				id: dev_pid << 16 or dev_vid
-				if [id-verified? id ids][
+				if id-verified? id ids [
 					tmp: as hid-device-info allocate size? hid-device-info
 					either cur_dev <> null [
 						cur_dev/next: tmp
@@ -555,6 +566,8 @@ hid: context [
 		udev_unref udev 
 		root 
 	]
+
+	#include %common.reds
 
 	open-path: func [
 		path			[c-string!]

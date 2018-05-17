@@ -11,9 +11,6 @@ Red/System [
 	}
 ]
 hid: context [
-
-	#include %common.reds
-
 	#define	EINVAL		22		;/* Invalid argument */
 	#define kIOHIDSerialNumberKey               "SerialNumber"
 	#define kIOHIDManufacturerKey               "Manufacturer"
@@ -49,6 +46,18 @@ hid: context [
 	timespec!: alias struct! [
 		sec    [integer!] ;Seconds
 		nsec   [integer!] ;Nanoseconds
+	]
+
+	hid-device-info: alias struct! [
+		path 				[c-string!]
+		id 					[integer!] ;vendor-id and product-id
+		serial-number 		[c-string!]
+		manufacturer-string [c-string!]
+		product-string 		[c-string!]
+		usage 				[integer!] ;usage-page and usage
+		release-number		[integer!]
+		interface-number	[integer!]
+		next				[hid-device-info]
 	]
 
 	CFRange: alias struct! [
@@ -763,7 +772,7 @@ hid: context [
 			;--check the vid/pid against the arguments
 
 			id: dev_pid << 16 or dev_vid
-			if [id-verified? id ids][
+			if id-verified? id ids [
 				;--vid/pid match create the record
 				tmp: as hid-device-info allocate size? hid-device-info
 				either cur_dev <> null [
@@ -812,6 +821,8 @@ hid: context [
 
 		return root
 	]
+
+	#include %common.reds
 
 	open-path: func [
 		path		[c-string!]

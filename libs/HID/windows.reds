@@ -12,9 +12,6 @@ Red/System [
 ]
 
 hid: context [
-
-	#include %common.reds
-
 	#define MAX_STRING_WCHARS				00000FFFh
 	;#define FILE_SHARE_READ                 00000001h
 	;#define FILE_SHARE_WRITE                00000002h
@@ -81,6 +78,17 @@ hid: context [
 		read-pending 			[logic!]
 		read-buf 				[c-string!]
 		ol        				[overlapped-struct value]
+	]
+	hid-device-info: alias struct! [
+		path 				[c-string!]
+		id 					[integer!] ;vendor-id and product-id
+		serial-number 		[c-string!]
+		manufacturer-string [c-string!]
+		product-string 		[c-string!]
+		usage 				[integer!] ;usage-page and usage
+		release-number		[integer!]
+		interface-number	[integer!]
+		next				[hid-device-info]
 	]
 	guid-struct: alias struct! [     ;--size 16
 		data1									[integer!]
@@ -319,6 +327,10 @@ hid: context [
 			wcscmp: "wcscmp" [
 				string1		[c-string!]
 				string2 	[c-string!]
+				return: 	[integer!]
+			]
+			wcslen: "wcslen" [
+				wcs   		[c-string!]
 				return: 	[integer!]
 			]
 			strstr: "strstr" [
@@ -572,7 +584,7 @@ hid: context [
 				;--Get the Vendor ID and Product ID for this device.
 				attrib/Size: size? HIDD-ATTRIBUTES
 				HidD_GetAttributes write-handle attrib
-				if [id-verified? attrib/ID ids][
+				if id-verified? attrib/ID ids [
 					tmp: as hid-device-info allocate size? hid-device-info
 
 					;--vid/pid match . create the record
@@ -661,6 +673,8 @@ hid: context [
 		SetupDiDestroyDeviceInfoList as integer! device-info-set
 		return root
 	]
+
+	#include %common.reds
 
 	open-path: func [
 		path 		[c-string!]

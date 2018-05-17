@@ -12,18 +12,6 @@ Red/System [
 root: declare hid-device-info
 enum-freed?: true
 
-hid-device-info: alias struct! [
-	path 				[c-string!]
-	id 					[integer!] ;vendor-id and product-id
-	serial-number 		[c-string!]
-	manufacturer-string [c-string!]
-	product-string 		[c-string!]
-	usage 				[integer!] ;usage-page and usage
-	release-number		[integer!]
-	interface-number	[integer!]
-	next				[hid-device-info]
-]
-
 hid-free-enumeration: func [
 	/local
 		d 		[hid-device-info]
@@ -81,6 +69,8 @@ enum-devs: func [
 		ser			[c-string!]
 		tmp			[integer!]
 ][
+	if not enum-freed? [hid-free-enumeration]
+
 	blk: block/push-only* 4
 	cur-dev: enumerate ids
 	enum-freed?: false
@@ -89,8 +79,8 @@ enum-devs: func [
 		ser: cur-dev/serial-number
 		tmp: strcmp ser "null"
 		if all [ser <> null tmp <> 0] [
-			block/rs-append blk integer/push cur-dev/id
-			block/rs-append blk string/load ser utf16-length? as byte-ptr! ser UTF-16LE
+			block/rs-append blk as red-value! integer/push cur-dev/id
+			block/rs-append blk as red-value! string/load ser wcslen ser UTF-16LE
 		]
 		cur-dev: cur-dev/next
 	]
