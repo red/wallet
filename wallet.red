@@ -470,11 +470,11 @@ wallet: context [
 		key/support? id
 	]
 
-	monitor-devices: func [/local id][
+	monitor-devices: does [
 		append ui/pane usb-device: make face! [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
-				on-up: func [face [object!] event [event!]][
+				on-up: func [face [object!] event [event!] /local id [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
 						;-- when plug in a new device, we don't known it's serial number, so reset all devices
@@ -484,7 +484,7 @@ wallet: context [
 						list-addresses
 					]
 				]
-				on-down: func [face [object!] event [event!]][
+				on-down: func [face [object!] event [event!] /local id [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
 						;-- when plug out a device, we don't knwon it's serial number, so reset all devices also
