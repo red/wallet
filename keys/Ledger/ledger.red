@@ -43,7 +43,7 @@ ledger: context [
 	buffer:		make binary! MAX_APDU_SIZE
 	data-frame: make binary! PACKET_SIZE
 
-	connect: func [serial-num [string!]][
+	connect: func [serial-num [string! none!]][
 		unless dongle [
 			dongle: hid/open id serial-num
 		]

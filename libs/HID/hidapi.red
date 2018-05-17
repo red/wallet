@@ -42,13 +42,20 @@ hid: context [
 
 	open: routine [
 		id			[integer!]
-		serial-num	[string!]
+		serial-num	[any-type!]
 		/local
 			h		[int-ptr!]
+			str		[c-string!]
 	][
 		if hid/enum-freed? [stack/set-last none-value]
 
-		h: hid/open id unicode/to-utf16 serial-num
+		either TYPE_OF(serial-num) = TYPE_STRING [
+			str: unicode/to-utf16 as red-string! serial-num
+		][
+			str: null
+		]
+
+		h: hid/open id str
 		either null? h [stack/set-last none-value][
 			handle/box as-integer h
 		]

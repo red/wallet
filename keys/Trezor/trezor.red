@@ -18,7 +18,7 @@ trezor: context [
 
 	dongle: none
 
-	connect: func [serial-num [string!]][
+	connect: func [serial-num [string! none!]][
 		unless dongle [
 			dongle: hid/open id serial-num
 		]

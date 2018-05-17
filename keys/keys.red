@@ -39,7 +39,7 @@ key: context [
 	free-enum: does [hid/free-enum]
 
 	get-names: func [/local i j id ser][
-		if devs = [] [return [no-dev]]
+		if devs = [] [return reduce [no-dev]]
 		i: 1
 		unique collect [
 			while [true] [
@@ -59,7 +59,8 @@ key: context [
 		]
 	]
 
-	connect: func [name [string!] serial-num [string!]][
+	connect: func [name [string! none!] serial-num [string! none!]][
+		if name = none [return none]
 		switch name [
 			ledger/name [
 				ledger/connect serial-num

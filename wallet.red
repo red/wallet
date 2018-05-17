@@ -106,7 +106,12 @@ wallet: context [
 		name: dev/1
 		sernum: dev/2
 
-		either key/connect name sernum [
+		if name = key/no-dev [
+			info-msg/text: ""
+			exit
+		]
+
+		either none <> key/connect name sernum [
 			process-events
 			connected?: yes
 
@@ -422,7 +427,7 @@ wallet: context [
 		
 		addr-list: text-list font list-font 520x100 return middle
 		
-		info-msg: text 285x20 "Please plug your key..."
+		info-msg: text 285x20 "Please plug in your key..."
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
