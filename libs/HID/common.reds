@@ -84,7 +84,7 @@ enum-devs: func [
 		]
 		cur-dev: cur-dev/next
 	]
-	blk
+	as red-block! stack/set-last as red-value! blk
 ]
 
 open: func [

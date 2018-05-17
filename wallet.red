@@ -107,7 +107,7 @@ wallet: context [
 		sernum: dev/2
 
 		if name = key/no-dev [
-			info-msg/text: ""
+			info-msg/text: "Please plug in your key..."
 			exit
 		]
 
