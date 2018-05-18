@@ -82,15 +82,17 @@ hid: context [
 	]
 
 	write: routine [
-		dev		[handle!]
-		data	[binary!]
+		dev			[handle!]
+		data		[binary!]
+		return:		[integer!]
 		/local
-			sz	[integer!]
+			sz		[integer!]
 	][
 		sz: hid/write as int-ptr! dev/value binary/rs-head data binary/rs-length? data
 		;if sz = -1 [
 		;	probe "write error"
 		;]
+		sz
 	]
 
 	close: routine [
