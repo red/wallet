@@ -498,9 +498,9 @@ wallet: context [
 					unless need-refresh? [face/rate: none]
 					if connected? [
 						connected?: no
-						key/close
-						enum-devs
 					]
+					key/close
+					enum-devs
 					list-addresses
 				]
 			]

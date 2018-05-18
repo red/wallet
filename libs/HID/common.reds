@@ -104,7 +104,9 @@ open: func [
 	while [cur-dev <> null] [
 		either all [serial-number <> null id <> 0] [
 			tmp: wcscmp serial-number cur-dev/serial-number
-			if all [tmp = 0 cur-dev/id = id] [
+			;-- TBD
+			;if all [tmp = 0 cur-dev/id = id] [
+			if cur-dev/id = id [
 				path-to-open: cur-dev/path
 				break
 			]
