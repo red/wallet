@@ -85,7 +85,7 @@ wallet: context [
 			n: page * addr-per-page
 			
 			loop addr-per-page [
-				addr: Ledger/get-address n
+				addr: ledger/get-address n
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -137,6 +137,8 @@ wallet: context [
 			gas-limit/text: either token-contract ["79510"]["21000"]
 			reset-sign-button
 			label-unit/text: token-name
+			clear addr-to/text
+			clear amount-field/text
 			view/flags send-dialog 'modal
 		]
 	]
@@ -225,7 +227,7 @@ wallet: context [
 		]
 
 		;-- Edge case: ledger key may locked in this moment
-		unless Ledger/get-address 0 [
+		unless string? ledger/get-address 0 [
 			reset-sign-button
 			view/flags unlock-dev-dlg 'modal
 			exit
@@ -274,8 +276,6 @@ wallet: context [
 			info-nonce/text: mold tx/1
 			unview
 			view/flags confirm-sheet 'modal
-			clear addr-to/text
-			clear amount-field/text
 		][
 			if signed-data = 'token-error [
 				unview
