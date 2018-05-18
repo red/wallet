@@ -476,7 +476,7 @@ hid: context [
 					;--go to next
 				]
 				id: dev_pid << 16 or dev_vid
-				if id-verified? id ids [
+				if id-filter? id ids [
 					tmp: as hid-device-info allocate size? hid-device-info
 					either cur_dev <> null [
 						cur_dev/next: tmp

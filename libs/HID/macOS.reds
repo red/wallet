@@ -772,7 +772,7 @@ hid: context [
 			;--check the vid/pid against the arguments
 
 			id: dev_pid << 16 or dev_vid
-			if id-verified? id ids [
+			if id-filter? id ids [
 				;--vid/pid match create the record
 				tmp: as hid-device-info allocate size? hid-device-info
 				either cur_dev <> null [

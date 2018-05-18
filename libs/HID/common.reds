@@ -30,7 +30,7 @@ hid-free-enumeration: func [
 	enum-freed?: true
 ]
 
-id-verified?: func [
+id-filter?: func [
 	id				[integer!]
 	ids				[red-block!]
 	return:			[logic!]
@@ -47,7 +47,7 @@ id-verified?: func [
 			value: block/rs-head ids
 			if TYPE_OF(value) = TYPE_INTEGER [
 				int: as red-integer! value
-				if id = int/value [
+				if any [id = int/value int/value = 0] [
 					return  true
 				]
 			]

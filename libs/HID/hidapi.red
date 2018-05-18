@@ -50,7 +50,7 @@ hid: context [
 		if hid/enum-freed? [stack/set-last none-value]
 
 		either TYPE_OF(serial-num) = TYPE_STRING [
-			str: unicode/to-utf16 as red-string! serial-num
+			str: as c-string! string/rs-head as red-string! serial-num
 		][
 			str: null
 		]

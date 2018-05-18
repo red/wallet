@@ -584,7 +584,7 @@ hid: context [
 				;--Get the Vendor ID and Product ID for this device.
 				attrib/Size: size? HIDD-ATTRIBUTES
 				HidD_GetAttributes write-handle attrib
-				if id-verified? attrib/ID ids [
+				if id-filter? attrib/ID ids [
 					tmp: as hid-device-info allocate size? hid-device-info
 
 					;--vid/pid match . create the record
