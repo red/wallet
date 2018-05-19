@@ -19,7 +19,8 @@ trezor: context [
 	dongle: none
 	hid-version: 0
 	data-frame: make binary! 65
-	read-frame: make binary! 500
+	read-frame: make binary! 1000
+	msg-id: 0
 
 	connect: func [serial-num [string! none!]][
 		unless dongle [
@@ -76,7 +77,6 @@ trezor: context [
 		/local
 			buf		[binary!]
 			size	[integer!]
-			id		[integer!]
 			max		[integer!]
 	][
 		clear data-frame
@@ -95,7 +95,7 @@ trezor: context [
 
 		clear buf
 		read-buffered buf 6
-		id: to-int16 buf
+		msg-id: to-int16 buf
 		size: to-int32 skip buf 2
 
 		max: 1024 * 1024
