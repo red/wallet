@@ -25,6 +25,10 @@ to-int16: func [b [binary!]][
 	to-integer copy/part b 2
 ]
 
+to-int32: func [b [binary!]][
+	to-integer copy/part b 4
+]
+
 #include %Ledger/ledger.red
 #include %Trezor/trezor.red
 
