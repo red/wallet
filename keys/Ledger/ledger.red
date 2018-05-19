@@ -41,7 +41,7 @@ ledger: context [
 		idx: 0
 		clear buffer
 		until [
-			if none? hid/read dongle clear data-frame timeout * 1000 [
+			if -1 = hid/read dongle clear data-frame timeout * 1000 [
 				return buffer
 			]
 

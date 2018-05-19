@@ -62,9 +62,10 @@ hid: context [
 	]
 
 	read: routine [
-		dev		[handle!]
-		buffer	[binary!]
-		timeout [integer!]		;-- millisec
+		dev			[handle!]
+		buffer		[binary!]
+		timeout		[integer!]		;-- millisec
+		return:		[integer!]
 		/local
 			s	[series!]
 			p	[byte-ptr!]
@@ -73,12 +74,10 @@ hid: context [
 		s: GET_BUFFER(buffer)
 		p: (as byte-ptr! s/offset) + buffer/head
 		sz: hid/read-timeout as int-ptr! dev/value p s/size timeout
-		either sz = -1 [
-			;probe "read error"
-			stack/set-last none-value
-		][
+		if sz <> -1 [
 			s/tail: as cell! (p + sz)
 		]
+		sz
 	]
 
 	write: routine [
