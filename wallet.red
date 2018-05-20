@@ -379,6 +379,8 @@ wallet: context [
 		btn-prev: button "Prev" disabled :do-prev-addr 
 		btn-more: button "More" :do-more-addr
 	]
+	
+	min-size: ui/size
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
@@ -445,9 +447,24 @@ wallet: context [
 	]
 
 	setup-actors: does [
-		ui/actors: make object! [
+		ui/actors: context [
 			on-close: func [face event][
 				ledger/close
+			]
+			on-resizing: function [face event] [
+				if any [event/offset/x < min-size/x event/offset/y < min-size/y][exit]
+				ref: as-pair btn-send/offset/x - 10 ui/size/y / 2
+				delta: event/offset - face/extra
+				foreach-face ui [
+					pos: face/offset
+					case [
+						all [pos/x > ref/x pos/y < ref/y][face/offset/x: pos/x + delta/x]
+						all [pos/x < ref/x pos/y > ref/y][face/offset/y: pos/y + delta/y]
+						all [pos/x > ref/x pos/y > ref/y][face/offset: pos + delta]
+					]
+				]
+				addr-list/size: addr-list/size + delta
+				face/extra: event/offset
 			]
 		]
 
@@ -469,9 +486,10 @@ wallet: context [
 	]
 
 	run: does [
+		ui/extra: ui/size
 		setup-actors
 		monitor-devices
-		view ui
+		view/flags ui 'resize
 	]
 ]
 
