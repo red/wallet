@@ -27,7 +27,7 @@ wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	signed-data: none
+	signed-data: addr-list: min-size: none
 	addr-per-page: 5
 
 	networks: [
@@ -166,6 +166,25 @@ wallet: context [
 	]
 	
 	do-reload: does [if connected? [list-addresses]]
+	
+	do-resize: function [delta [pair!]][
+		ref: as-pair btn-send/offset/x - 10 ui/size/y / 2
+		foreach-face ui [
+			pos: face/offset
+			case [
+				all [pos/x > ref/x pos/y < ref/y][face/offset/x: pos/x + delta/x]
+				all [pos/x < ref/x pos/y > ref/y][face/offset/y: pos/y + delta/y]
+				all [pos/x > ref/x pos/y > ref/y][face/offset: pos + delta]
+			]
+		]
+		addr-list/size: addr-list/size + delta
+	]
+	
+	do-auto-size: function [face [object!]][
+		size: size-text/with face "X"
+		delta: (as-pair size/x * 64 size/y * 6) - face/size
+		ui/size: ui/size + delta + 8x0					;-- triggers a resizing event
+	]
 
 	check-data: func [/local addr amount balance][
 		addr: trim any [addr-to/text ""]
@@ -379,8 +398,6 @@ wallet: context [
 		btn-prev: button "Prev" disabled :do-prev-addr 
 		btn-more: button "More" :do-more-addr
 	]
-	
-	min-size: ui/size
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
@@ -453,17 +470,7 @@ wallet: context [
 			]
 			on-resizing: function [face event] [
 				if any [event/offset/x < min-size/x event/offset/y < min-size/y][exit]
-				ref: as-pair btn-send/offset/x - 10 ui/size/y / 2
-				delta: event/offset - face/extra
-				foreach-face ui [
-					pos: face/offset
-					case [
-						all [pos/x > ref/x pos/y < ref/y][face/offset/x: pos/x + delta/x]
-						all [pos/x < ref/x pos/y > ref/y][face/offset/y: pos/y + delta/y]
-						all [pos/x > ref/x pos/y > ref/y][face/offset: pos + delta]
-					]
-				]
-				addr-list/size: addr-list/size + delta
+				do-resize event/offset - face/extra
 				face/extra: event/offset
 			]
 		]
@@ -486,9 +493,10 @@ wallet: context [
 	]
 
 	run: does [
-		ui/extra: ui/size
+		min-size: ui/extra: ui/size
 		setup-actors
 		monitor-devices
+		do-auto-size addr-list
 		view/flags ui 'resize
 	]
 ]
