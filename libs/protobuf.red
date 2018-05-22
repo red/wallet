@@ -1,5 +1,5 @@
 Red [
-	Title:	"protobuf messages define"
+	Title:	"protobuf parse"
 	Author: "bitbegin"
 	File: 	%protobuf.red
 	Tabs: 	4
@@ -320,52 +320,3 @@ protobuf: context [
 		either ctx = none [msg-ctx: none][msg-ctx: get ctx]
 	]
 ]
-
-test: context [
-	Initialize: [
-		[1		bytes state optional]
-	]
-
-	GetFeatures: []
-
-	Features: [
-		[1		string vendor optional]
-		[2 		uint32 major_version optional]
-		[3		uint32 minor_version optional]
-		[4		uint32 patch_version optional]
-		[5		bool bootloader_mode optional]
-		[6		string device_id optional]
-		[7		bool pin_protection optional]
-		[8		bool passphrase_protection optional]
-		[9		string language optional]
-		[10		string label optional]
-		[11		CoinType coins repeated]
-		[12		bool initialized optional]
-		[13		bytes revision optional]
-		[14		bytes bootloader_hash optional]
-		[15		bool imported optional]
-		[16		bool pin_cached optional]
-		[17		bool passphrase_cached optional]
-		[18		bool firmware_present optional]
-		[19		bool needs_backup optional]
-		[20		uint32 flags optional]
-		[21		string model optional]
-		[22		uint32 fw_major optional]
-		[23		uint32 fw_minor optional]
-		[24		uint32 fw_patch optional]
-		[25		string fw_vendor optional]
-		[26		bytes fw_vendor_keys optional]
-		[27		bool unfinished_backup optional]
-	]
-]
-
-protobuf/init-ctx 'test
-result: make binary! 10
-
-ret: protobuf/encode 'Initialize #(state: #{1234}) result
-probe result
-#{0A021234} = result
-
-clear result
-ret: protobuf/encode 'Initialize #() result
-probe result
