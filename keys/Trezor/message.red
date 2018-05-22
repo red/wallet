@@ -1,7 +1,7 @@
 Red [
-	Title:	"protobuf messages define"
+	Title:	"protobuf messages define for trezor"
 	Author: "bitbegin"
-	File: 	%protobuf.red
+	File: 	%message.red
 	Tabs: 	4
 	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]

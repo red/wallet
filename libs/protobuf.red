@@ -1,5 +1,5 @@
 Red [
-	Title:	"protobuf parser"
+	Title:	"protobuf(syntax = proto2, no packed feature) parser"
 	Author: "bitbegin"
 	File: 	%protobuf.red
 	Tabs: 	4
