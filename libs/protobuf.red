@@ -289,6 +289,7 @@ protobuf: context [
 				nlen: length? data
 				if len <> (nlen - olen) [return -1]
 				ret: ret + len
+				return ret
 			]
 		]
 		ret
