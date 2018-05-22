@@ -72,7 +72,7 @@ protobuf: context [
 
 	append-series: func [
 		value
-		repeated-buf
+		repeated-buf	[binary!]
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -99,7 +99,7 @@ protobuf: context [
 
 	append-integer: func [
 		value
-		repeated-buf
+		repeated-buf	[binary!]
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -123,7 +123,7 @@ protobuf: context [
 
 	append-logic: func [
 		value
-		repeated-buf
+		repeated-buf	[binary!]
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -147,7 +147,7 @@ protobuf: context [
 	append-embedded: func [
 		wire-type		[word!]
 		value
-		repeated-buf
+		repeated-buf	[binary!]
 		data			[binary!]
 		return:			[integer!]
 		/local
