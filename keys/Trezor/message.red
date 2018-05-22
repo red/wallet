@@ -164,6 +164,20 @@ message: context [
 		[27		bool unfinished_backup optional]
 	]
 
+	CoinType: [
+		[1		string coin_name optional]
+		[2		string coin_shortcut optional]
+		[3		uint32 address_type optional]
+		[4		uint64 maxfee_kb optional]
+		[5		uint32 address_type_p2sh optional]
+		[8		string signed_message_header optional]
+		[9		uint32 xpub_magic optional]
+		[10		uint32 xprv_magic optional]
+		[11		bool segwit optional]
+		[12		uint32 forkid optional]
+		[13		bool force_bip143 optional]
+	]
+
 
 	tabs: [
 		[Initialize					MessageType_Initialize				wire_in]

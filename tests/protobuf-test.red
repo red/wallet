@@ -66,6 +66,21 @@ Red []
 		len: protobuf/encode 'Features #(bootloader_mode: #[true]) x
 		y: #{2801}
 		--assert y = x
+	--test-- "encode-10"
+		clear x
+		len: protobuf/encode 'Features #(bootloader_mode: #[false]) x
+		y: #{2800}
+		--assert y = x
+	--test-- "encode-11"
+		clear x
+		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100)]) x
+		y: #{5A0B0A07426974636F696E1864}
+		--assert y = x
+	--test-- "encode-12"
+		clear x
+		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100) #(coin_name: "eth" address_type: 200)]) x
+		y: #{5A0B0A07426974636F696E18645A080A0365746818C801}
+		--assert y = x
 ===end-group===
 
 ~~~end-file~~~

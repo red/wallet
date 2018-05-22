@@ -11,7 +11,6 @@ Red [
 
 protobuf: context [
 	
-	repeated-buf: make binary! 8
 	varint-buffer: make binary! 8
 	msg-ctx: none
 
@@ -76,6 +75,7 @@ protobuf: context [
 
 	append-series: func [
 		value
+		repeated-buf
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -96,11 +96,13 @@ protobuf: context [
 		append data varint-buffer
 		ret: ret + length? varint-buffer
 		append data value
-		ret: ret + len
+		ret: ret + length? value
+		ret
 	]
 
 	append-integer: func [
 		value
+		repeated-buf
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -124,6 +126,7 @@ protobuf: context [
 
 	append-logic: func [
 		value
+		repeated-buf
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -147,6 +150,7 @@ protobuf: context [
 	append-embedded: func [
 		wire-type		[word!]
 		value
+		repeated-buf
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -179,7 +183,7 @@ protobuf: context [
 	encode-type: func [
 		wire-type		[word!]
 		field-number	[integer!]
-		value			[integer! logic! string! binary! object! block!]
+		value			[integer! logic! string! binary! map! block!]
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -187,28 +191,28 @@ protobuf: context [
 			len			[integer!]
 			ret			[integer!]
 			wire-type2	[word!]
+			rep-buf		[binary!]
 			v-type
 			sub
 	][
 		v-type: type? value
 		wire-type2: get-wire-type wire-type
-
 		tag: field-number << 3 or get-wire-type-id wire-type2
 		encode-varint tag
-		clear repeated-buf
-		append repeated-buf varint-buffer
+		rep-buf: make binary! 8
+		append rep-buf varint-buffer
 
 		ret: 0
 		switch wire-type2 [
 			string bytes [
 				either block! = v-type [
 					foreach sub value [
-						len: append-series sub data
+						len: append-series sub rep-buf data
 						if len < 0 [return len]
 						ret: ret + len
 					]
 				][
-					len: append-series value data
+					len: append-series value rep-buf data
 					if len < 0 [return len]
 					ret: ret + len
 				]
@@ -217,12 +221,12 @@ protobuf: context [
 			int32 int64 uint32 uint64 enum [
 				either block! = v-type [
 					foreach sub value [
-						len: append-integer sub data
+						len: append-integer sub rep-buf data
 						if len < 0 [return len]
 						ret: ret + len
 					]
 				][
-					len: append-integer value data
+					len: append-integer value rep-buf data
 					if len < 0 [return len]
 					ret: ret + len
 				]
@@ -231,12 +235,12 @@ protobuf: context [
 			bool [
 				either block! = v-type [
 					foreach sub value [
-						len: append-logic sub data
+						len: append-logic sub rep-buf data
 						if len < 0 [return len]
 						ret: ret + len
 					]
 				][
-					len: append-logic value data
+					len: append-logic value rep-buf data
 					if len < 0 [return len]
 					ret: ret + len
 				]
@@ -245,12 +249,12 @@ protobuf: context [
 			embedded [
 				either block! = v-type [
 					foreach sub value [
-						len: append-embedded wire-type sub data
+						len: append-embedded wire-type sub rep-buf data
 						if len < 0 [return len]
 						ret: ret + len
 					]
 				][
-					len: append-embedded wire-type value data
+					len: append-embedded wire-type value rep-buf data
 					if len < 0 [return len]
 					ret: ret + len
 				]
@@ -263,7 +267,7 @@ protobuf: context [
 	encode-each: func [
 		msg				[word!]				;-- structure message's name
 		name			[word!]				;-- structure message's field name
-		value			[integer! logic! string! binary! object!]
+		value			[integer! logic! string! binary! map! block!]
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -272,12 +276,13 @@ protobuf: context [
 			olen		[integer!]
 			nlen		[integer!]
 			len			[integer!]
+			ret			[integer!]
 			repeated?	[logic!]
 	][
 		either msg-ctx = none [blk: get msg][blk: get in msg-ctx msg]
 		if block! <> type? blk [return -1]
 		if 0 = length? blk [return 0]
-
+		ret: 0
 		foreach sub blk [
 			if sub/3 = name [
 				olen: length? data
@@ -286,9 +291,10 @@ protobuf: context [
 				len: encode-type sub/2 sub/1 value data
 				nlen: length? data
 				if len <> (nlen - olen) [return -1]
+				ret: ret + len
 			]
 		]
-		nlen
+		ret
 	]
 
 	encode: func [
