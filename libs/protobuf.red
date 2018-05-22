@@ -20,10 +20,10 @@ protobuf: context [
 		return:			[integer!]
 	][
 		switch wire-type [
-			'int32 'int64 'uint32 'uint64 'sint32 'sint64 'bool 'enum [return 0]
-			'fixed64 'sfixed64 'double [return 1]
-			'string 'bytes 'packed 'embedded [return 2]
-			'fixed32 'sfixed32 'float [return 5]
+			int32 int64 uint32 uint64 sint32 sint64 bool enum [return 0]
+			fixed64 sfixed64 double [return 1]
+			string bytes packed embedded [return 2]
+			fixed32 sfixed32 float [return 5]
 		]
 		return 2
 	]
