@@ -170,4 +170,18 @@ message: context [
 		[GetFeatures				MessageType_GetFeatures				wire_in]
 		[Features					MessageType_Features]
 	]
+
+	get-msg-id: func [
+		msg				[word!]
+		return:			[integer!]
+		/local
+			sub			[block!]
+	][
+		foreach sub tabs [
+			if sub/1 = msg [
+				return get sub/2
+			]
+		]
+		-1
+	]
 ]
