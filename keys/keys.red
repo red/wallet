@@ -3,10 +3,7 @@ Red [
 	Author: "bitbegin"
 	File: 	%keys.red
 	Tabs: 	4
-	License: {
-		Distributed under the Boost Software License, Version 1.0.
-		See https://github.com/red/red/blob/master/BSL-License.txt
-	}
+	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]
 
 to-bin8: func [v [integer! char!]][

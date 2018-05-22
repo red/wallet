@@ -1,12 +1,9 @@
 Red [
-	Title:	"protobuf parse"
+	Title:	"protobuf parser"
 	Author: "bitbegin"
 	File: 	%protobuf.red
 	Tabs: 	4
-	License: {
-		Distributed under the Boost Software License, Version 1.0.
-		See https://github.com/red/red/blob/master/BSL-License.txt
-	}
+	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]
 
 protobuf: context [
@@ -320,6 +317,14 @@ protobuf: context [
 			ret: ret + len
 		]
 		ret
+	]
+
+	decode: func [
+		msg				[word!]
+		value			[map!]
+		data			[binary!]
+	][
+
 	]
 
 	init-ctx: func [ctx [word! none!]][
