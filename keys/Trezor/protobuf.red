@@ -313,7 +313,7 @@ protobuf: context [
 			if len < 0 [return -1]
 			ret: ret + len
 		]
-
+		ret
 	]
 
 	init-ctx: func [ctx [word! none!]][
@@ -363,6 +363,9 @@ protobuf/init-ctx 'test
 result: make binary! 10
 
 ret: protobuf/encode 'Initialize #(state: #{1234}) result
-
 probe result
+#{0A021234} = result
 
+clear result
+ret: protobuf/encode 'Initialize #() result
+probe result
