@@ -168,7 +168,7 @@ wallet: context [
 	do-reload: does [if connected? [list-addresses]]
 	
 	do-resize: function [delta [pair!]][
-		ref: as-pair btn-send/offset/x - 10 ui/size/y / 2
+		ref: as-pair btn-send/offset/x - 10 ui/extra/y / 2
 		foreach-face ui [
 			pos: face/offset
 			case [
@@ -182,8 +182,8 @@ wallet: context [
 	
 	do-auto-size: function [face [object!]][
 		size: size-text/with face "X"
-		delta: (as-pair size/x * 64 size/y * 6) - face/size
-		ui/size: ui/size + delta + 8x0					;-- triggers a resizing event
+		delta: (as-pair size/x * 64 size/y * 5.3) - face/size
+		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
 	]
 
 	check-data: func [/local addr amount balance][
