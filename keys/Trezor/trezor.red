@@ -9,6 +9,9 @@ Red [
 	}
 ]
 
+#include %message.red
+#include %../../libs/protobuf.red
+
 trezor: context [
 	name: "Trezor"
 
@@ -28,23 +31,33 @@ trezor: context [
 			if dongle <> none [
 				hid-version: get-hid-version
 
-				;-- test
-				test
+				tmp: make binary! 100
+				len: Initialize tmp tmp
+				print ["len: " len lf]
+				print ["tmp: " tmp lf]
 			]
 		]
 		dongle
 	]
 
-	test: func [/local tmp r][
-		tmp: make binary! 63
-		r: message-write tmp 0
-		if r < 0 [print ["write r: " r lf] exit]
+	;===================
+	;-- commands
+	;===================
 
-		clear tmp
-		r: message-read tmp
-		print ["r: " r lf]
-		if r < 0 [print ["read r: " r lf] exit]
-		print ["tmp: " tmp lf]
+	Initialize: func [
+		cmd				[binary!]
+		res				[binary!]
+		return:			[integer!]
+		/local
+			len			[integer!]
+	][
+		if protobuf/msg-ctx = none [protobuf/init-ctx 'message]
+		len: protobuf/encode 'Initialize #() cmd
+		if len < 0 [return -1]
+		len: message-write cmd message/get-msg-id 'Initialize
+		if len < 0 [return -1]
+		len: message-read res
+		len
 	]
 
 	;-- high level interface for message write
