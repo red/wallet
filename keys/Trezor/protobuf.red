@@ -11,24 +11,21 @@ Red [
 
 protobuf: context [
 	
-	repeated-head: make binary! 8
+	repeated-buf: make binary! 8
 	varint-buffer: make binary! 8
 	msg-ctx: none
 
-	get-wire-type-id: [
+	get-wire-type-id: func [
 		wire-type		[word!]
 		return:			[integer!]
-		/local
-			ret			[integer!]
 	][
-		ret: switch wire-type [
-			'int32 'int64 'uint32 'uint64 'sint32 'sint64 'bool 'enum [0]
-			'fixed64 'sfixed64 'double [1]
-			'string 'bytes 'packed 'embedded [2]
-			'fixed32 'sfixed32 'float [5]
-			default [2]
+		switch wire-type [
+			'int32 'int64 'uint32 'uint64 'sint32 'sint64 'bool 'enum [return 0]
+			'fixed64 'sfixed64 'double [return 1]
+			'string 'bytes 'packed 'embedded [return 2]
+			'fixed32 'sfixed32 'float [return 5]
 		]
-		ret
+		return 2
 	]
 
 	get-wire-type: func [
@@ -183,7 +180,6 @@ protobuf: context [
 		wire-type		[word!]
 		field-number	[integer!]
 		value			[integer! logic! string! binary! object! block!]
-		repeated?		[logic!]
 		data			[binary!]
 		return:			[integer!]
 		/local
@@ -199,14 +195,12 @@ protobuf: context [
 
 		tag: field-number << 3 or get-wire-type-id wire-type2
 		encode-varint tag
-		if repeated? [
-			clear repeated-buf
-			append repeated-buf varint-buffer
-		]
+		clear repeated-buf
+		append repeated-buf varint-buffer
 
 		ret: 0
 		switch wire-type2 [
-			'string 'bytes [
+			string bytes [
 				either block! = v-type [
 					foreach sub value [
 						len: append-series sub data
@@ -220,7 +214,7 @@ protobuf: context [
 				]
 				return ret
 			]
-			'int32 'int64 'uint32 'uint64 'enum [
+			int32 int64 uint32 uint64 enum [
 				either block! = v-type [
 					foreach sub value [
 						len: append-integer sub data
@@ -234,7 +228,7 @@ protobuf: context [
 				]
 				return ret
 			]
-			'bool [
+			bool [
 				either block! = v-type [
 					foreach sub value [
 						len: append-logic sub data
@@ -248,7 +242,7 @@ protobuf: context [
 				]
 				return ret
 			]
-			'embedded [
+			embedded [
 				either block! = v-type [
 					foreach sub value [
 						len: append-embedded wire-type sub data
@@ -280,7 +274,7 @@ protobuf: context [
 			len			[integer!]
 			repeated?	[logic!]
 	][
-		if msg-ctx = none [blk: get msg][blk: msg-ctx/msg]
+		either msg-ctx = none [blk: get msg][blk: get in msg-ctx msg]
 		if block! <> type? blk [return -1]
 		if 0 = length? blk [return 0]
 
@@ -289,9 +283,9 @@ protobuf: context [
 				olen: length? data
 				repeated?: sub/4 = 'repeated
 				if all [repeated? block! <> type? value][return -1]
-				len: encode-type sub/2 sub/1 value repeated? data
-				olen: length? data
-				if len <> nlen - olen [return -1]
+				len: encode-type sub/2 sub/1 value data
+				nlen: length? data
+				if len <> (nlen - olen) [return -1]
 			]
 		]
 		nlen
