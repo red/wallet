@@ -61,6 +61,11 @@ Red []
 		len: protobuf/encode 'Features #(major_version: 100 minor_version: 10000 patch_version: 1000000) x
 		y: #{106418904E20C0843D}
 		--assert y = x
+	--test-- "encode-9"
+		clear x
+		len: protobuf/encode 'Features #(bootloader_mode: #[true]) x
+		y: #{2801}
+		--assert y = x
 ===end-group===
 
 ~~~end-file~~~
