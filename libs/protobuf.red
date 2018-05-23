@@ -360,6 +360,7 @@ protobuf: context [
 		return:			[integer!]
 		/local
 			i			[integer!]
+			j			[integer!]
 			dlen		[integer!]
 			vlen		[integer!]
 			temp		[integer!]
@@ -370,6 +371,7 @@ protobuf: context [
 			low			[integer!]
 			off			[integer!]
 	][
+		varint-buffer: head varint-buffer
 		clear varint-buffer
 		dlen: length? data
 
@@ -396,6 +398,17 @@ protobuf: context [
 			]
 			if msb = 0 [
 				reverse varint-buffer
+				dlen: length? varint-buffer
+				j: 1
+				until [
+					either 0 = to integer! varint-buffer/:j [
+						j: j + 1
+					][
+						break
+					]
+					j > dlen
+				]
+				varint-buffer: skip varint-buffer j - 1
 				;-- print ["i: " i " varint: " varint-buffer]
 				return i
 			]

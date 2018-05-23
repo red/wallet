@@ -61,6 +61,12 @@ trezor: context [
 		len
 	]
 
+	GetPublicKey: func [
+		
+	][
+
+	]
+
 	;-- high level interface for message write
 	message-write: func [
 		data			[binary!]

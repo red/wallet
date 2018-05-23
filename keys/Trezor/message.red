@@ -161,6 +161,13 @@ message: context [
 		[27		bool unfinished_backup optional]
 	]
 
+	GetPublicKey: [
+		[1		uint32 address_n repeated]
+		[2		string ecdsa_curve_name optional]
+		[3		bool show_display optional]
+		[4		string coin_name optional]
+	]
+
 	CoinType: [
 		[1		string coin_name optional]
 		[2		string coin_shortcut optional]
@@ -180,6 +187,7 @@ message: context [
 		[Initialize					MessageType_Initialize				wire_in]
 		[GetFeatures				MessageType_GetFeatures				wire_in]
 		[Features					MessageType_Features]
+		[GetPublicKey				MessageType_GetPublicKey]
 	]
 
 	get-msg-id: func [
