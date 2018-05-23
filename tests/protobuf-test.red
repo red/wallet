@@ -93,4 +93,94 @@ Red []
 		--assert y = x
 ===end-group===
 
+===start-group=== "decode"
+	protobuf/init-ctx 'message
+	bin: make binary! 10
+	--test-- "decode-1"
+		clear bin
+		x: #()
+		len: protobuf/decode 'Initialize x bin
+		y: #()
+		--assert y = x
+		--assert len = 0
+	--test-- "decode-2"
+		clear bin
+		x: #()
+		append bin #{0A021234}
+		len: protobuf/decode 'Initialize x bin
+		y: #(state: #{1234})
+		--assert y = x
+	--test-- "decode-3"
+		clear bin
+		x: #()
+		len: protobuf/decode 'GetFeatures x bin
+		y: #()
+		--assert y = x
+		--assert len = 0
+	--test-- "decode-4"
+		clear bin
+		x: #()
+		append bin #{0A08626974626567696E}
+		len: protobuf/decode 'Features x bin
+		y: #(vendor: "bitbegin")
+		--assert y = x
+	--test-- "decode-5"
+		clear bin
+		x: #()
+		append bin #{1064}
+		len: protobuf/decode 'Features x bin
+		y: #(major_version: 100)
+		--assert y = x
+	--test-- "decode-6"
+		clear bin
+		x: #()
+		append bin #{10889102}
+		len: protobuf/decode 'Features x bin
+		y: #(major_version: 8888h)
+		--assert y = x
+	--test-- "decode-7"
+		clear bin
+		x: #()
+		append bin #{10E8D1A307}
+		len: protobuf/decode 'Features x bin
+		y: #(major_version: E8E8E8h)
+		--assert y = x
+	--test-- "decode-8"
+		clear bin
+		x: #()
+		append bin #{18904E}
+		len: protobuf/decode 'Features x bin
+		y: #(minor_version: 10000)
+		--assert y = x
+	--test-- "decode-9"
+		clear bin
+		x: #()
+		append bin #{20C0843D}
+		len: protobuf/decode 'Features x bin
+		y: #(patch_version: 1000000)
+		--assert y = x
+	--test-- "decode-10"
+		clear bin
+		x: #()
+		append bin #{106418904E20C0843D}
+		len: protobuf/decode 'Features x bin
+		y: #(major_version: 100 minor_version: 10000 patch_version: 1000000)
+		--assert y = x
+	--test-- "decode-11"
+		clear bin
+		x: #()
+		append bin #{2801}
+		len: protobuf/decode 'Features x bin
+		y: #(bootloader_mode: #[true])
+		--assert y = x
+	--test-- "decode-12"
+		clear bin
+		x: #()
+		append bin #{2800}
+		len: protobuf/decode 'Features x bin
+		y: #(bootloader_mode: #[false])
+		--assert y = x
+
+===end-group===
+
 ~~~end-file~~~
