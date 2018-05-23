@@ -83,7 +83,7 @@ Red []
 		--assert y = x
 	--test-- "encode-13"
 		clear x
-		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100)]) x
+		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100)]) x		;-- only block! can be used for conins, because of it's repeated property
 		y: #{5A0B0A07426974636F696E1864}
 		--assert y = x
 	--test-- "encode-14"
@@ -180,7 +180,20 @@ Red []
 		len: protobuf/decode 'Features x bin
 		y: #(bootloader_mode: #[false])
 		--assert y = x
-
+	--test-- "decode-13"
+		clear bin
+		x: #()
+		append bin #{5A0B0A07426974636F696E1864}
+		len: protobuf/decode 'Features x bin
+		y: #(coins: #(coin_name: "Bitcoin" address_type: 100))
+		--assert y = x
+	--test-- "decode-14"
+		clear bin
+		x: #()
+		append bin #{5A0B0A07426974636F696E18645A080A0365746818C801}
+		len: protobuf/decode 'Features x bin
+		y: #(coins: [#(coin_name: "Bitcoin" address_type: 100) #(coin_name: "eth" address_type: 200)])
+		--assert y = x
 ===end-group===
 
 ~~~end-file~~~
