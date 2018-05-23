@@ -19,7 +19,7 @@ trezor: context [
 	dongle: none
 	hid-version: 0
 	data-frame: make binary! 65
-	read-frame: make binary! 1000
+	command-buffer: make binary! 1000
 	msg-id: 0
 
 	connect: func [serial-num [string! none!]][
@@ -28,10 +28,11 @@ trezor: context [
 			if dongle <> none [
 				hid-version: get-hid-version
 
-				tmp: make binary! 100
-				len: Initialize tmp tmp
+				cmd: make binary! 8
+				res: make map! []
+				len: Initialize cmd res
 				print ["len: " len lf]
-				print ["tmp: " tmp lf]
+				print ["res: " res lf]
 			]
 		]
 		dongle
@@ -43,7 +44,7 @@ trezor: context [
 
 	Initialize: func [
 		cmd				[binary!]
-		res				[binary!]
+		res				[map!]
 		return:			[integer!]
 		/local
 			len			[integer!]
@@ -53,7 +54,10 @@ trezor: context [
 		if len < 0 [return -1]
 		len: message-write cmd message/get-msg-id 'Initialize
 		if len < 0 [return -1]
-		len: message-read res
+		len: message-read command-buffer
+		if len < 0 [return -1]
+		len: protobuf/decode 'Features res command-buffer
+		if len < 0 [return -1]
 		len
 	]
 
