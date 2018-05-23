@@ -48,35 +48,45 @@ Red []
 		--assert y = x
 	--test-- "encode-6"
 		clear x
+		len: protobuf/encode 'Features #(major_version: 8888h) x
+		y: #{10889102}
+		--assert y = x
+	--test-- "encode-7"
+		clear x
+		len: protobuf/encode 'Features #(major_version: E8E8E8h) x
+		y: #{10E8D1A307}
+		--assert y = x
+	--test-- "encode-8"
+		clear x
 		len: protobuf/encode 'Features #(minor_version: 10000) x
 		y: #{18904E}
 		--assert y = x
-	--test-- "encode-7"
+	--test-- "encode-9"
 		clear x
 		len: protobuf/encode 'Features #(patch_version: 1000000) x
 		y: #{20C0843D}
 		--assert y = x
-	--test-- "encode-8"
+	--test-- "encode-10"
 		clear x
 		len: protobuf/encode 'Features #(major_version: 100 minor_version: 10000 patch_version: 1000000) x
 		y: #{106418904E20C0843D}
 		--assert y = x
-	--test-- "encode-9"
+	--test-- "encode-11"
 		clear x
 		len: protobuf/encode 'Features #(bootloader_mode: #[true]) x
 		y: #{2801}
 		--assert y = x
-	--test-- "encode-10"
+	--test-- "encode-12"
 		clear x
 		len: protobuf/encode 'Features #(bootloader_mode: #[false]) x
 		y: #{2800}
 		--assert y = x
-	--test-- "encode-11"
+	--test-- "encode-13"
 		clear x
 		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100)]) x
 		y: #{5A0B0A07426974636F696E1864}
 		--assert y = x
-	--test-- "encode-12"
+	--test-- "encode-14"
 		clear x
 		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100) #(coin_name: "eth" address_type: 200)]) x
 		y: #{5A0B0A07426974636F696E18645A080A0365746818C801}
