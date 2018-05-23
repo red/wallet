@@ -517,7 +517,7 @@ protobuf: context [
 				varint: to integer! varint-buffer
 				if varint < 0 [return -1]					;-- we don't support too large embedded message
 				nvalue: copy/part skip data vlen varint
-				nres: #()
+				nres: make map! []
 				len: decode wire-type nres nvalue
 				if len < 0 [return -1]
 				if len <> varint [return -1]
