@@ -322,6 +322,39 @@ protobuf: context [
 		ret
 	]
 
+
+	get-bits: func [
+		value			[integer!]
+		start			[integer!]
+		len				[integer!]
+		return:			[integer!]
+		/local
+			ret			[integer!]
+			mask		[integer!]
+	][
+		ret: value >> start
+		mask: (1 << len) - 1
+		ret: ret and mask
+		ret
+	]
+
+	append-hi-bits: func [
+		src				[integer!]
+		start			[integer!]
+		value			[integer!]
+		return:			[integer!]
+		/locat
+			ret			[integer!]
+			mask		[integer!]
+			value2		[integer!]
+	][
+		mask: (1 << start) - 1
+		ret: src and mask
+		value: value << start
+		ret: ret or value
+		ret
+	]
+
 	decode-varint: func [
 		data			[binary!]
 		return:			[integer!]
@@ -333,27 +366,42 @@ protobuf: context [
 			item		[integer!]
 			last-item	[integer!]
 			msb			[integer!]
-			lsb			[integer!]
+			hi			[integer!]
+			low			[integer!]
+			off			[integer!]
 	][
 		clear varint-buffer
 		dlen: length? data
 
 		i: 1
+		off: 0
 		until [
 			temp: to integer! data/:i
 			msb: temp >> 7
-			lsb: temp xor 1
-			item: (temp and 7Fh) >> 1
+			either msb = 0 [
+				hi: get-bits temp off (8 - off)
+			][
+				hi: get-bits temp off (7 - off)
+			]
+			low: get-bits temp 0 off
 			vlen: length? varint-buffer
-			if all [lsb = 1 vlen <> 0] [
-				last-item: 80h or to integer! varint-buffer/:vlen
+			;-- print ["temp: " temp " msb: " msb " off: " off " hi: " hi " low: " low " vlen: " vlen lf]
+			if off <> 0 [
+			][
+				last-item: to integer! varint-buffer/:vlen
+				last-item: append-hi-bits last-item (8 - off) low
 				varint-buffer/:vlen: last-item
 			]
-			append varint-buffer item
+			if any [msb = 0 off <> 7][
+				append varint-buffer hi
+			]
 			if msb = 0 [
 				reverse varint-buffer
+				;-- print ["i: " i " varint: " varint-buffer]
 				return i
 			]
+			off: off + 1
+			if off = 8 [off: 0]
 			i: i + 1
 			i > dlen
 		]
@@ -372,6 +420,7 @@ protobuf: context [
 			len				[integer!]
 			varint			[integer!]
 			vlen			[integer!]
+			nvalue
 			ovalue
 		
 	][
@@ -387,13 +436,17 @@ protobuf: context [
 				if len > 4 [return -1]
 				varint: to integer! varint-buffer
 				if varint < 0 [return -1]					;-- we don't support too large string/binary
+				nvalue: copy/part skip data vlen varint
+				if wire-type2 = 'string [
+					nvalue: to string! nvalue
+				]
 				either none = ovalue [
-					put value name copy/part skip data vlen varint
+					put value name nvalue
 				][
 					either block! = type? ovalue [
-						put value name append ovalue copy/part skip data vlen varint
+						put value name append ovalue nvalue
 					][
-						put value name reduce [ovalue copy/part skip data vlen varint]
+						put value name reduce [ovalue nvalue]
 					]
 				]
 				ret: ret + vlen + varint
@@ -530,6 +583,7 @@ protobuf: context [
 			pos: skip pos vlen
 			ret: ret + vlen
 			varint: to integer! varint-buffer
+			;-- print ["head varint: " varint lf]
 			if varint < 0 [return -1]					;-- we don't support too large field number
 			len: decode-each msg varint value pos
 			if len < 0 [return len]
