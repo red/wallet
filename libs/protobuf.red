@@ -8,8 +8,8 @@ Red [
 
 protobuf: context [
 	
-	varint-buffer: make binary! 8
 	msg-ctx: none
+	varint-buffer: make binary! 8
 
 	get-wire-type-id: func [
 		wire-type		[word!]
@@ -257,8 +257,8 @@ protobuf: context [
 				]
 				return ret
 			]
-			default [return 0]
 		]
+		ret
 	]
 
 	encode-each: func [
@@ -279,6 +279,7 @@ protobuf: context [
 		either msg-ctx = none [blk: get msg][blk: get in msg-ctx msg]
 		if block! <> type? blk [return -1]
 		if 0 = length? blk [return 0]
+
 		ret: 0
 		foreach sub blk [
 			if sub/3 = name [
@@ -299,6 +300,7 @@ protobuf: context [
 		msg				[word!]
 		value			[map!]
 		data			[binary!]
+		return:			[integer!]
 		/local
 			keys		[block!]
 			buffer		[binary!]
@@ -320,12 +322,223 @@ protobuf: context [
 		ret
 	]
 
-	decode: func [
-		msg				[word!]
-		value			[map!]
+	decode-varint: func [
 		data			[binary!]
+		return:			[integer!]
+		/local
+			i			[integer!]
+			dlen		[integer!]
+			vlen		[integer!]
+			temp		[integer!]
+			item		[integer!]
+			last-item	[integer!]
+			msb			[integer!]
+			lsb			[integer!]
 	][
+		clear varint-buffer
+		dlen: length? data
 
+		i: 1
+		until [
+			temp: to integer! data/:i
+			msb: temp >> 7
+			lsb: temp xor 1
+			item: (temp and 7Fh) >> 1
+			vlen: length? varint-buffer
+			if all [lsb = 1 vlen <> 0] [
+				last-item: 80h or to integer! varint-buffer/:vlen
+				varint-buffer/:vlen: last-item
+			]
+			append varint-buffer item
+			if msb = 0 [
+				reverse varint-buffer
+				return i
+			]
+			i: i + 1
+			i > dlen
+		]
+		-1
+	]
+
+	decode-type: func [
+		wire-type			[word!]
+		name				[word!]
+		value				[map!]
+		data				[binary!]
+		return:				[integer!]
+		/local
+			wire-type2		[word!]
+			ret				[integer!]
+			len				[integer!]
+			varint			[integer!]
+			vlen			[integer!]
+			ovalue
+		
+	][
+		wire-type2: get-wire-type wire-type
+		ovalue: select value name
+
+		ret: 0
+		switch wire-type2 [
+			string bytes [
+				vlen: decode-varint data
+				if vlen < 0 [return vlen]
+				len: length? varint-buffer
+				if len > 4 [return -1]
+				varint: to integer! varint-buffer
+				if varint < 0 [return -1]					;-- we don't support too large string/binary
+				either none = ovalue [
+					put value name copy/part skip data vlen varint
+				][
+					either block! = type? ovalue [
+						put value name append ovalue copy/part skip data vlen varint
+					][
+						put value name reduce [ovalue copy/part skip data vlen varint]
+					]
+				]
+				ret: ret + vlen + varint
+				return ret
+			]
+			int64 uint64 [
+				vlen: decode-varint data
+				if vlen < 0 [return vlen]
+				len: length? varint-buffer
+				if len > 8 [return -1]
+				either none = ovalue [
+					put value name varint-buffer
+				][
+					either block! = type? ovalue [
+						put value name append ovalue varint-buffer
+					][
+						put value name reduce [ovalue varint-buffer]
+					]
+				]
+				ret: ret + vlen
+				return ret
+			]
+			int32 uint32 enum [
+				vlen: decode-varint data
+				if vlen < 0 [return vlen]
+				len: length? varint-buffer
+				if len > 4 [return -1]
+				varint: to integer! varint-buffer
+				either none = ovalue [
+					put value name varint
+				][
+					either block! = type? ovalue [
+						put value name append ovalue varint
+					][
+						put value name reduce [ovalue varint]
+					]
+				]
+				ret: ret + vlen
+				return ret
+			]
+			bool [
+				vlen: decode-varint data
+				if vlen < 0 [return vlen]
+				len: length? varint-buffer
+				if len <> 1 [return -1]
+				either varint-buffer = #{00} [
+					varint: false
+				][
+					varint: true
+				]
+				either none = ovalue [
+					put value name varint
+				][
+					either block! = type? ovalue [
+						put value name append ovalue varint
+					][
+						put value name reduce [ovalue varint]
+					]
+				]
+				ret: ret + vlen
+				return ret
+			]
+			embedded [
+
+			]
+		]
+		ret
+	]
+
+	decode-each: func [
+		msg					[word!]
+		varint				[integer!]
+		value				[map!]
+		data				[binary!]
+		return:				[integer!]
+		/local
+			blk				[block!]
+			sub				[block!]
+			wire-type-id	[integer!]
+			wire-type-id2	[integer!]
+			field-number	[integer!]
+			ret				[integer!]
+			len				[integer!]
+			wire-type		[word!]
+			wire-type2		[word!]
+			pos				[binary!]
+	][
+		either msg-ctx = none [blk: get msg][blk: get in msg-ctx msg]
+		if block! <> type? blk [return -1]
+		if 0 = length? blk [return 0]
+
+		wire-type-id: varint and 7
+		field-number: varint >>> 3
+		ret: 0
+		pos: data
+		foreach sub blk [
+			wire-type: sub/2
+			wire-type2: get-wire-type sub/2
+			wire-type-id2: get-wire-type-id wire-type2
+			if all [sub/1 = field-number wire-type-id = wire-type-id2][
+				len: decode-type wire-type sub/3 value pos
+				if len < 0 [return len]
+				pos: skip data len
+				ret: ret + len
+			]
+		]
+
+		ret
+	]
+
+	decode: func [
+		msg					[word!]
+		value				[map!]
+		data				[binary!]
+		return:				[integer!]
+		/local
+			dlen			[integer!]
+			vlen			[integer!]
+			len				[integer!]
+			pos				[binary!]
+			varint			[integer!]
+			ret				[integer!]
+	][
+		dlen: length? data
+		if dlen = 0 [return 0]
+
+		ret: 0
+		pos: data
+		until [
+			vlen: decode-varint pos
+			if vlen < 0 [return vlen]
+			len: length? varint-buffer
+			if len > 4 [return -1]
+			pos: skip data vlen
+			ret: ret + vlen
+			varint: to integer! varint-buffer
+			if varint < 0 [return -1]					;-- we don't support too large field number
+			len: decode-each msg varint value pos
+			if len < 0 [return len]
+			pos: skip data len
+			ret: ret + len
+			tail? pos
+		]
+		
+		ret
 	]
 
 	init-ctx: func [ctx [word! none!]][
