@@ -527,13 +527,13 @@ protobuf: context [
 			if vlen < 0 [return vlen]
 			len: length? varint-buffer
 			if len > 4 [return -1]
-			pos: skip data vlen
+			pos: skip pos vlen
 			ret: ret + vlen
 			varint: to integer! varint-buffer
 			if varint < 0 [return -1]					;-- we don't support too large field number
 			len: decode-each msg varint value pos
 			if len < 0 [return len]
-			pos: skip data len
+			pos: skip pos len
 			ret: ret + len
 			tail? pos
 		]
