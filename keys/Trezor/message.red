@@ -168,6 +168,21 @@ message: context [
 		[4		string coin_name optional]
 	]
 
+	PinMatrixRequest: [
+		;[1		PinMatrixRequestType type optional]			;-- TBC
+		[1		enum type optional]
+	]
+
+	PinMatrixAck: [
+		[1		string pin required]
+	]
+
+	PublicKey: [
+		[1		HDNodeType node required]
+		[2		string xpub optional]
+		
+	]
+
 	CoinType: [
 		[1		string coin_name optional]
 		[2		string coin_shortcut optional]
@@ -182,12 +197,22 @@ message: context [
 		[13		bool force_bip143 optional]
 	]
 
+	HDNodeType: [
+		[1		uint32 depth required]
+		[2		uint32 fingerprint required]
+		[3		uint32 child_num required]
+		[4		bytes chain_code required]
+		[5		bytes private_key optional]
+		[6		bytes public_key optional]
+	]
 
 	tabs: [
 		[Initialize					MessageType_Initialize				wire_in]
 		[GetFeatures				MessageType_GetFeatures				wire_in]
 		[Features					MessageType_Features]
 		[GetPublicKey				MessageType_GetPublicKey]
+		[PinMatrixRequest			MessageType_PinMatrixRequest]
+		[PublicKey					MessageType_PublicKey]
 	]
 
 	get-msg-id: func [
