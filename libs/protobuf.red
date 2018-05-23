@@ -387,7 +387,6 @@ protobuf: context [
 			vlen: length? varint-buffer
 			;-- print ["temp: " temp " msb: " msb " off: " off " hi: " hi " low: " low " vlen: " vlen lf]
 			if off <> 0 [
-			][
 				last-item: to integer! varint-buffer/:vlen
 				last-item: append-hi-bits last-item (8 - off) low
 				varint-buffer/:vlen: last-item
