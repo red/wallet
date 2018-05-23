@@ -419,6 +419,7 @@ protobuf: context [
 			len				[integer!]
 			varint			[integer!]
 			vlen			[integer!]
+			nres			[map!]
 			nvalue
 			ovalue
 		
@@ -509,7 +510,28 @@ protobuf: context [
 				return ret
 			]
 			embedded [
-
+				vlen: decode-varint data
+				if vlen < 0 [return vlen]
+				len: length? varint-buffer
+				if len > 4 [return -1]
+				varint: to integer! varint-buffer
+				if varint < 0 [return -1]					;-- we don't support too large embedded message
+				nvalue: copy/part skip data vlen varint
+				nres: #()
+				len: decode wire-type nres nvalue
+				if len < 0 [return -1]
+				if len <> varint [return -1]
+				either none = ovalue [
+					put value name nres
+				][
+					either block! = type? ovalue [
+						put value name append ovalue nres
+					][
+						put value name reduce [ovalue nres]
+					]
+				]
+				ret: ret + vlen + varint
+				return ret
 			]
 		]
 		ret
