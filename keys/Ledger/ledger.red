@@ -49,7 +49,7 @@ ledger: context [
 
 			;-- sanity check the frame
 			if DEFAULT_CHANNEL <> to-int16 data [
-				return buffer
+				return copy/part data 4
 			]
 			if TAG_APDU <> data/3 [
 				return buffer
@@ -118,11 +118,16 @@ ledger: context [
 		write-apdu data
 		data: read-apdu 1
 
-		if 40 < length? data [
-			;-- parse reply data
-			pub-key-len: to-integer data/1
-			addr-len: to-integer pick skip data pub-key-len + 1 1
-			rejoin ["0x" to-string copy/part skip data pub-key-len + 2 addr-len]
+		case [
+			40 < length? data [
+				;-- parse reply data
+				pub-key-len: to-integer data/1
+				addr-len: to-integer pick skip data pub-key-len + 1 1
+				rejoin ["0x" to-string copy/part skip data pub-key-len + 2 addr-len]
+			]
+			#{BF00018D} = data ['browser-support-on]
+			#{6804} = data ['locked]
+			#{6700} = data ['plug]
 		]
 	]
 

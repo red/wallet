@@ -2,6 +2,7 @@ Red [
 	Title:	 "RED Wallet"
 	Author:  "Xie Qingtian"
 	File: 	 %wallet.red
+	Icon:	 %assets/RED-token.ico
 	Needs:	 View
 	Version: 0.1.0
 	Tabs: 	 4
@@ -26,7 +27,7 @@ wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	signed-data: none
+	signed-data: addr-list: min-size: none
 	addr-per-page: 5
 
 	networks: [
@@ -62,7 +63,6 @@ wallet: context [
 	last-dev: none
 	last-ser: none
 	connected?:		no
-	need-refresh?:	no
 	address-index:	0
 	page:			0
 
@@ -113,6 +113,7 @@ wallet: context [
 
 		either none <> key/connect name sernum [
 			process-events
+			usb-device/rate: none
 			connected?: yes
 
 			info-msg/text: "Please wait while loading addresses..."
@@ -124,15 +125,17 @@ wallet: context [
 			
 			loop addr-per-page [
 				addr: ledger/get-address n
-				either addr [
-					if need-refresh? [
-						need-refresh?: no
-						usb-device/rate: none
-					]
+				either string? addr [
+					info-msg/text: "Please wait while loading addresses..."
 				][
-					unless need-refresh? [view/flags unlock-dev-dlg 'modal]
-					usb-device/rate: 0:0:3
-					need-refresh?: yes
+					info-msg/text: case [
+						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
+						addr = 'locked [
+							usb-device/rate: 0:0:3
+							"Please unlock your key"
+						]
+						true [{Please open the "Ethereum" application}]
+					]
 					exit
 				]
 				append addresses rejoin [addr "      <loading>"]
@@ -151,6 +154,7 @@ wallet: context [
 				]
 				process-events
 			]
+			info-msg/text: ""
 			update-ui yes
 		][
 			info-msg/text: "This device can't be recognized"
@@ -172,6 +176,8 @@ wallet: context [
 			gas-limit/text: either token-contract ["79510"]["21000"]
 			reset-sign-button
 			label-unit/text: token-name
+			clear addr-to/text
+			clear amount-field/text
 			view/flags send-dialog 'modal
 		]
 	]
@@ -220,6 +226,25 @@ wallet: context [
 	]
 	
 	do-reload: does [if connected? [list-addresses]]
+	
+	do-resize: function [delta [pair!]][
+		ref: as-pair btn-send/offset/x - 10 ui/extra/y / 2
+		foreach-face ui [
+			pos: face/offset
+			case [
+				all [pos/x > ref/x pos/y < ref/y][face/offset/x: pos/x + delta/x]
+				all [pos/x < ref/x pos/y > ref/y][face/offset/y: pos/y + delta/y]
+				all [pos/x > ref/x pos/y > ref/y][face/offset: pos + delta]
+			]
+		]
+		addr-list/size: addr-list/size + delta
+	]
+	
+	do-auto-size: function [face [object!]][
+		size: size-text/with face "X"
+		delta: (as-pair size/x * 64 size/y * 5.3) - face/size
+		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
+	]
 
 	check-data: func [/local addr amount balance][
 		addr: trim any [addr-to/text ""]
@@ -277,10 +302,11 @@ wallet: context [
 			unview
 			view/flags nonce-error-dlg 'modal
 			reset-sign-button
+			exit
 		]
 
 		;-- Edge case: ledger key may locked in this moment
-		unless Ledger/get-address 0 [
+		unless string? ledger/get-address 0 [
 			reset-sign-button
 			view/flags unlock-dev-dlg 'modal
 			exit
@@ -317,7 +343,7 @@ wallet: context [
 			binary? signed-data
 		][
 			info-from/text:		addr-from/text
-			info-to/text:		addr-to/text
+			info-to/text:		copy addr-to/text
 			info-amount/text:	rejoin [amount-field/text " " token-name]
 			info-network/text:	net-name
 			info-price/text:	rejoin [gas-price/text " Gwei"]
@@ -336,9 +362,6 @@ wallet: context [
 			]
 			reset-sign-button
 		]
-		clear addr-to/text
-		clear amount-field/text
-		gas-price/text: "21"
 	]
 
 	do-confirm: func [face [object!] event [event!] /local result][
@@ -427,7 +450,7 @@ wallet: context [
 		
 		addr-list: text-list font list-font 520x100 return middle
 		
-		info-msg: text 285x20 "Please plug in your key..."
+		info-msg: text 285x20
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
@@ -488,17 +511,15 @@ wallet: context [
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
 						;-- when plug out a device, we don't knwon it's serial number, so reset all devices also
+						face/rate: none
 						connected?: no
 						key/close
-						enum-devs
-						list-addresses
+						info-msg/text: ""
+						clear addr-list/data
 					]
 				]
 				on-time: func [face event][
-					unless need-refresh? [face/rate: none]
-					if connected? [
-						connected?: no
-					]
+					if connected? [face/rate: none]
 					key/close
 					enum-devs
 					list-addresses
@@ -508,9 +529,14 @@ wallet: context [
 	]
 
 	setup-actors: does [
-		ui/actors: make object! [
+		ui/actors: context [
 			on-close: func [face event][
 				key/close
+			]
+			on-resizing: function [face event] [
+				if any [event/offset/x < min-size/x event/offset/y < min-size/y][exit]
+				do-resize event/offset - face/extra
+				face/extra: event/offset
 			]
 		]
 
@@ -532,9 +558,11 @@ wallet: context [
 	]
 
 	run: does [
+		min-size: ui/extra: ui/size
 		setup-actors
 		monitor-devices
-		view ui
+		do-auto-size addr-list
+		view/flags ui 'resize
 	]
 ]
 
