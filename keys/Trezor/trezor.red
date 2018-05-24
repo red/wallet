@@ -58,7 +58,7 @@ trezor: context [
 			len			[integer!]
 			req			[map!]
 	][
-		len: encode-and-write 'EthereumGetAddress make map! reduce ['address_n append [8000002Ch 8000003Ch 80000000h] idx]
+		len: encode-and-write 'EthereumGetAddress make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]]
 		if len < 0 [return len]
 
 		clear command-buffer
@@ -67,6 +67,10 @@ trezor: context [
 		if msg-id = message/get-msg-id 'EthereumAddress [
 			len: protobuf/decode 'EthereumAddress res command-buffer
 			return len
+		]
+
+		if msg-id <> message/get-msg-id 'PinMatrixRequest [
+			return -1
 		]
 
 		len: protobuf/decode 'PinMatrixRequest make map! [] command-buffer
@@ -87,6 +91,8 @@ trezor: context [
 			len			[integer!]
 	][
 		clear command-buffer
+		print ["msg: " msg]
+		print ["value: " value]
 		len: protobuf/encode msg value command-buffer
 		if len < 0 [return len]
 		len: message-write command-buffer message/get-msg-id msg
