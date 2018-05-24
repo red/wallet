@@ -399,6 +399,7 @@ protobuf: context [
 			if msb = 0 [
 				reverse varint-buffer
 				dlen: length? varint-buffer
+				if dlen = 1 [return i]
 				j: 1
 				until [
 					either 0 = to integer! varint-buffer/:j [
