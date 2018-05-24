@@ -180,7 +180,15 @@ message: context [
 	PublicKey: [
 		[1		HDNodeType node required]
 		[2		string xpub optional]
-		
+	]
+
+	EthereumGetAddress: [
+		[1		uint32 address_n required]
+		[2		bool show_display required]
+	]
+
+	EthereumAddress: [
+		[1		bytes address required]
 	]
 
 	CoinType: [
@@ -212,7 +220,10 @@ message: context [
 		[Features					MessageType_Features]
 		[GetPublicKey				MessageType_GetPublicKey]
 		[PinMatrixRequest			MessageType_PinMatrixRequest]
+		[PinMatrixAck				MessageType_PinMatrixAck]
 		[PublicKey					MessageType_PublicKey]
+		[EthereumGetAddress			MessageType_EthereumGetAddress]
+		[EthereumAddress			MessageType_EthereumAddress]
 	]
 
 	get-msg-id: func [

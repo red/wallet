@@ -21,18 +21,13 @@ trezor: context [
 	data-frame: make binary! 65
 	command-buffer: make binary! 1000
 	msg-id: 0
+	pin-get: make string! 16
 
 	connect: func [serial-num [string! none!]][
 		unless dongle [
 			dongle: hid/open id serial-num
 			if dongle <> none [
 				hid-version: get-hid-version
-
-				cmd: make binary! 8
-				res: make map! []
-				len: Initialize cmd res
-				print ["len: " len lf]
-				print ["res: " res lf]
 			]
 		]
 		dongle
@@ -43,28 +38,102 @@ trezor: context [
 	;===================
 
 	Initialize: func [
-		cmd				[binary!]
 		res				[map!]
 		return:			[integer!]
 		/local
 			len			[integer!]
 	][
 		if protobuf/msg-ctx = none [protobuf/init-ctx 'message]
-		len: protobuf/encode 'Initialize #() cmd
-		if len < 0 [return -1]
-		len: message-write cmd message/get-msg-id 'Initialize
-		if len < 0 [return -1]
-		len: message-read command-buffer
-		if len < 0 [return -1]
-		len: protobuf/decode 'Features res command-buffer
-		if len < 0 [return -1]
+		len: encode-and-write 'Initialize #()
+		if len < 0 [return len]
+		len: read-and-decode 'Features res
 		len
 	]
 
-	GetPublicKey: func [
-		
+	EthereumGetAddress: func [
+		idx				[integer!]
+		res				[map!]
+		return:			[integer!]
+		/local
+			len			[integer!]
+			req			[map!]
 	][
+		len: encode-and-write 'EthereumGetAddress make map! reduce ['address_n append [8000002Ch 8000003Ch 80000000h] idx]
+		if len < 0 [return len]
 
+		clear command-buffer
+		len: message-read command-buffer
+		if len < 0 [return len]
+		if msg-id = message/get-msg-id 'EthereumAddress [
+			len: protobuf/decode 'EthereumAddress res command-buffer
+			return len
+		]
+
+		len: protobuf/decode 'PinMatrixRequest make map! [] command-buffer
+		if len < 0 [return len]
+		clear pin-get
+		pin-dlg pin-get
+		len: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
+		if len < 0 [return len]
+		len: read-and-decode 'EthereumAddress res
+		len
+	]
+
+	encode-and-write: func [
+		msg				[word!]
+		value			[map!]
+		return:			[integer!]
+		/local
+			len			[integer!]
+	][
+		clear command-buffer
+		len: protobuf/encode msg value command-buffer
+		if len < 0 [return len]
+		len: message-write command-buffer message/get-msg-id msg
+		if len < 0 [return len]
+		len
+	]
+
+	read-and-decode: func [
+		msg				[word!]
+		value			[map!]
+		return:			[integer!]
+		/local
+			len			[integer!]
+	][
+		clear command-buffer
+		len: message-read command-buffer
+		if len < 0 [return len]
+		len: protobuf/decode msg value command-buffer
+		if len < 0 [return len]
+		len
+	]
+
+	pin-dlg: func [
+		pin		[string!]
+	][
+		dlg: layout [
+			title "Please enter your PIN"
+			style label: text 400 middle
+			style but: button 50x50 "*"
+			style pin-field: field 200 middle
+			but [append pin-show/text "*" append pin "7"]
+			but [append pin-show/text "*" append pin "8"]
+			but [append pin-show/text "*" append pin "9"] return
+			but [append pin-show/text "*" append pin "4"]
+			but [append pin-show/text "*" append pin "5"]
+			but [append pin-show/text "*" append pin "6"] return
+			but [append pin-show/text "*" append pin "1"]
+			but [append pin-show/text "*" append pin "2"]
+			but [append pin-show/text "*" append pin "3"] return
+			pin-show: pin-field "" return
+			button "Enter" 80 middle [unview]
+			do [
+				clear pin-show/text
+			]
+		]
+
+		view/flags dlg 'modal
 	]
 
 	;-- high level interface for message write
