@@ -91,6 +91,13 @@ Red []
 		len: protobuf/encode 'Features #(coins: [#(coin_name: "Bitcoin" address_type: 100) #(coin_name: "eth" address_type: 200)]) x
 		y: #{5A0B0A07426974636F696E18645A080A0365746818C801}
 		--assert y = x
+	--test-- "encode-15"
+		clear x
+		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 0]]
+		put req 'show_display false
+		len: protobuf/encode 'EthereumGetAddress req x
+		y: #{08AC8080800808BC80808008088080808008080008001000}
+		--assert y = x
 ===end-group===
 
 ===start-group=== "decode"

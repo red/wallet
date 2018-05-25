@@ -58,14 +58,14 @@ protobuf: context [
 
 		rest: int
 		while [true][
-			either rest < 128 [
+			either all [(rest and FFFFFF80h) = 0 rest < 128] [
 				append varint-buffer to integer! rest
 				exit
 			][
 				little: rest and 7Fh
 				little: little or 80h
 				append varint-buffer to integer! little
-				rest: rest >> 7
+				rest: rest >>> 7
 			]
 		]
 	]
