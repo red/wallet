@@ -64,26 +64,21 @@ key: context [
 			case [
 				ledger/filter? id usg [
 					index: select/last dev-names-in-block ledger/name
-					either index = none [index: 1][index: index + 1]
+					either index = none [index: 0][index: index + 1]
 					append dev-names-in-block reduce [ledger/name index]
 				]
 				trezor/filter? id usg [
 					index: select/last dev-names-in-block trezor/name
-					either index = none [index: 1][index: index + 1]
+					either index = none [index: 0][index: index + 1]
 					append dev-names-in-block reduce [trezor/name index]
 				]
-				true [
-					index: select/last dev-names-in-block no-dev
-					either index = none [index: 1][index: index + 1]
-					append dev-names-in-block reduce [no-dev index]
-				]
 			]
-
 			i: i + 2
 			i > len
 		]
 
 		len: length? dev-names-in-block
+		if len = 0 [return reduce [no-dev]]
 		i: 1
 		clear dev-names
 		until [
@@ -102,11 +97,58 @@ key: context [
 		dev-names
 	]
 
+	get-enum-index: func [
+		id				[integer!]
+		index			[integer!]
+		return:			[integer!]
+		/local
+			len i j enum-index nid usg
+	][
+		len: length? devs
+		if len = 0 [return index]
+
+		enum-index: 0
+		count: 0
+		i: 1
+		until [
+			nid: devs/:i
+			j: i + 1
+			usg: devs/:j
+			case [
+				all [ledger/id = id id = nid] [
+					if ledger/filter? id usg [
+						either count = index [
+							return enum-index
+						][
+							count: count + 1
+						]
+					]
+					enum-index: enum-index + 1
+				]
+				all [trezor/id = id id = nid] [
+					if trezor/filter? id usg [
+						either count = index [
+							return enum-index
+						][
+							count: count + 1
+						]
+					]
+					enum-index: enum-index + 1
+				]
+			]
+
+			i: i + 2
+			i > len
+		]
+
+		index
+	]
+
 	connect: func [name [string! none!] index [integer!]][
 		if name = none [return none]
 		case [
-			name = ledger/name [ledger/connect index]
-			name = trezor/name [trezor/connect index]
+			name = ledger/name [ledger/connect get-enum-index ledger/id index]
+			name = trezor/name [trezor/connect get-enum-index trezor/id index]
 			true [none]
 		]
 	]
