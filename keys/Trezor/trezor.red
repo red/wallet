@@ -44,6 +44,30 @@ trezor: context [
 		dongle
 	]
 
+	get-address: func [
+		idx				[integer!]
+		/local
+			res len
+	][
+		res: make map! []
+		len: EthereumGetAddress idx res
+		if len < 0 [
+			if msg-id = message/get-msg-id 'Failure [
+				return 'Failure
+			]
+			return 'OtherFailure
+		]
+		if res/address = none [return 'NoneAddress]
+		rejoin ["0x" enbase/base res/address 16]
+	]
+
+	set-init: func [][
+		res: make map! []
+		len: Initialize res
+		if len < 0 [return 'InitFailure]
+		return 'InitSuccess
+	]
+
 	;===================
 	;-- commands
 	;===================
@@ -92,7 +116,11 @@ trezor: context [
 		pin-dlg pin-get
 		len: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
 		if len < 0 [return len]
+
 		len: read-and-decode 'EthereumAddress res
+		if msg-id <> message/get-msg-id 'EthereumAddress [
+			return -1
+		]
 		len
 	]
 
@@ -104,8 +132,8 @@ trezor: context [
 			len			[integer!]
 	][
 		clear command-buffer
-		print ["msg: " msg]
-		print ["value: " value]
+		;-- print ["msg: " msg]
+		;-- print ["value: " value]
 		len: protobuf/encode msg value command-buffer
 		if len < 0 [return len]
 		len: message-write command-buffer message/get-msg-id msg
@@ -165,6 +193,7 @@ trezor: context [
 			msg			[binary!]
 			r			[integer!]
 	][
+		msg-id: _id
 		sz: length? data
 		msg: make binary! 8 + sz
 		append msg reduce [

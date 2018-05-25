@@ -43,6 +43,10 @@ ledger: context [
 		dongle
 	]
 
+	set-init: func [][
+		return 'InitSuccess
+	]
+
 	read-apdu: func [
 		timeout [integer!]				;-- seconds
 		/local idx total msg-len data

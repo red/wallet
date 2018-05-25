@@ -153,6 +153,24 @@ key: context [
 		]
 	]
 
+	get-address: func [name [string! none!] idx [integer!]][
+		if name = none [return 'NoDevice]
+		case [
+			name = ledger/name [ledger/get-address idx]
+			name = trezor/name [trezor/get-address idx]
+			true ['NotSupport]
+		]
+	]
+
+	set-init: func [name [string! none!]][
+		if name = none [return 'NoDevice]
+		case [
+			name = ledger/name [ledger/set-init]
+			name = trezor/name [trezor/set-init]
+			true ['NotSupport]
+		]
+	]
+
 	close: does [
 		ledger/close
 		trezor/close
