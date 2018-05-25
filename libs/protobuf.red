@@ -397,19 +397,8 @@ protobuf: context [
 				append varint-buffer hi
 			]
 			if msb = 0 [
+				append varint-buffer #{00}
 				reverse varint-buffer
-				dlen: length? varint-buffer
-				if dlen = 1 [return i]
-				j: 1
-				until [
-					either 0 = to integer! varint-buffer/:j [
-						j: j + 1
-					][
-						break
-					]
-					j > dlen
-				]
-				varint-buffer: skip varint-buffer j - 1
 				;-- print ["i: " i " varint: " varint-buffer]
 				return i
 			]
@@ -487,8 +476,7 @@ protobuf: context [
 				vlen: decode-varint data
 				if vlen < 0 [return vlen]
 				len: length? varint-buffer
-				if len > 4 [return -1]
-				varint: to integer! varint-buffer
+				varint: to integer! back back back back tail varint-buffer
 				either none = ovalue [
 					put value name varint
 				][
@@ -505,8 +493,8 @@ protobuf: context [
 				vlen: decode-varint data
 				if vlen < 0 [return vlen]
 				len: length? varint-buffer
-				if len <> 1 [return -1]
-				either varint-buffer = #{00} [
+				varint: to integer! back back tail varint-buffer
+				either varint-buffer = #{0000} [
 					varint: false
 				][
 					varint: true
