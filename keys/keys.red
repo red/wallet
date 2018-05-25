@@ -32,11 +32,8 @@ to-int32: func [b [binary!]][
 key: context [
 	no-dev: "<No Device>"
 	devs: []
-
-	clear-devs: does [
-		clear devs
-		devs: copy []
-	]
+	dev-names: []
+	dev-names-in-block: []
 
 	support?: func [
 		id			[integer!]
@@ -48,41 +45,68 @@ key: context [
 	]
 
 	enum-devs: does [
-		if devs <> [] [clear-devs]
+		if devs <> [] [clear devs]
 		devs: hid/enum-devs reduce [ledger/id trezor/id]
 	]
 
 	free-enum: does [hid/free-enum]
 
-	get-names: func [/local i j id ser cond1 cond2][
-		if devs = [] [return reduce [no-dev]]
+	get-names: func [/local len i j id usg index name index-string][
+		len: length? devs
+		if len = 0 [return reduce [no-dev]]
 		i: 1
-		unique collect [
-			while [true] [
-				id: devs/:i
-				j: i + 1
-				ser: devs/:j
-				if id = none [break]
-				if ser = none [break]
-				cond1: integer! = type? id
-				cond2: string! = type? ser
-				either all [cond1 cond2] [
-					case [
-						id = ledger/id	[keep rejoin [ledger/name ":" ser]]
-						id = trezor/id	[keep rejoin [trezor/name ":" ser]]
-						true			[keep no-dev]
-					]
-				][break]
-				i: i + 2
+		clear dev-names-in-block
+		until [
+			id: devs/:i
+			j: i + 1
+			usg: devs/:j
+			if any [id = none usg = none] [break]
+			case [
+				ledger/filter? id usg [
+					index: select/last dev-names-in-block ledger/name
+					either index = none [index: 1][index: index + 1]
+					append dev-names-in-block reduce [ledger/name index]
+				]
+				trezor/filter? id usg [
+					index: select/last dev-names-in-block trezor/name
+					either index = none [index: 1][index: index + 1]
+					append dev-names-in-block reduce [trezor/name index]
+				]
+				true [
+					index: select/last dev-names-in-block no-dev
+					either index = none [index: 1][index: index + 1]
+					append dev-names-in-block reduce [no-dev index]
+				]
 			]
+
+			i: i + 2
+			i > len
 		]
+
+		len: length? dev-names-in-block
+		i: 1
+		clear dev-names
+		until [
+			name: dev-names-in-block/:i
+			j: i + 1
+			index: dev-names-in-block/:j
+			either index = 0 [
+				append dev-names name
+			][
+				append dev-names reduce [name ": " to string! index]
+			]
+
+			i: i + 2
+			i > len
+		]
+		dev-names
 	]
 
-	connect: func [name [string! none!] serial-num [string! none!]][
+	connect: func [name [string! none!] index [integer!]][
 		if name = none [return none]
 		case [
-			name = ledger/name [ledger/connect serial-num]
-			name = trezor/name [trezor/connect serial-num]
+			name = ledger/name [ledger/connect index]
+			name = trezor/name [trezor/connect index]
 			true [none]
 		]
 	]

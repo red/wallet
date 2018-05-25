@@ -27,9 +27,18 @@ ledger: context [
 	buffer:		make binary! MAX_APDU_SIZE
 	data-frame: make binary! PACKET_SIZE
 
-	connect: func [serial-num [string! none!]][
+	filter?: func [
+		_id				[integer!]
+		_usage			[integer!]
+		return:			[logic!]
+	][
+		if _id <> id [return false]
+		true
+	]
+
+	connect: func [index [integer!]][
 		unless dongle [
-			dongle: hid/open id serial-num
+			dongle: hid/open id index
 		]
 		dongle
 	]

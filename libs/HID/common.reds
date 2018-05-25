@@ -67,8 +67,6 @@ enum-devs: func [
 	/local
 		blk			[red-block!]
 		cur-dev		[hid-device-info]
-		ser			[c-string!]
-		tmp			[integer!]
 ][
 	if not enum-freed? [hid-free-enumeration]
 
@@ -77,12 +75,8 @@ enum-devs: func [
 	enum-freed?: false
 
 	while [cur-dev <> null] [
-		ser: cur-dev/serial-number
-		tmp: strcmp ser "null"
-		if all [ser <> null tmp <> 0] [
-			block/rs-append blk as red-value! integer/push cur-dev/id
-			block/rs-append blk as red-value! string/load ser wcslen ser UTF-16LE
-		]
+		block/rs-append blk as red-value! integer/push cur-dev/id
+		block/rs-append blk as red-value! integer/push cur-dev/usage
 		cur-dev: cur-dev/next
 	]
 	as red-block! stack/set-last as red-value! blk
@@ -90,24 +84,28 @@ enum-devs: func [
 
 open: func [
 	id				[integer!]
-	serial-number	[c-string!]
+	index			[integer!]
 	return:			[int-ptr!]
 	/local
 		cur-dev			[hid-device-info]
 		path-to-open	[c-string!]
 		handle 			[hid-device]
 		tmp				[integer!]
+		count			[integer!]
 ][
 	path-to-open: null
 	handle: null
 
+	count: 0
 	cur-dev: root
 	while [cur-dev <> null] [
-		either all [serial-number <> null id <> 0] [
-			tmp: wcscmp serial-number cur-dev/serial-number
-			;-- TBD
-			;if all [tmp = 0 cur-dev/id = id] [
+		either id <> 0 [
 			if cur-dev/id = id [
+				if index <> count [
+					count: count + 1
+					cur-dev: cur-dev/next
+					continue
+				]
 				path-to-open: cur-dev/path
 				break
 			]

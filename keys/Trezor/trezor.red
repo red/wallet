@@ -23,9 +23,20 @@ trezor: context [
 	msg-id: 0
 	pin-get: make string! 16
 
-	connect: func [serial-num [string! none!]][
+	filter?: func [
+		_id				[integer!]
+		_usage			[integer!]
+		return:			[logic!]
+	][
+		if _id <> id [return false]
+		if (_usage >>> 16) = FF01h [return false]		;-- skip debug integerface
+		if (_usage >>> 16) = F1D0h [return false]		;-- skip fido integerface
+		true
+	]
+
+	connect: func [index [integer!]][
 		unless dongle [
-			dongle: hid/open id serial-num
+			dongle: hid/open id index
 			if dongle <> none [
 				hid-version: get-hid-version
 			]
@@ -58,7 +69,9 @@ trezor: context [
 			len			[integer!]
 			req			[map!]
 	][
-		len: encode-and-write 'EthereumGetAddress make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]]
+		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]]
+		put req 'show_display false
+		len: encode-and-write 'EthereumGetAddress req
 		if len < 0 [return len]
 
 		clear command-buffer
