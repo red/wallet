@@ -94,11 +94,8 @@ wallet: context [
 		split names/:index ": "
 	]
 
-	list-addresses: func [
-		/prev /next 
-		/local
-			display-name name index
-			addresses addr n
+	connect-device: func [
+		/local display-name name index
 	][
 		update-ui no
 
@@ -110,13 +107,29 @@ wallet: context [
 		either none <> key/connect name index [
 			process-events
 			usb-device/rate: none
-			connected?: yes
 
 			if 'InitSuccess <> key/set-init name [
 				info-msg/text: "Initialize the key failed..."
 				exit
 			]
+			connected?: yes			
+			update-ui yes
+		][
+			info-msg/text: "This device can't be recognized"
+		]
+	]
 
+	list-addresses: func [
+		/prev /next 
+		/local
+			display-name name
+			addresses addr n
+	][
+		update-ui no
+
+		if connected? [
+			display-name: get-cur-name
+			name: display-name/1
 			info-msg/text: "Please wait while loading addresses..."
 			
 			addresses: clear []
@@ -157,8 +170,6 @@ wallet: context [
 			]
 			info-msg/text: ""
 			update-ui yes
-		][
-			info-msg/text: "This device can't be recognized"
 		]
 	]
 
@@ -507,6 +518,7 @@ comment {
 						connected?: no
 						key/close
 						enumerate-connected-devices
+						connect-device
 						list-addresses
 					]
 				]
@@ -527,6 +539,7 @@ comment {
 					;-- print "on-time"
 					key/close
 					enumerate-connected-devices
+					connect-device
 					list-addresses
 				]
 			]
