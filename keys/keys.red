@@ -31,8 +31,8 @@ to-int32: func [b [binary!]][
 
 key: context [
 	no-dev: "<No Device>"
-	devs: []
-	dev-names: []
+	enumerated-devices: []
+	valid-device-names: []
 	dev-names-in-block: []
 
 	support?: func [
@@ -44,22 +44,22 @@ key: context [
 		false
 	]
 
-	enum-devs: does [
-		if devs <> [] [clear devs]
-		devs: hid/enum-devs reduce [ledger/id trezor/id]
+	enumerate-connected-devices: does [
+		if enumerated-devices <> [] [clear enumerated-devices]
+		enumerated-devices: hid/enumerate-connected-devices reduce [ledger/id trezor/id]
 	]
 
 	free-enum: does [hid/free-enum]
 
-	get-names: func [/local len i j id usg index name index-string][
-		len: length? devs
+	get-valid-names: func [/local len i j id usg index name index-string][
+		len: length? enumerated-devices
 		if len = 0 [return reduce [no-dev]]
 		i: 1
 		clear dev-names-in-block
 		until [
-			id: devs/:i
+			id: enumerated-devices/:i
 			j: i + 1
-			usg: devs/:j
+			usg: enumerated-devices/:j
 			if any [id = none usg = none] [break]
 			case [
 				ledger/filter? id usg [
@@ -80,21 +80,21 @@ key: context [
 		len: length? dev-names-in-block
 		if len = 0 [return reduce [no-dev]]
 		i: 1
-		clear dev-names
+		clear valid-device-names
 		until [
 			name: dev-names-in-block/:i
 			j: i + 1
 			index: dev-names-in-block/:j
 			either index = 0 [
-				append dev-names name
+				append valid-device-names name
 			][
-				append dev-names reduce [name ": " to string! index]
+				append valid-device-names reduce [name ": " to string! index]
 			]
 
 			i: i + 2
 			i > len
 		]
-		dev-names
+		valid-device-names
 	]
 
 	get-enum-index: func [
@@ -104,16 +104,16 @@ key: context [
 		/local
 			len i j enum-index nid usg
 	][
-		len: length? devs
+		len: length? enumerated-devices
 		if len = 0 [return index]
 
 		enum-index: 0
 		count: 0
 		i: 1
 		until [
-			nid: devs/:i
+			nid: enumerated-devices/:i
 			j: i + 1
-			usg: devs/:j
+			usg: enumerated-devices/:j
 			case [
 				all [ledger/id = id id = nid] [
 					if ledger/filter? id usg [

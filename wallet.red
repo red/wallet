@@ -73,48 +73,49 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
-	enum-devs: does [
-		key/enum-devs
-		dev-list/data: key/get-names
+	enumerate-connected-devices: does [
+		key/enumerate-connected-devices
+		dev-list/data: key/get-valid-names
 		dev-list/selected: 1
-		if key/devs = [] [
+		if dev-list/data = [] [
 			info-msg/text: "Please plug in your key..."
 			clear addr-list/data
 		]
 	]
 
-	get-cur-dev: func [
+	get-cur-name: func [
 		return:			[block!]
 		/local
 			index
-			devs
+			names
 	][
 		index: dev-list/selected
-		devs: dev-list/data
-		split devs/:index ":"
+		names: dev-list/data
+		split names/:index ": "
 	]
 
 	list-addresses: func [
 		/prev /next 
 		/local
-			dev name sernum
+			display-name name index
 			addresses addr n
 	][
 		update-ui no
 
-		dev: get-cur-dev
-		name: dev/1
-		sernum: dev/2
+		display-name: get-cur-name
+		name: display-name/1
+		index: display-name/2
+		if index = none [index: 0]
 
-		if name = key/no-dev [
-			info-msg/text: "Please plug in your key..."
-			exit
-		]
-
-		either none <> key/connect name sernum [
+		either none <> key/connect name index [
 			process-events
 			usb-device/rate: none
 			connected?: yes
+
+			if 'InitSuccess <> key/set-init name [
+				info-msg/text: "Initialize the key failed..."
+				exit
+			]
 
 			info-msg/text: "Please wait while loading addresses..."
 			
@@ -124,7 +125,7 @@ wallet: context [
 			n: page * addr-per-page
 			
 			loop addr-per-page [
-				addr: ledger/get-address n
+				addr: key/get-address name n
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -184,7 +185,7 @@ wallet: context [
 
 	do-select-dev: func [face [object!] event [event!] /local idx dev-name i devs item][
 		idx: face/selected
-
+comment {
 		dev-name: face/data/:idx
 		i: 1
 		devs: key/devs
@@ -201,6 +202,7 @@ wallet: context [
 			]
 			i: i + 2
 		]
+}
 	]
 
 	do-select-network: func [face [object!] event [event!] /local idx][
@@ -438,7 +440,7 @@ wallet: context [
 	ui: layout compose [
 		title "RED Wallet"
 		text 50 "Device:"
-		dev-list: drop-list data key/get-names 135 select 1 :do-select-dev
+		dev-list: drop-list data key/get-valid-names 135 select 1 :do-select-dev
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
 		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
@@ -501,9 +503,10 @@ wallet: context [
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
 						;-- when plug in a new device, we don't known it's serial number, so reset all devices
+						;-- print "on-up"
 						connected?: no
 						key/close
-						enum-devs
+						enumerate-connected-devices
 						list-addresses
 					]
 				]
@@ -511,6 +514,7 @@ wallet: context [
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
 						;-- when plug out a device, we don't knwon it's serial number, so reset all devices also
+						;-- print "on-down"
 						face/rate: none
 						connected?: no
 						key/close
@@ -520,8 +524,9 @@ wallet: context [
 				]
 				on-time: func [face event][
 					if connected? [face/rate: none]
+					;-- print "on-time"
 					key/close
-					enum-devs
+					enumerate-connected-devices
 					list-addresses
 				]
 			]

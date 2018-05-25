@@ -29,11 +29,11 @@ Red [
 ]
 
 hid: context [
-	enum-devs: routine [
+	enumerate-connected-devices: routine [
 		ids			[block!]
 		return:		[block!]
 	][
-		hid/enum-devs ids
+		hid/enumerate-connected-devices ids
 	]
 
 	free-enum: routine [][

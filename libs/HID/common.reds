@@ -61,7 +61,7 @@ id-filter?: func [
 	false
 ]
 
-enum-devs: func [
+enumerate-connected-devices: func [
 	ids				[red-block!]
 	return:			[red-block!]
 	/local
