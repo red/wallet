@@ -196,6 +196,19 @@ message: context [
 		[1		bytes address required]
 	]
 
+	EthereumSignTx: [
+		[1		uint32 address_n repeated]
+		[2		bytes nonce optional]
+		[3		bytes gas_price optional]
+		[4		bytes gas_limit optional]
+		[5		bytes _to optional]
+		[6		bytes value optional]
+		[7		bytes data_initial_chunk optional]
+		[8		uint32 data_length optional]
+		[9		uint32 chain_id optional]
+		[10		uint32 tx_type optional]
+	]
+
 	CoinType: [
 		[1		string coin_name optional]
 		[2		string coin_shortcut optional]
@@ -230,6 +243,7 @@ message: context [
 		[PublicKey					MessageType_PublicKey]
 		[EthereumGetAddress			MessageType_EthereumGetAddress]
 		[EthereumAddress			MessageType_EthereumAddress]
+		[EthereumSignTx				MessageType_EthereumSignTx]
 	]
 
 	get-msg-id: func [

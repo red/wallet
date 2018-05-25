@@ -83,26 +83,40 @@ wallet: context [
 		]
 	]
 
-	get-cur-name: func [
-		return:			[block!]
+	get-device-name: func [
+		return:			[string!]
 		/local
 			index
 			names
+			blk
 	][
 		index: dev-list/selected
 		names: dev-list/data
-		split names/:index ": "
+		blk: split names/:index ": "
+		blk/1
+	]
+
+	get-device-index: func [
+		return:			[integer!]
+		/local
+			index
+			names
+			blk
+	][
+		index: dev-list/selected
+		names: dev-list/data
+		blk: split names/:index ": "
+		if blk/2 = none [return 0]
+		blk/2
 	]
 
 	connect-device: func [
-		/local display-name name index
+		/local name index
 	][
 		update-ui no
 
-		display-name: get-cur-name
-		name: display-name/1
-		index: display-name/2
-		if index = none [index: 0]
+		name: get-device-name
+		index: get-device-index
 
 		either none <> key/connect name index [
 			process-events
@@ -122,14 +136,13 @@ wallet: context [
 	list-addresses: func [
 		/prev /next 
 		/local
-			display-name name
+			name
 			addresses addr n
 	][
 		update-ui no
 
 		if connected? [
-			display-name: get-cur-name
-			name: display-name/1
+			name: get-device-name
 			info-msg/text: "Please wait while loading addresses..."
 			
 			addresses: clear []
@@ -288,7 +301,7 @@ wallet: context [
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount][
+	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount name][
 		unless check-data [exit]
 
 		notify-user
@@ -304,8 +317,9 @@ wallet: context [
 			exit
 		]
 
+		name: get-device-name
 		;-- Edge case: ledger key may locked in this moment
-		unless string? ledger/get-address 0 [
+		unless string? key/get-address name 0 [
 			reset-sign-button
 			view/flags unlock-dev-dlg 'modal
 			exit
