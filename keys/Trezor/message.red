@@ -129,6 +129,11 @@ message: context [
 		[1		bytes state optional]
 	]
 
+	Failure: [
+		[1		enum code optional]
+		[2		string message optional]
+	]
+
 	GetFeatures: []
 
 	Features: [
@@ -216,6 +221,7 @@ message: context [
 
 	tabs: [
 		[Initialize					MessageType_Initialize				wire_in]
+		[Failure					MessageType_Failure					wire_out]
 		[GetFeatures				MessageType_GetFeatures				wire_in]
 		[Features					MessageType_Features]
 		[GetPublicKey				MessageType_GetPublicKey]
