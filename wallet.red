@@ -194,26 +194,12 @@ wallet: context [
 		]
 	]
 
-	do-select-dev: func [face [object!] event [event!] /local idx dev-name i devs item][
-		idx: face/selected
-comment {
-		dev-name: face/data/:idx
-		i: 1
-		devs: key/devs
-		while [true] [
-			item: devs/:i
-			if item == none [
-				clear serialnum-list/data
-				break
-			]
-			if item = dev-name [
-				i: i + 1
-				serialnum-list/data: devs/:i
-				break
-			]
-			i: i + 2
-		]
-}
+	do-select-dev: func [face [object!] event [event!]][
+		connected?: no
+		key/close
+		enumerate-connected-devices
+		connect-device
+		list-addresses
 	]
 
 	do-select-network: func [face [object!] event [event!] /local idx][
