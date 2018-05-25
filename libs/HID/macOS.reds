@@ -24,8 +24,7 @@ hid: context [
 	#define kIOHIDMaxInputReportSizeKey         "MaxInputReportSize"
 	#define BUF_LEN 							256
 	#define kCFNumberSInt32Type  				3
-	#define kCFStringEncodingUTF8				08000100h
-	#define HID_CFSTR(cStr)						[CFStringCreateWithCString 0 cStr kCFStringEncodingUTF8]
+	#define HID_CFSTR(cStr)						[CFStringCreateWithCString 0 cStr 08000100h]
 	#define LOWORD(param) (param and FFFFh << 16 >> 16)
 	#define HIWORD(param) (param >> 16)
 	#define WIDE_CHAR_SIZE						4
