@@ -164,6 +164,7 @@ trezor: context [
 			style label: text 400 middle
 			style but: button 50x50 "*"
 			style pin-field: field 200 middle
+			label "Look at the device for number positions." return
 			but [append pin-show/text "*" append pin "7"]
 			but [append pin-show/text "*" append pin "8"]
 			but [append pin-show/text "*" append pin "9"] return
@@ -174,7 +175,7 @@ trezor: context [
 			but [append pin-show/text "*" append pin "2"]
 			but [append pin-show/text "*" append pin "3"] return
 			pin-show: pin-field "" return
-			button "Enter" 80 middle [unview]
+			button "Enter" 200 middle [unview]
 			do [
 				clear pin-show/text
 			]
