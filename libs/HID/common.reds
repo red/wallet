@@ -39,6 +39,7 @@ id-filter?: func [
 		value		[red-value!]
 		int			[red-integer!]
 ][
+	ids/head: 0
 	size:  block/rs-length? ids
 	either zero? size [
 		return true

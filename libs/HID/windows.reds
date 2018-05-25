@@ -341,6 +341,7 @@ hid: context [
 			strtol: "strtol" [
 				Result 		[c-string!]
 				String 		[c-string!]
+				Base		[integer!]
 				return: 	[integer!]
 			]
 			strcmp: "strcmp" [
@@ -655,12 +656,12 @@ hid: context [
 						interface-component: declare c-string!
 						interface-component: strstr cur-dev/path "&mi_"
 						if as logic! interface-component [
-						hex-str: interface-component + 4
-						endptr: 0
-						cur-dev/interface-number: strtol hex-str (as c-string! :endptr) 16
-						if (as c-string! endptr) = hex-str [
-							cur-dev/interface-number: -1
-						]
+							hex-str: interface-component + 4
+							endptr: 0
+							cur-dev/interface-number: strtol hex-str (as c-string! :endptr) 16
+							if (as c-string! endptr) = hex-str [
+								cur-dev/interface-number: -1
+							]
 						]
 					]
 				]
