@@ -120,6 +120,11 @@ wallet: context [
 		name: get-device-name
 		index: get-device-index
 
+		if name = key/no-dev [
+			info-msg/text: ""
+			exit
+		]
+
 		either none <> key/connect name index [
 			process-events
 			usb-device/rate: none
