@@ -80,15 +80,21 @@ trezor: context [
 			amount
 			signed
 			len
+			data-len
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
+		data-len: length? tx/6
 		req: make map! reduce [
 			'address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
 			'_to tx/4 'value amount 'chain_id chain-id
+		]
+		if data-len > 0 [
+			put req 'data_length data-len
+			put req 'data_initial_chunk tx/6
 		]
 		res: make map! []
 		len: EthereumSignTx req res
