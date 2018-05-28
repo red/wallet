@@ -9,8 +9,6 @@ Red [
 	}
 ]
 
-#include %rlp.red
-
 ledger: context [
 	name: "Ledger Nano S"
 

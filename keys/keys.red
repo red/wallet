@@ -171,6 +171,15 @@ key: context [
 		]
 	]
 
+	get-signed-data: func [name [string! none!] idx [integer!] tx [block!] chain-id [integer!]][
+		if name = none [return 'NoDevice]
+		case [
+			name = ledger/name [ledger/get-signed-data idx tx]
+			name = trezor/name [trezor/get-signed-data idx tx chain-id]
+			true ['NotSupport]
+		]
+	]
+
 	close: does [
 		ledger/close
 		trezor/close

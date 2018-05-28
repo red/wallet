@@ -7,7 +7,6 @@ Red [
 ]
 
 #include %message.red
-#include %../../libs/protobuf.red
 
 trezor: context [
 	name: "Trezor"
@@ -44,6 +43,13 @@ trezor: context [
 		dongle
 	]
 
+	set-init: func [][
+		res: make map! []
+		len: Initialize res
+		if len < 0 [return 'InitFailure]
+		return 'InitSuccess
+	]
+
 	get-address: func [
 		idx				[integer!]
 		/local
@@ -61,11 +67,39 @@ trezor: context [
 		rejoin ["0x" enbase/base res/address 16]
 	]
 
-	set-init: func [][
+	get-signed-data: func [
+		idx				[integer!]
+		tx				[block!]
+		chain-id		[integer!]
+		/local
+			req			[map!]
+			res			[map!]
+			nonce
+			gas_price
+			gas_limit
+			amount
+			signed
+			len
+	][
+		nonce: trim/head to binary! tx/1
+		gas_price: trim/head i256-to-bin tx/2
+		gas_limit: trim/head to binary! tx/3
+		amount: trim/head i256-to-bin tx/5
+		req: make map! reduce [
+			'address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]
+			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
+			'_to tx/4 'value amount 'chain_id chain-id
+		]
 		res: make map! []
-		len: Initialize res
-		if len < 0 [return 'InitFailure]
-		return 'InitSuccess
+		len: EthereumSignTx req res
+		either len > 0 [
+			append tx reduce [
+				to-bin8 res/signature_v
+				res/signature_r
+				res/signature_s
+			]
+			rlp/encode tx
+		]['SignError]
 	]
 
 	;===================
@@ -151,10 +185,18 @@ trezor: context [
 			if len < 0 [return len]
 		]
 
+		if msg-id <> message/get-msg-id 'ButtonRequest [return -1]
+
 		res2: make map! []
 		len: protobuf/decode 'ButtonRequest res2 command-buffer
 		if len < 0 [return len]
 
+		len: encode-and-write 'ButtonAck make map! []
+		if len < 0 [return len]
+
+		res2: make map! []
+		len: read-and-decode 'ButtonRequest res2
+		if len < 0 [return len]
 		len: encode-and-write 'ButtonAck make map! []
 		if len < 0 [return len]
 

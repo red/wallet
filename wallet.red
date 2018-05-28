@@ -15,6 +15,8 @@ Red [
 
 #include %libs/int256.red
 #include %libs/JSON.red
+#include %libs/rlp.red
+#include %libs/protobuf.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/keys.red
@@ -301,7 +303,7 @@ wallet: context [
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount name][
+	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount name chain-id][
 		unless check-data [exit]
 
 		notify-user
@@ -349,7 +351,12 @@ wallet: context [
 			]
 		]
 
-		signed-data: ledger/get-signed-data address-index tx
+		chain-id: case [
+			net-name = "mainnet" [1]
+			net-name = "Rinkeby" [4]
+			net-name = "Kovan" [42]
+		]
+		signed-data: key/get-signed-data name address-index tx chain-id
 
 		either all [
 			signed-data
