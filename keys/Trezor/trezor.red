@@ -106,21 +106,59 @@ trezor: context [
 			return len
 		]
 
-		if msg-id <> message/get-msg-id 'PinMatrixRequest [
-			return -1
-		]
+		if msg-id <> message/get-msg-id 'PinMatrixRequest [return -1]
+		len: PinMatrix
+		if len < 0 [return len]
 
+		len: read-and-decode 'EthereumAddress res
+		if msg-id <> message/get-msg-id 'EthereumAddress [return -1]
+		len
+	]
+
+	PinMatrix: func [
+		return:			[integer!]
+		/local
+			len			[integer!]
+	][
 		len: protobuf/decode 'PinMatrixRequest make map! [] command-buffer
 		if len < 0 [return len]
 		clear pin-get
 		pin-dlg pin-get
 		len: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
+		len
+	]
+
+	EthereumSignTx: func [
+		req				[map!]
+		res				[map!]
+		return:			[integer!]
+		/local
+			len			[integer!]
+			res2		[map!]
+	][
+		len: encode-and-write 'EthereumSignTx req
 		if len < 0 [return len]
 
-		len: read-and-decode 'EthereumAddress res
-		if msg-id <> message/get-msg-id 'EthereumAddress [
-			return -1
+		clear command-buffer
+		len: message-read command-buffer
+		if len < 0 [return len]
+
+		if msg-id = message/get-msg-id 'PinMatrixRequest [
+			len: PinMatrix
+			if len < 0 [return len]
+			clear command-buffer
+			len: message-read command-buffer
+			if len < 0 [return len]
 		]
+
+		res2: make map! []
+		len: protobuf/decode 'ButtonRequest res2 command-buffer
+		if len < 0 [return len]
+
+		len: encode-and-write 'ButtonAck make map! []
+		if len < 0 [return len]
+
+		len: read-and-decode 'EthereumTxRequest res
 		len
 	]
 

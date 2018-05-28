@@ -209,6 +209,21 @@ message: context [
 		[10		uint32 tx_type optional]
 	]
 
+	ButtonRequest: [
+		;[1		ButtonRequestType code optional]
+		[1		enum code optional]
+		[2		string data optional]
+	]
+
+	ButtonAck: []
+
+	EthereumTxRequest: [
+		[1		uint32 data_length optional]
+		[2		uint32 signature_v optional]
+		[3		bytes signature_r optional]
+		[4		bytes signature_s optional]
+	]
+
 	CoinType: [
 		[1		string coin_name optional]
 		[2		string coin_shortcut optional]
@@ -244,6 +259,9 @@ message: context [
 		[EthereumGetAddress			MessageType_EthereumGetAddress]
 		[EthereumAddress			MessageType_EthereumAddress]
 		[EthereumSignTx				MessageType_EthereumSignTx]
+		[ButtonRequest				MessageType_ButtonRequest]
+		[ButtonAck					MessageType_ButtonAck]
+		[EthereumTxRequest			MessageType_EthereumTxRequest]
 	]
 
 	get-msg-id: func [
