@@ -536,9 +536,12 @@ wallet: context [
 						;-- print "on-down"
 						face/rate: none
 						connected?: no
-						key/close
 						info-msg/text: ""
 						clear addr-list/data
+						key/close
+						enumerate-connected-devices
+						connect-device
+						list-addresses
 					]
 				]
 				on-time: func [face event][
