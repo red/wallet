@@ -77,7 +77,7 @@ wallet: context [
 
 	enumerate-connected-devices: does [
 		key/enumerate-connected-devices
-		dev-list/data: key/get-valid-names
+		dev-list/data: key/get-valid-names key/valid-device-names
 		dev-list/selected: 1
 		if dev-list/data = [] [
 			info-msg/text: "Please plug in your key..."
@@ -477,7 +477,7 @@ wallet: context [
 	ui: layout compose [
 		title "RED Wallet"
 		text 50 "Device:"
-		dev-list: drop-list data key/get-valid-names 135 select 1 :do-select-dev
+		dev-list: drop-list data key/get-valid-names key/valid-device-names 135 select 1 :do-select-dev
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
 		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
@@ -536,28 +536,41 @@ wallet: context [
 		append ui/pane usb-device: make face! [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
-				on-up: func [face [object!] event [event!] /local id [integer!]][
+				on-up: func [face [object!] event [event!] /local id [integer!] len [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
-						;-- when plug in a new device, we don't known it's serial number, so reset all devices
 						;-- print "on-up"
-						if any [
-							not key/opened? id
-							'Init = key/get-request-pin-state-by-id id
-						][
-							;-- print "need unlock key"
+						enumerate-connected-devices
+						len: length? key/get-valid-names key/new-valid-names
+						len: len / 2
+						either len > 1 [								;-- if we have multi devices, just reset all
+							face/rate: none
 							connected?: no
+							info-msg/text: ""
+							clear addr-list/data
+							key/close-pin-requesting-by-id id			;-- for trezor pin request
 							key/close
-							enumerate-connected-devices
+							key/valid-device-names: copy key/new-valid-names
 							connect-device
 							list-addresses
+						][
+							if any [
+								not key/opened? id
+								'Init = key/get-request-pin-state-by-id id
+							][
+								;-- print "need unlock key"
+								connected?: no
+								key/close
+								connect-device
+								list-addresses
+							]
 						]
+						key/free-enum
 					]
 				]
 				on-down: func [face [object!] event [event!] /local id [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
-						;-- when plug out a device, we don't knwon it's serial number, so reset all devices also
 						;-- print "on-down"
 						face/rate: none
 						connected?: no
@@ -568,6 +581,7 @@ wallet: context [
 						enumerate-connected-devices
 						connect-device
 						list-addresses
+						key/free-enum
 					]
 				]
 				on-time: func [face event /local name][
@@ -582,6 +596,7 @@ wallet: context [
 						key/close
 						enumerate-connected-devices
 						connect-device
+						key/free-enum
 					]
 					list-addresses
 				]
