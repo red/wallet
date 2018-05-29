@@ -47,10 +47,18 @@ trezor: context [
 		]
 	]
 
-	request-pin: has [
-		req len
-	][
+	request-pin: does [
 		if request-pin-state <> 'Init [return request-pin-state]
+		request-pin-cmd
+		if request-pin-state <> 'Init [return request-pin-state]
+
+		request-pin-state: 'Requesting
+		clear pin-get
+		view/no-wait/flags pin-dlg 'modal
+		request-pin-state
+	]
+
+	request-pin-cmd: has [req len][
 
 		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 0]]
 		put req 'show_display false
@@ -75,11 +83,6 @@ trezor: context [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
-
-		request-pin-state: 'Requesting
-		clear pin-get
-		view/no-wait/flags pin-dlg 'modal
-		request-pin-state
 	]
 
 	connect: func [index [integer!]][
@@ -330,7 +333,7 @@ trezor: context [
 		style label: text 220 middle
 		style but: button 60x60 "*"
 		style pin-field: field 205 middle
-		pad 15x0 label "Look at the device for number positions."
+		pad 15x0 header: label "Look at the device for number positions."
 		return pad 15x0
 		but [append pin-show/text "*" append pin-get "7"]
 		but [append pin-show/text "*" append pin-get "8"]
@@ -359,6 +362,13 @@ trezor: context [
 				if pin-get-tmp < 0 [
 					request-pin-state: 'TrezorError
 					unview
+					exit
+				]
+				if msg-id = message/get-msg-id 'Failure [
+					clear pin-show/text
+					header/text: "Input Pin Failure! Enter Pin again."
+					request-pin-cmd
+					clear pin-get
 					exit
 				]
 				if msg-id <> message/get-msg-id 'EthereumAddress [
