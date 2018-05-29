@@ -102,6 +102,18 @@ trezor: context [
 	get-address: func [
 		idx				[integer!]
 		/local
+			ret
+	][
+		until [
+			ret: _get-address idx
+			ret <> 'Failure
+		]
+		ret
+	]
+
+	_get-address: func [
+		idx				[integer!]
+		/local
 			res len
 	][
 		res: make map! []
@@ -220,6 +232,24 @@ trezor: context [
 	]
 
 	EthereumSignTx: func [
+		req				[map!]
+		res				[map!]
+		return:			[integer!]
+		/local
+			len			[integer!]
+			res2		[map!]
+	][
+		until [
+			len: _EthereumSignTx req res
+			any [
+				len > 0
+				msg-id <> message/get-msg-id 'Failure
+			]
+		]
+		len
+	]
+
+	_EthereumSignTx: func [
 		req				[map!]
 		res				[map!]
 		return:			[integer!]
