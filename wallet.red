@@ -148,7 +148,7 @@ wallet: context [
 					usb-device/rate: 0:0:1
 					info-msg/text: "Please unlock your key"
 				]
-				print 'Init
+				;-- print 'Init
 			]
 			connected?: yes			
 		][
@@ -168,9 +168,9 @@ wallet: context [
 
 		if connected? [
 			name: get-device-name
-			print name
+			;-- print name
 			req-pin-state: key/get-request-pin-state-by-name name
-			print req-pin-state
+			;-- print req-pin-state
 			if req-pin-state <> 'HasRequested [
 				update-ui yes
 				exit
@@ -552,11 +552,11 @@ wallet: context [
 				on-up: func [face [object!] event [event!] /local id [integer!] len [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
-						print "on-up"
+						;-- print "on-up"
 						enumerate-connected-devices
 						len: length? dev-list/data
 						either len > 1 [								;-- if we have multi devices, just reset all
-							print [len " devices"]
+							;-- print [len " devices"]
 							face/rate: none
 							connected?: no
 							info-msg/text: ""
@@ -569,7 +569,7 @@ wallet: context [
 								not key/opened? id
 								'Init = key/get-request-pin-state-by-id id
 							][
-								print "need unlock key"
+								;-- print "need unlock key"
 								connected?: no
 								key/close
 								connect-device
@@ -582,7 +582,7 @@ wallet: context [
 				on-down: func [face [object!] event [event!] /local id [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
-						print "on-down"
+						;-- print "on-down"
 						face/rate: none
 						connected?: no
 						info-msg/text: ""
@@ -601,9 +601,9 @@ wallet: context [
 						connected?
 						'Requesting <> key/get-request-pin-state-by-name name
 					][face/rate: none]
-					print "on-time"
+					;-- print "on-time"
 					if not key/any-opened? [
-						print "need to enumerate"
+						;-- print "need to enumerate"
 						key/close
 						enumerate-connected-devices
 						connect-device
