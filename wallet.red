@@ -101,6 +101,7 @@ wallet: context [
 		index: dev-list/selected
 		names: dev-list/data
 		blk: split names/:index ": "
+		print blk/1
 		blk/1
 	]
 
@@ -542,16 +543,17 @@ wallet: context [
 		append ui/pane usb-device: make face! [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
-				on-up: func [face [object!] event [event!] /local id [integer!]][
+				on-up: func [face [object!] event [event!] /local id [integer!] len [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
-						;-- print "on-up"
+						print "on-up"
 						enumerate-connected-devices
-						either dev-list/selected > 1 [					;-- if we have multi devices, just reset all
+						len: length? dev-list/data
+						either len > 1 [								;-- if we have multi devices, just reset all
+							print [len " devices"]
 							face/rate: none
 							connected?: no
 							info-msg/text: ""
-							clear addr-list/data
 							key/close-pin-requesting-by-id id			;-- for trezor pin request
 							key/close
 							connect-device
@@ -561,7 +563,7 @@ wallet: context [
 								not key/opened? id
 								'Init = key/get-request-pin-state-by-id id
 							][
-								;-- print "need unlock key"
+								print "need unlock key"
 								connected?: no
 								key/close
 								connect-device
@@ -574,7 +576,7 @@ wallet: context [
 				on-down: func [face [object!] event [event!] /local id [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
-						;-- print "on-down"
+						print "on-down"
 						face/rate: none
 						connected?: no
 						info-msg/text: ""
@@ -593,9 +595,9 @@ wallet: context [
 						connected?
 						'Requesting <> key/get-request-pin-state-by-name name
 					][face/rate: none]
-					;-- print "on-time"
+					print "on-time"
 					if not key/any-opened? [
-						;-- print "need to enumerate"
+						print "need to enumerate"
 						key/close
 						enumerate-connected-devices
 						connect-device

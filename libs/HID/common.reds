@@ -17,6 +17,7 @@ hid-free-enumeration: func [
 		d 		[hid-device-info]
 		next 	[hid-device-info]
 ][
+	if enum-freed? = true [exit]
 	d: root
 	while [as logic! d] [
 		next: d/next
@@ -68,7 +69,7 @@ enumerate-connected-devices: func [
 		blk			[red-block!]
 		cur-dev		[hid-device-info]
 ][
-	if not enum-freed? [hid-free-enumeration]
+	hid-free-enumeration
 
 	blk: block/push-only* 4
 	cur-dev: enumerate ids
