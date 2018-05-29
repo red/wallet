@@ -128,6 +128,7 @@ wallet: context [
 		index: get-device-index
 
 		if name = key/no-dev [
+			update-ui yes
 			exit
 		]
 
@@ -137,6 +138,7 @@ wallet: context [
 
 			if 'InitSuccess <> key/set-init name [
 				info-msg/text: "Initialize the key failed..."
+				update-ui yes
 				exit
 			]
 
@@ -145,12 +147,13 @@ wallet: context [
 					usb-device/rate: 0:0:1
 					info-msg/text: "Please unlock your key"
 				]
+				print 'Init
 			]
 			connected?: yes			
-			update-ui yes
 		][
 			info-msg/text: "This device can't be recognized"
 		]
+		update-ui yes
 	]
 
 	list-addresses: func [
@@ -165,6 +168,7 @@ wallet: context [
 		if connected? [
 			name: get-device-name
 			req-pin-state: key/get-request-pin-state-by-name name
+			print req-pin-state
 			if req-pin-state <> 'HasRequested [
 				update-ui yes
 				exit
@@ -209,8 +213,8 @@ wallet: context [
 				process-events
 			]
 			info-msg/text: ""
-			update-ui yes
 		]
+		update-ui yes
 	]
 
 	reset-sign-button: does [

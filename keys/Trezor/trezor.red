@@ -41,7 +41,7 @@ trezor: context [
 	]
 
 	close-pin-requesting: does [
-		if request-pin-state = 'Requesting [
+		if request-pin-state <> 'Init [
 			request-pin-state: 'Init
 			unview/only pin-dlg
 		]
@@ -77,6 +77,7 @@ trezor: context [
 		]
 
 		request-pin-state: 'Requesting
+		clear pin-get
 		view/no-wait/flags pin-dlg 'modal
 		request-pin-state
 	]
