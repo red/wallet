@@ -413,7 +413,7 @@ trezor: context [
 			sz		[integer!]
 	][
 		sz: len
-		while [true] [
+		forever [
 			if 0 = length? data-frame [
 				r: buffer-report
 				if r < 0 [return r]

@@ -57,7 +57,7 @@ protobuf: context [
 		clear varint-buffer
 
 		rest: int
-		while [true][
+		forever [
 			either all [(rest and FFFFFF80h) = 0 rest < 128] [
 				append varint-buffer to integer! rest
 				exit
