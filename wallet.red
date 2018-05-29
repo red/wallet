@@ -75,14 +75,20 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
-	enumerate-connected-devices: does [
+	enumerate-connected-devices: func [/local len] [
 		key/enumerate-connected-devices
 		dev-list/data: key/get-valid-names key/valid-device-names
-		dev-list/selected: 1
-		if dev-list/data = [] [
+		len: length? dev-list/data
+		if len < dev-list/selected [dev-list/selected: len]
+		if all [len = 1 dev-list/data/1 = key/no-dev] [
 			info-msg/text: "Please plug in your key..."
+			dev-list/selected: 1
 			clear addr-list/data
 		]
+	]
+
+	free-enumerate-connected-devices: does [
+		key/free-enum
 	]
 
 	get-device-name: func [
@@ -121,7 +127,6 @@ wallet: context [
 		index: get-device-index
 
 		if name = key/no-dev [
-			info-msg/text: ""
 			exit
 		]
 
@@ -234,6 +239,7 @@ wallet: context [
 		enumerate-connected-devices
 		connect-device
 		list-addresses
+		free-enumerate-connected-devices
 	]
 
 	do-select-network: func [face [object!] event [event!] /local idx][
@@ -536,21 +542,18 @@ wallet: context [
 		append ui/pane usb-device: make face! [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
-				on-up: func [face [object!] event [event!] /local id [integer!] len [integer!]][
+				on-up: func [face [object!] event [event!] /local id [integer!]][
 					id: face/data/2 << 16 or face/data/1
 					if support-device? id [
 						;-- print "on-up"
 						enumerate-connected-devices
-						len: length? key/get-valid-names key/new-valid-names
-						len: len / 2
-						either len > 1 [								;-- if we have multi devices, just reset all
+						either dev-list/selected > 1 [					;-- if we have multi devices, just reset all
 							face/rate: none
 							connected?: no
 							info-msg/text: ""
 							clear addr-list/data
 							key/close-pin-requesting-by-id id			;-- for trezor pin request
 							key/close
-							key/valid-device-names: copy key/new-valid-names
 							connect-device
 							list-addresses
 						][
@@ -565,7 +568,7 @@ wallet: context [
 								list-addresses
 							]
 						]
-						key/free-enum
+						free-enumerate-connected-devices
 					]
 				]
 				on-down: func [face [object!] event [event!] /local id [integer!]][
@@ -581,7 +584,7 @@ wallet: context [
 						enumerate-connected-devices
 						connect-device
 						list-addresses
-						key/free-enum
+						free-enumerate-connected-devices
 					]
 				]
 				on-time: func [face event /local name][
@@ -596,7 +599,7 @@ wallet: context [
 						key/close
 						enumerate-connected-devices
 						connect-device
-						key/free-enum
+						free-enumerate-connected-devices
 					]
 					list-addresses
 				]
