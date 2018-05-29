@@ -100,8 +100,8 @@ wallet: context [
 	][
 		index: dev-list/selected
 		names: dev-list/data
+		if names = none [return key/no-dev]
 		blk: split names/:index ": "
-		print blk/1
 		blk/1
 	]
 
@@ -114,6 +114,7 @@ wallet: context [
 	][
 		index: dev-list/selected
 		names: dev-list/data
+		if names = none [return 0]		
 		blk: split names/:index ": "
 		if blk/2 = none [return 0]
 		blk/2
@@ -167,6 +168,7 @@ wallet: context [
 
 		if connected? [
 			name: get-device-name
+			print name
 			req-pin-state: key/get-request-pin-state-by-name name
 			print req-pin-state
 			if req-pin-state <> 'HasRequested [
