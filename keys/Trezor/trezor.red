@@ -21,6 +21,8 @@ trezor: context [
 	command-buffer: make binary! 1000
 	msg-id: 0
 	pin-get: make string! 16
+	pin-get-tmp: -1
+	request-pin-state: 'Init							;-- Init/Requesting/HasRequested/TrezorError
 
 	filter?: func [
 		_id				[integer!]
@@ -31,6 +33,52 @@ trezor: context [
 		if (_usage >>> 16) = FF01h [return false]		;-- skip debug integerface
 		if (_usage >>> 16) = F1D0h [return false]		;-- skip fido integerface
 		true
+	]
+
+	opened?: func [return: [logic!]] [
+		if dongle = none [return false]
+		true
+	]
+
+	close-pin-requesting: does [
+		if request-pin-state = 'Requesting [
+			request-pin-state: 'Init
+			unview/only pin-dlg
+		]
+	]
+
+	request-pin: has [
+		req len
+	][
+		if request-pin-state <> 'Init [return request-pin-state]
+
+		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 0]]
+		put req 'show_display false
+		len: encode-and-write 'EthereumGetAddress req
+		if len < 0 [
+			request-pin-state: 'TrezorError
+			return request-pin-state
+		]
+
+		clear command-buffer
+		len: message-read command-buffer
+		if len < 0 [
+			request-pin-state: 'TrezorError
+			return request-pin-state
+		]
+		if msg-id = message/get-msg-id 'EthereumAddress [
+			request-pin-state: 'HasRequested
+			return request-pin-state
+		]
+
+		if msg-id <> message/get-msg-id 'PinMatrixRequest [
+			request-pin-state: 'TrezorError
+			return request-pin-state
+		]
+
+		request-pin-state: 'Requesting
+		view/no-wait/flags pin-dlg 'modal
+		request-pin-state
 	]
 
 	connect: func [index [integer!]][
@@ -133,6 +181,8 @@ trezor: context [
 			len			[integer!]
 			req			[map!]
 	][
+		if request-pin-state <> 'HasRequested [return -1]
+
 		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]]
 		put req 'show_display false
 		len: encode-and-write 'EthereumGetAddress req
@@ -163,7 +213,7 @@ trezor: context [
 		len: protobuf/decode 'PinMatrixRequest make map! [] command-buffer
 		if len < 0 [return len]
 		clear pin-get
-		pin-dlg pin-get
+		view/flags pin-dlg 'modal
 		len: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
 		len
 	]
@@ -176,6 +226,8 @@ trezor: context [
 			len			[integer!]
 			res2		[map!]
 	][
+		if request-pin-state <> 'HasRequested [return -1]
+
 		len: encode-and-write 'EthereumSignTx req
 		if len < 0 [return len]
 
@@ -242,32 +294,54 @@ trezor: context [
 		len
 	]
 
-	pin-dlg: func [
-		pin		[string!]
-	][
-		dlg: layout [
-			title "Please enter your PIN"
-			style label: text 400 middle
-			style but: button 50x50 "*"
-			style pin-field: field 200 middle
-			label "Look at the device for number positions." return
-			but [append pin-show/text "*" append pin "7"]
-			but [append pin-show/text "*" append pin "8"]
-			but [append pin-show/text "*" append pin "9"] return
-			but [append pin-show/text "*" append pin "4"]
-			but [append pin-show/text "*" append pin "5"]
-			but [append pin-show/text "*" append pin "6"] return
-			but [append pin-show/text "*" append pin "1"]
-			but [append pin-show/text "*" append pin "2"]
-			but [append pin-show/text "*" append pin "3"] return
-			pin-show: pin-field "" return
-			button "Enter" 200 middle [unview]
-			do [
-				clear pin-show/text
+	pin-dlg: layout [
+		title "Please enter your PIN"
+		style label: text 220 middle
+		style but: button 60x60 "*"
+		style pin-field: field 205 middle
+		pad 15x0 label "Look at the device for number positions."
+		return pad 15x0
+		but [append pin-show/text "*" append pin-get "7"]
+		but [append pin-show/text "*" append pin-get "8"]
+		but [append pin-show/text "*" append pin-get "9"]
+		return pad 15x0
+		but [append pin-show/text "*" append pin-get "4"]
+		but [append pin-show/text "*" append pin-get "5"]
+		but [append pin-show/text "*" append pin-get "6"]
+		return pad 15x0
+		but [append pin-show/text "*" append pin-get "1"]
+		but [append pin-show/text "*" append pin-get "2"]
+		but [append pin-show/text "*" append pin-get "3"]
+		return pad 15x0
+		pin-show: pin-field ""
+		return pad 15x0
+		button "Enter" 205x30 middle [
+			if request-pin-state = 'Requesting [
+				pin-get-tmp: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
+				if pin-get-tmp < 0 [
+					request-pin-state: 'TrezorError
+					unview
+					exit
+				]
+				clear command-buffer
+				pin-get-tmp: message-read command-buffer
+				if pin-get-tmp < 0 [
+					request-pin-state: 'TrezorError
+					unview
+					exit
+				]
+				if msg-id <> message/get-msg-id 'EthereumAddress [
+					request-pin-state: 'TrezorError
+					unview
+					exit
+				]
+				request-pin-state: 'HasRequested
 			]
+			unview
 		]
-
-		view/flags dlg 'modal
+		do [
+			clear pin-show/text
+		]
 	]
 
 	;-- high level interface for message write

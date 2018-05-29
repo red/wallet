@@ -44,6 +44,52 @@ key: context [
 		false
 	]
 
+	opened?: func [id [integer!] return: [logic!]] [
+		case [
+			id = ledger/id [ledger/opened?]
+			id = trezor/id [trezor/opened?]
+			true [false]
+		]
+	]
+
+	any-opened?: does [
+		if ledger/opened? [return true]
+		if trezor/opened? [return true]
+		false
+	]
+
+	get-request-pin-state-by-id: func [id][
+		if id = trezor/id [return trezor/request-pin-state]
+		'HasRequested
+	]
+
+	get-request-pin-state-by-name: func [name][
+		if name = trezor/name [return trezor/request-pin-state]
+		'HasRequested
+	]
+
+	set-request-pin-state-by-id: func [id state][
+		if id = trezor/id [trezor/request-pin-state: state]
+	]
+
+	set-request-pin-state-by-name: func [name][
+		if name = trezor/name [trezor/request-pin-state: state]
+	]
+
+	request-pin-by-id: func [id][
+		if id = trezor/id [return trezor/request-pin]
+		'HasRequested
+	]
+
+	request-pin-by-name: func [name][
+		if name = trezor/name [return trezor/request-pin]
+		'HasRequested
+	]
+
+	close-pin-requesting-by-id: func [id][
+		if id = trezor/id [trezor/close-pin-requesting]
+	]
+
 	enumerate-connected-devices: does [
 		if enumerated-devices <> [] [clear enumerated-devices]
 		enumerated-devices: hid/enumerate-connected-devices reduce [ledger/id trezor/id]
@@ -88,7 +134,7 @@ key: context [
 			either index = 0 [
 				append valid-device-names name
 			][
-				append valid-device-names reduce [name ": " to string! index]
+				append valid-device-names rejoin [name ": " to string! index]
 			]
 
 			i: i + 2

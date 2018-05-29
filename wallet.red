@@ -133,6 +133,13 @@ wallet: context [
 				info-msg/text: "Initialize the key failed..."
 				exit
 			]
+
+			if 'Init = key/get-request-pin-state-by-name name [
+				if 'HasRequested <> key/request-pin-by-name name [
+					usb-device/rate: 0:0:1
+					info-msg/text: "Please unlock your key"
+				]
+			]
 			connected?: yes			
 			update-ui yes
 		][
@@ -145,13 +152,19 @@ wallet: context [
 		/local
 			name
 			addresses addr n
+			req-pin-state
 	][
 		update-ui no
 
 		if connected? [
 			name: get-device-name
+			req-pin-state: key/get-request-pin-state-by-name name
+			if req-pin-state <> 'HasRequested [
+				update-ui yes
+				exit
+			]
 			info-msg/text: "Please wait while loading addresses..."
-			
+
 			addresses: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
@@ -170,6 +183,7 @@ wallet: context [
 						]
 						true [{Please open the "Ethereum" application}]
 					]
+					update-ui yes
 					exit
 				]
 				append addresses rejoin [addr "      <loading>"]
@@ -527,11 +541,17 @@ wallet: context [
 					if support-device? id [
 						;-- when plug in a new device, we don't known it's serial number, so reset all devices
 						;-- print "on-up"
-						connected?: no
-						key/close
-						enumerate-connected-devices
-						connect-device
-						list-addresses
+						if any [
+							not key/opened? id
+							'Init = key/get-request-pin-state-by-id id
+						][
+							;-- print "need unlock key"
+							connected?: no
+							key/close
+							enumerate-connected-devices
+							connect-device
+							list-addresses
+						]
 					]
 				]
 				on-down: func [face [object!] event [event!] /local id [integer!]][
@@ -543,18 +563,26 @@ wallet: context [
 						connected?: no
 						info-msg/text: ""
 						clear addr-list/data
+						key/close-pin-requesting-by-id id			;-- for trezor pin request
 						key/close
 						enumerate-connected-devices
 						connect-device
 						list-addresses
 					]
 				]
-				on-time: func [face event][
-					if connected? [face/rate: none]
+				on-time: func [face event /local name][
+					name:  get-device-name
+					if all [
+						connected?
+						'Requesting <> key/get-request-pin-state-by-name name
+					][face/rate: none]
 					;-- print "on-time"
-					key/close
-					enumerate-connected-devices
-					connect-device
+					if not key/any-opened? [
+						;-- print "need to enumerate"
+						key/close
+						enumerate-connected-devices
+						connect-device
+					]
 					list-addresses
 				]
 			]

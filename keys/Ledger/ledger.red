@@ -34,6 +34,11 @@ ledger: context [
 		true
 	]
 
+	opened?: func [return: [logic!]] [
+		if dongle = none [return false]
+		true
+	]
+
 	connect: func [index [integer!]][
 		unless dongle [
 			dongle: hid/open id index
