@@ -129,7 +129,7 @@ wallet: context [
 		index: get-device-index
 
 		if name = key/no-dev [
-			update-ui yes
+			;update-ui yes
 			exit
 		]
 
@@ -139,7 +139,7 @@ wallet: context [
 
 			if 'InitSuccess <> key/set-init name [
 				info-msg/text: "Initialize the key failed..."
-				update-ui yes
+				;update-ui yes
 				exit
 			]
 
@@ -154,7 +154,7 @@ wallet: context [
 		][
 			info-msg/text: "This device can't be recognized"
 		]
-		update-ui yes
+		;update-ui yes
 	]
 
 	list-addresses: func [
@@ -220,9 +220,8 @@ wallet: context [
 			][
 				info-msg/text: ""
 			]
-			info-msg/text: ""
+			update-ui yes
 		]
-		update-ui yes
 	]
 
 	reset-sign-button: does [
