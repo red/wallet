@@ -205,14 +205,20 @@ wallet: context [
 			]
 			info-msg/text: "Please wait while loading balances..."
 			update-ui no
-			foreach address addr-list/data [
-				addr: copy/part address find address space
-				replace address "   <loading>" form-amount either token-contract [
-					eth/get-balance-token network token-contract addr
-				][
-					eth/get-balance network addr
+			either error? try [
+				foreach address addr-list/data [
+					addr: copy/part address find address space
+					replace address "   <loading>" form-amount either token-contract [
+						eth/get-balance-token network token-contract addr
+					][
+						eth/get-balance network addr
+					]
+					process-events
 				]
-				process-events
+			][
+				info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
+			][
+				info-msg/text: ""
 			]
 			info-msg/text: ""
 		]
