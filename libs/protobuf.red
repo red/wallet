@@ -1,5 +1,5 @@
 Red [
-	Title:	"protobuf(syntax = proto2, no packed feature) parser"
+	Title:	"protobuf(syntax = proto2, no packed feature) encode/decode"
 	Author: "bitbegin"
 	File: 	%protobuf.red
 	Tabs: 	4
@@ -165,7 +165,7 @@ protobuf: context [
 		ret: ret + length? repeated-buf
 
 		buffer: make binary! 100
-		len: encode wire-type value buffer
+		len: encode true wire-type value buffer
 		if len < 0 [return len]
 		if len <> length? buffer [return -1]
 
@@ -297,6 +297,7 @@ protobuf: context [
 	]
 
 	encode: func [
+		ctx				[word! none! logic!]
 		msg				[word!]
 		value			[map!]
 		data			[binary!]
@@ -311,6 +312,10 @@ protobuf: context [
 	][
 		keys: keys-of value
 		if 0 = length? keys [return 0]
+
+		either any [ctx = none ctx = false] [msg-ctx: none][
+			if ctx <> true [msg-ctx: get ctx]
+		]
 
 		ret: 0
 		foreach key keys [
@@ -520,7 +525,7 @@ protobuf: context [
 				if varint < 0 [return -1]					;-- we don't support too large embedded message
 				nvalue: copy/part skip data vlen varint
 				nres: make map! []
-				len: decode wire-type nres nvalue
+				len: decode true wire-type nres nvalue
 				if len < 0 [return -1]
 				if len <> varint [return -1]
 				either none = ovalue [
@@ -581,6 +586,7 @@ protobuf: context [
 	]
 
 	decode: func [
+		ctx					[word! none! logic!]
 		msg					[word!]
 		value				[map!]
 		data				[binary!]
@@ -595,6 +601,10 @@ protobuf: context [
 	][
 		dlen: length? data
 		if dlen = 0 [return 0]
+
+		either any [ctx = none ctx = false] [msg-ctx: none][
+			if ctx <> true [msg-ctx: get ctx]
+		]
 
 		ret: 0
 		pos: data
@@ -618,7 +628,4 @@ protobuf: context [
 		ret
 	]
 
-	init-ctx: func [ctx [word! none!]][
-		either ctx = none [msg-ctx: none][msg-ctx: get ctx]
-	]
 ]

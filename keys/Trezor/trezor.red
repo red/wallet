@@ -182,7 +182,6 @@ trezor: context [
 		/local
 			len			[integer!]
 	][
-		if protobuf/msg-ctx = none [protobuf/init-ctx 'message]
 		len: encode-and-write 'Initialize #()
 		if len < 0 [return len]
 		len: read-and-decode 'Features res
@@ -208,7 +207,7 @@ trezor: context [
 		len: message-read command-buffer
 		if len < 0 [return len]
 		if msg-id = message/get-msg-id 'EthereumAddress [
-			len: protobuf/decode 'EthereumAddress res command-buffer
+			len: protobuf/decode 'message 'EthereumAddress res command-buffer
 			return len
 		]
 
@@ -226,7 +225,7 @@ trezor: context [
 		/local
 			len			[integer!]
 	][
-		len: protobuf/decode 'PinMatrixRequest make map! [] command-buffer
+		len: protobuf/decode 'message 'PinMatrixRequest make map! [] command-buffer
 		if len < 0 [return len]
 		clear pin-get
 		view/flags pin-dlg 'modal
@@ -280,7 +279,7 @@ trezor: context [
 		if msg-id <> message/get-msg-id 'ButtonRequest [return -1]
 
 		res2: make map! []
-		len: protobuf/decode 'ButtonRequest res2 command-buffer
+		len: protobuf/decode 'message 'ButtonRequest res2 command-buffer
 		if len < 0 [return len]
 
 		len: encode-and-write 'ButtonAck make map! []
@@ -306,7 +305,7 @@ trezor: context [
 		clear command-buffer
 		;-- print ["msg: " msg]
 		;-- print ["value: " value]
-		len: protobuf/encode msg value command-buffer
+		len: protobuf/encode 'message msg value command-buffer
 		if len < 0 [return len]
 		len: message-write command-buffer message/get-msg-id msg
 		if len < 0 [return len]
@@ -323,7 +322,7 @@ trezor: context [
 		clear command-buffer
 		len: message-read command-buffer
 		if len < 0 [return len]
-		len: protobuf/decode msg value command-buffer
+		len: protobuf/decode 'message msg value command-buffer
 		if len < 0 [return len]
 		len
 	]
