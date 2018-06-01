@@ -16,7 +16,7 @@ Red [
 #include %libs/int256.red
 #include %libs/JSON.red
 #include %libs/rlp.red
-#include %libs/protobuf.red
+#include %libs/proto-encode.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/keys.red

@@ -1,12 +1,12 @@
 Red [
 	Title:	"protobuf(syntax = proto2, no packed feature) encode/decode"
 	Author: "bitbegin"
-	File: 	%protobuf.red
+	File: 	%proto-encode.red
 	Tabs: 	4
 	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]
 
-protobuf: context [
+proto-encode: context [
 	
 	msg-ctx: none
 	varint-buffer: make binary! 8
