@@ -626,6 +626,8 @@ proto-encode: context [
 			]
 		]
 
+		if ret = 0 [append/only error reduce ['decode-each 'Unkown varint] return error]
+
 		ret
 	]
 
