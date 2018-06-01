@@ -152,7 +152,7 @@ proto-encode: context [
 		buffer: make binary! 100
 		len: encode true wire-type value buffer
 		if block! = type? len [append/only error reduce ['encode-embedded 'encode wire-type] return error]
-		if len <> length? buffer [append/only error reduce ['encode-embedded 'LengthNotEqual len len <> length?] return error]
+		if len <> length? buffer [append/only error reduce ['encode-embedded 'LengthNotEqual len len <> length? buffer] return error]
 
 		encode-varint len
 		append data varint-buffer

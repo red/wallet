@@ -74,12 +74,12 @@ trezor: context [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
-		if msg-id = message/get-msg-id 'EthereumAddress [
+		if msg-id = trezor-message/get-id 'EthereumAddress [
 			request-pin-state: 'HasRequested
 			return request-pin-state
 		]
 
-		if msg-id <> message/get-msg-id 'PinMatrixRequest [
+		if msg-id <> trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
@@ -122,7 +122,7 @@ trezor: context [
 		res: make map! []
 		len: EthereumGetAddress idx res
 		if len < 0 [
-			if msg-id = message/get-msg-id 'Failure [
+			if msg-id = trezor-message/get-id 'Failure [
 				return 'Failure
 			]
 			return 'OtherFailure
@@ -206,17 +206,17 @@ trezor: context [
 		clear command-buffer
 		len: message-read command-buffer
 		if len < 0 [return len]
-		if msg-id = message/get-msg-id 'EthereumAddress [
-			len: proto-encode/decode 'message 'EthereumAddress res command-buffer
+		if msg-id = trezor-message/get-id 'EthereumAddress [
+			len: proto-encode/decode trezor-message/messages 'EthereumAddress res command-buffer
 			return len
 		]
 
-		if msg-id <> message/get-msg-id 'PinMatrixRequest [return -1]
+		if msg-id <> trezor-message/get-id 'PinMatrixRequest [return -1]
 		len: PinMatrix
 		if len < 0 [return len]
 
 		len: read-and-decode 'EthereumAddress res
-		if msg-id <> message/get-msg-id 'EthereumAddress [return -1]
+		if msg-id <> trezor-message/get-id 'EthereumAddress [return -1]
 		len
 	]
 
@@ -225,7 +225,7 @@ trezor: context [
 		/local
 			len			[integer!]
 	][
-		len: proto-encode/decode 'message 'PinMatrixRequest make map! [] command-buffer
+		len: proto-encode/decode trezor-message/messages 'PinMatrixRequest make map! [] command-buffer
 		if len < 0 [return len]
 		clear pin-get
 		view/flags pin-dlg 'modal
@@ -245,7 +245,7 @@ trezor: context [
 			len: _EthereumSignTx req res
 			any [
 				len > 0
-				msg-id <> message/get-msg-id 'Failure
+				msg-id <> trezor-message/get-id 'Failure
 			]
 		]
 		len
@@ -268,7 +268,7 @@ trezor: context [
 		len: message-read command-buffer
 		if len < 0 [return len]
 
-		if msg-id = message/get-msg-id 'PinMatrixRequest [
+		if msg-id = trezor-message/get-id 'PinMatrixRequest [
 			len: PinMatrix
 			if len < 0 [return len]
 			clear command-buffer
@@ -276,10 +276,10 @@ trezor: context [
 			if len < 0 [return len]
 		]
 
-		if msg-id <> message/get-msg-id 'ButtonRequest [return -1]
+		if msg-id <> trezor-message/get-id 'ButtonRequest [return -1]
 
 		res2: make map! []
-		len: proto-encode/decode 'message 'ButtonRequest res2 command-buffer
+		len: proto-encode/decode trezor-message/messages 'ButtonRequest res2 command-buffer
 		if len < 0 [return len]
 
 		len: encode-and-write 'ButtonAck make map! []
@@ -305,9 +305,9 @@ trezor: context [
 		clear command-buffer
 		;-- print ["msg: " msg]
 		;-- print ["value: " value]
-		len: proto-encode/encode 'message msg value command-buffer
+		len: proto-encode/encode trezor-message/messages msg value command-buffer
 		if len < 0 [return len]
-		len: message-write command-buffer message/get-msg-id msg
+		len: message-write command-buffer trezor-message/get-id msg
 		if len < 0 [return len]
 		len
 	]
@@ -322,7 +322,7 @@ trezor: context [
 		clear command-buffer
 		len: message-read command-buffer
 		if len < 0 [return len]
-		len: proto-encode/decode 'message msg value command-buffer
+		len: proto-encode/decode trezor-message/messages msg value command-buffer
 		if len < 0 [return len]
 		len
 	]
@@ -363,14 +363,14 @@ trezor: context [
 					unview
 					exit
 				]
-				if msg-id = message/get-msg-id 'Failure [
+				if msg-id = trezor-message/get-id 'Failure [
 					clear pin-show/text
 					header/text: "Input Pin Failure! Enter Pin again."
 					request-pin-cmd
 					clear pin-get
 					exit
 				]
-				if msg-id <> message/get-msg-id 'EthereumAddress [
+				if msg-id <> trezor-message/get-id 'EthereumAddress [
 					request-pin-state: 'TrezorError
 					unview
 					exit
