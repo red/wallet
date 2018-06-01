@@ -100,5 +100,30 @@ proto-parser: context [
 		buffer
 	]
 
+	get-msg-type: func [
+		msgs				[block!]
+		msg					[word!]
+		return:				[word!]
+		/local
+			type-blk			[block!]
+	][
+		foreach type-blk msgs [
+			if type-blk/2 = msg [return type-blk/1]
+		]
+		'NotFound
+	]
+
+	get-msg: func [
+		msgs				[block!]
+		msg					[word!]
+		return:				[block!]
+		/local
+			type-blk			[block!]
+	][
+		foreach type-blk msgs [
+			if type-blk/2 = msg [return type-blk]
+		]
+		[]
+	]
 ]
 
