@@ -3,7 +3,7 @@ Red [
 	Author: "bitbegin"
 	File: 	%generate-msg.red
 	Usage:	comment {1. ./red.exe keys/Trezor/generate-msg.red
-				2. step 1 will put messages.red
+				2. we will get messages.red from step 1
 				3. include %messages.red to a block!
 			}
 	Tabs:	4
@@ -15,4 +15,5 @@ Red [
 blk: []
 print proto-parser/parse-files [%protob/types.proto %protob/messages.proto] blk
 
-save %messages.red blk
+write %messages.red {Red [Title: "auto generated, don't modify it manully!"]}
+write/append %messages.red blk
