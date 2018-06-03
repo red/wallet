@@ -19,9 +19,10 @@ trezor: context [
 	hid-version: 0
 	data-frame: make binary! 65
 	command-buffer: make binary! 1000
+	error: make block! 10
 	msg-id: 0
 	pin-get: make string! 16
-	pin-get-tmp: -1
+	pin-ret: -1
 	request-pin-state: 'Init							;-- Init/Requesting/HasRequested/TrezorError
 
 	filter?: func [
@@ -58,19 +59,23 @@ trezor: context [
 		request-pin-state
 	]
 
-	request-pin-cmd: has [req len][
+	request-pin-cmd: func [return: [word!]
+		/local
+			req		[map!]
+			len		[intger! block! word!]
+	][
 
 		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 0]]
 		put req 'show_display false
 		len: encode-and-write 'EthereumGetAddress req
-		if len < 0 [
+		if word! = type? len [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
 
 		clear command-buffer
 		len: message-read command-buffer
-		if len < 0 [
+		if block! = type? len [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
@@ -98,7 +103,7 @@ trezor: context [
 	set-init: func [][
 		res: make map! []
 		len: Initialize res
-		if len < 0 [return 'InitFailure]
+		if word! = type? len [return 'InitFailure]
 		return 'InitSuccess
 	]
 
@@ -121,7 +126,7 @@ trezor: context [
 	][
 		res: make map! []
 		len: EthereumGetAddress idx res
-		if len < 0 [
+		if word! = type? len [
 			if msg-id = trezor-message/get-id 'Failure [
 				return 'Failure
 			]
@@ -162,14 +167,14 @@ trezor: context [
 		]
 		res: make map! []
 		len: EthereumSignTx req res
-		either len > 0 [
-			append tx reduce [
-				to-bin8 res/signature_v
-				res/signature_r
-				res/signature_s
-			]
-			rlp/encode tx
-		]['SignError]
+		if word! = type? len [return 'SignError]
+
+		append tx reduce [
+			to-bin8 res/signature_v
+			res/signature_r
+			res/signature_s
+		]
+		rlp/encode tx
 	]
 
 	;===================
@@ -178,12 +183,12 @@ trezor: context [
 
 	Initialize: func [
 		res				[map!]
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! word!]
 	][
 		len: encode-and-write 'Initialize #()
-		if len < 0 [return len]
+		if word! = type? len [return len]
 		len: read-and-decode 'Features res
 		len
 	]
@@ -191,60 +196,63 @@ trezor: context [
 	EthereumGetAddress: func [
 		idx				[integer!]
 		res				[map!]
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! word! block!]
 			req			[map!]
 	][
-		if request-pin-state <> 'HasRequested [return -1]
+		if request-pin-state <> 'HasRequested [return 'Locked]
 
 		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]]
 		put req 'show_display false
 		len: encode-and-write 'EthereumGetAddress req
-		if len < 0 [return len]
+		if word! = type? len [return to word! append "EthereumGetAddress-SendFailed-" to string! len]
 
 		clear command-buffer
 		len: message-read command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'EthereumGetAddress-ReadFailed]
 		if msg-id = trezor-message/get-id 'EthereumAddress [
 			len: proto-encode/decode trezor-message/messages 'EthereumAddress res command-buffer
+			if block! = type? len [return 'EthereumGetAddress-DecodeFailed]
 			return len
 		]
 
-		if msg-id <> trezor-message/get-id 'PinMatrixRequest [return -1]
+		if msg-id <> trezor-message/get-id 'PinMatrixRequest [return 'EthereumGetAddress-NotPinReq]
 		len: PinMatrix
-		if len < 0 [return len]
+		if word! = type? len [return to word! append "EthereumGetAddress-PinReq-" to string! len]
 
 		len: read-and-decode 'EthereumAddress res
-		if msg-id <> trezor-message/get-id 'EthereumAddress [return -1]
+		if word! = type? len [return to word! append "EthereumGetAddress-ReadFailed-" to string! len]
+		if msg-id <> trezor-message/get-id 'EthereumAddress [return 'EthereumGetAddress-NotAddrId]
 		len
 	]
 
 	PinMatrix: func [
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! block! word!]
 	][
 		len: proto-encode/decode trezor-message/messages 'PinMatrixRequest make map! [] command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'DecodeFailed]
 		clear pin-get
 		view/flags pin-dlg 'modal
 		len: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
+		if word! = type? len [return 'WriteFailed]
 		len
 	]
 
 	EthereumSignTx: func [
 		req				[map!]
 		res				[map!]
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! word!]
 			res2		[map!]
 	][
 		until [
 			len: _EthereumSignTx req res
 			any [
-				len > 0
+				integer! = type? len
 				msg-id <> trezor-message/get-id 'Failure
 			]
 		]
@@ -254,42 +262,43 @@ trezor: context [
 	_EthereumSignTx: func [
 		req				[map!]
 		res				[map!]
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! word! block!]
 			res2		[map!]
 	][
-		if request-pin-state <> 'HasRequested [return -1]
+		if request-pin-state <> 'HasRequested [return 'Locked]
 
 		len: encode-and-write 'EthereumSignTx req
+		if word! = type? len [return to word! append "EthereumSignTx-SendFailed-" to string! len]
 		if len < 0 [return len]
 
 		clear command-buffer
 		len: message-read command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'EthereumSignTx-ReadFailed]
 
 		if msg-id = trezor-message/get-id 'PinMatrixRequest [
 			len: PinMatrix
-			if len < 0 [return len]
+			if word! = type? len [return to word! append "EthereumSignTx-PinReqSend-" to string! len]
 			clear command-buffer
 			len: message-read command-buffer
-			if len < 0 [return len]
+			if block! = type? len [return 'EthereumSignTx-PinReqReadFailed]
 		]
 
-		if msg-id <> trezor-message/get-id 'ButtonRequest [return -1]
+		if msg-id <> trezor-message/get-id 'ButtonRequest [return 'EthereumSignTx-NotButReq]
 
 		res2: make map! []
 		len: proto-encode/decode trezor-message/messages 'ButtonRequest res2 command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'EthereumSignTx-ButReqDecodeFailed]
 
 		len: encode-and-write 'ButtonAck make map! []
-		if len < 0 [return len]
+		if word! = type? len [return to word! append "EthereumSignTx-ButAckWrite-" to string! len]
 
 		res2: make map! []
 		len: read-and-decode 'ButtonRequest res2
-		if len < 0 [return len]
+		if word! = type? len [return to word! append "EthereumSignTx-ButReq2Read-" to string! len]
 		len: encode-and-write 'ButtonAck make map! []
-		if len < 0 [return len]
+		if word! = type? len [return to word! append "EthereumSignTx-ButAck2Write-" to string! len]
 
 		len: read-and-decode 'EthereumTxRequest res
 		len
@@ -298,32 +307,32 @@ trezor: context [
 	encode-and-write: func [
 		msg				[word!]
 		value			[map!]
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! block!]
 	][
 		clear command-buffer
 		;-- print ["msg: " msg]
 		;-- print ["value: " value]
 		len: proto-encode/encode trezor-message/messages msg value command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'WriteFailed]
 		len: message-write command-buffer trezor-message/get-id msg
-		if len < 0 [return len]
+		if block! = type? len [return 'EncodeFailed]
 		len
 	]
 
 	read-and-decode: func [
 		msg				[word!]
 		value			[map!]
-		return:			[integer!]
+		return:			[integer! word!]
 		/local
-			len			[integer!]
+			len			[integer! block!]
 	][
 		clear command-buffer
 		len: message-read command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'ReadFailed]
 		len: proto-encode/decode trezor-message/messages msg value command-buffer
-		if len < 0 [return len]
+		if block! = type? len [return 'DecodeFailed]
 		len
 	]
 
@@ -350,15 +359,15 @@ trezor: context [
 		return pad 15x0
 		button "Enter" 205x30 middle [
 			if request-pin-state = 'Requesting [
-				pin-get-tmp: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
-				if pin-get-tmp < 0 [
+				pin-ret: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
+				if word! = type? pin-ret [
 					request-pin-state: 'TrezorError
 					unview
 					exit
 				]
 				clear command-buffer
-				pin-get-tmp: message-read command-buffer
-				if pin-get-tmp < 0 [
+				pin-ret: message-read command-buffer
+				if block! = type? pin-ret [
 					request-pin-state: 'TrezorError
 					unview
 					exit
@@ -388,12 +397,13 @@ trezor: context [
 	message-write: func [
 		data			[binary!]
 		_id				[integer!]
-		return:			[integer!]
+		return:			[integer! block!]
 		/local
 			sz			[integer!]
 			msg			[binary!]
-			r			[integer!]
+			ret			[integer! block!]
 	][
+		clear error
 		msg-id: _id
 		sz: length? data
 		msg: make binary! 8 + sz
@@ -404,58 +414,67 @@ trezor: context [
 			to-bin32 sz
 			data
 		]
-		r: write msg
-		r
+		ret: write msg
+		if block! = type? ret [append/only error ['message-write 'Failure] return error]
+		ret
 	]
 
 	;-- high level interface for message read
 	message-read: func [
 		data		[binary!]
-		return: 	[integer!]
+		return: 	[integer! block!]
 		/local
 			buf		[binary!]
 			size	[integer!]
 			max		[integer!]
+			ret		[integer! block!]
 	][
+		clear error
 		clear data-frame
 
 		buf: #{000000000000}
 		clear buf
-		read-buffered buf 1
+		ret: read-buffered buf 1
+		if block! = type? ret [append/only error ['message-read 'Failure] return error]
 		while [buf/1 <> to integer! #"#"] [
 			clear buf
-			read-buffered buf 1
+			ret: read-buffered buf 1
+			if block! = type? ret [append/only error ['message-read 'Failure] return error]
 		]
 
 		clear buf
-		read-buffered buf 1
-		if buf/1 <> to integer! #"#" [return -1]
+		ret: read-buffered buf 1
+		if block! = type? ret [append/only error ['message-read 'Failure] return error]
+		if buf/1 <> to integer! #"#" [append/only error reduce ['message-read 'MagicError buf/1] return error]
 
 		clear buf
-		read-buffered buf 6
+		ret: read-buffered buf 6
+		if block! = type? ret [append/only error ['message-read 'Failure] return error]
 		msg-id: to-int16 buf
 		size: to-int32 skip buf 2
 
 		max: 1024 * 1024
-		if size > max [return -1]
-		size: read-buffered data size
-		size
+		if size > max [append/only error reduce ['message-read 'SizeError size] return error]
+		ret: read-buffered data size
+		if block! = type? ret [append/only error ['message-read 'Failure] return error]
+		ret
 	]
 
 	;-- low level read, read data from buffer
 	read-buffered: func [
 		data		[binary!]
 		len			[integer!]
+		return:		[integer! block!]
 		/local
 			n		[integer!]
-			r		[integer!]
+			ret		[integer! block!]
 			sz		[integer!]
 	][
 		sz: len
 		forever [
 			if 0 = length? data-frame [
-				r: buffer-report
-				if r < 0 [return r]
+				ret: buffer-report
+				if block! = type? ret [append/only error ['read-buffered 'Failure] return error]
 			]
 
 			n: read-report-from-buffer data len
@@ -482,17 +501,20 @@ trezor: context [
 
 	;-- low level read, put report data to buffer
 	buffer-report: func [
-		return:		[integer!]
-		/local r sz
+		return:		[integer! block!]
+		/local
+			ret		[integer!]
+			sz		[integer!]
 	][
 		until [
 			data-frame: clear head data-frame
-			r: hid/read dongle data-frame 50
-			r <> 0
+			ret: hid/read dongle data-frame 50
+			ret <> 0
 		]
-		if r <= 0 [return r]
+		if ret < 0 [append/only error ['buffer-report 'Failure] return error]
+		if ret = 0 [return ret]
 		sz: data-frame/1
-		if r - 1 < sz [sz: r - 1]
+		if ret - 1 < sz [sz: ret - 1]
 		clear skip data-frame sz + 1
 		data-frame: skip head data-frame 1
 		sz
@@ -501,19 +523,19 @@ trezor: context [
 	;-- low level write: adapt data length
 	write: func [
 		data			[binary!]
-		return:			[integer!]
+		return:			[integer! block!]
 		/local
 			len			[integer!]
 			sz			[integer!]
-			r			[integer!]
+			ret			[integer! block!]
 			src			[binary!]
 	][
 		len: length? data
 		until [
 			sz: length? data
 			if sz > 63 [sz: 63]
-			r: write-report data sz
-			if r < 0 [return r]
+			ret: write-report data sz
+			if block! = type? ret [append/only error ['write 'Failure] return error]
 			data: skip data sz
 			tail? data
 		]
@@ -524,11 +546,11 @@ trezor: context [
 	write-report: func [
 		data			[binary!]
 		size			[integer!]
-		return:			[integer!]
+		return:			[integer! block!]
 		/local
 			i			[integer!]
 			cnt			[integer!]
-			r			[integer!]
+			ret			[integer!]
 	][
 		clear data-frame
 		switch hid-version [
@@ -546,10 +568,9 @@ trezor: context [
 			cnt: cnt + 1
 		]
 
-		r: hid/write dongle data-frame
-		if any [r < 0 r < length? data-frame] [
-			return -1
-		]
+		ret: hid/write dongle data-frame
+		if ret < 0 [append/only error ['write-report 'Failure] return error]
+		if ret < length? data-frame [append/only error ['write-report 'SizeError] return error]
 		size
 	]
 
