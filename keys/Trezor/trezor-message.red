@@ -34,5 +34,25 @@ trezor-message: context [
 		-1
 	]
 
+	get-type-name: func [
+		id					[integer!]
+		return:				[word! none!]
+		/local
+			type-blk		[block!]
+			msg-blk			[block!]
+			msg-type
+	][
+		foreach type-blk messages [
+			if all [type-blk/1 = 'enum type-blk/2 = 'MessageType] [
+				foreach msg-blk type-blk/3 [
+					if id = to integer! msg-blk/1 [
+						msg-type: split to string! msg-blk/2 "_"
+						return to word! msg-type/2
+					]
+				]
+			]
+		]
+		none
+	]
 ]
 
