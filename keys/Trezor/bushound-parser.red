@@ -146,7 +146,7 @@ bushound-parser: context [
 				tail? data-end
 			]
 
-			if debug-level > 1 [print [last-phase ": package: " package]]
+			if debug-level > 1 [print ["debug-2:: " last-phase ": package: " package]]
 
 			if any [package/1 <> to integer! #{00} package/2 <> to integer! #{3f}] [return data-item]
 			either all [package/3 = to integer! #{ff} package/4 = to integer! #{ff}][
@@ -167,7 +167,7 @@ bushound-parser: context [
 						if message-size <> 0 [append message copy/part skip package 10 message-size]
 						count: message-size
 						print ["------------------------------------------------------"]
-						if debug-level > 0 [print [last-phase ": message: " message]]
+						if debug-level > 0 [print ["debug-1:: " last-phase ": message: " message]]
 						res: make map! []
 						name: trezor-message/get-type-name message-id
 						print [last-phase ": " "message type: " name]
@@ -184,7 +184,7 @@ bushound-parser: context [
 						append message copy/part skip package 2 (message-size - count)
 						count: message-size
 						print ["------------------------------------------------------"]
-						if debug-level > 0 [print [last-phase ": message: " message]]
+						if debug-level > 0 [print ["debug-1:: " last-phase ": message: " message]]
 						res: make map! []
 						name: trezor-message/get-type-name message-id
 						print [last-phase ": " "message type: " name]
