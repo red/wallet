@@ -36,8 +36,7 @@ to-int32: func [b [binary!]][
 
 bushound-parser: context [
 
-	;nochar: charset " ^-^/"
-	;chars: complement nochar
+	debug-level: 0
 	space: charset " ^-^/"
 	notspace: complement space
 	digit: charset [#"0" - #"9"]
@@ -147,22 +146,35 @@ bushound-parser: context [
 				tail? data-end
 			]
 
+			if debug-level > 1 [print [last-phase ": package: " package]]
+
 			if any [package/1 <> to integer! #{00} package/2 <> to integer! #{3f}] [return data-item]
 			either all [package/3 = to integer! #{ff} package/4 = to integer! #{ff}][
+				print ["------------------------------------------------------"]
 				print [last-phase ": get hid version"]
+				print ["------------------------------------------------------" lf]
 			][
 				either all [package/3 = to integer! #{23} package/4 = to integer! #{23}][
 					message-id: to-int16 skip package 4
 					message-size: to-int32 skip package 6
+					count: 0
+					clear message
 					either message-size > (65 - 10) [
 						count: 65 - 10
+						append message copy/part skip package 10 count
 						
 					][
+						if message-size <> 0 [append message copy/part skip package 10 message-size]
 						count: message-size
-					]
-					clear message
-					if count <> 0 [
-						append message copy/part skip package 10 count
+						print ["------------------------------------------------------"]
+						if debug-level > 0 [print [last-phase ": message: " message]]
+						res: make map! []
+						name: trezor-message/get-type-name message-id
+						print [last-phase ": " "message type: " name]
+						len: proto-encode/decode trezor-message/messages name res message
+						if block! = type? len [probe len return data-item]
+						probe res
+						print ["------------------------------------------------------" lf]
 					]
 				][
 					either message-size > (63 + count) [
@@ -171,13 +183,15 @@ bushound-parser: context [
 					][
 						append message copy/part skip package 2 (message-size - count)
 						count: message-size
-						;print [last-phase ": message: " message]
+						print ["------------------------------------------------------"]
+						if debug-level > 0 [print [last-phase ": message: " message]]
 						res: make map! []
 						name: trezor-message/get-type-name message-id
 						print [last-phase ": " "message type: " name]
 						len: proto-encode/decode trezor-message/messages name res message
 						if block! = type? len [probe len return data-item]
 						probe res
+						print ["------------------------------------------------------" lf]
 					]
 				]
 			]
@@ -190,6 +204,8 @@ bushound-parser: context [
 main: does [
 	if none? system/options/args [print "please input file name!" exit]
 	file: to file! system/options/args/1
+	print system/options/args/2
+	if system/options/args/2 <> none [bushound-parser/debug-level: to integer! system/options/args/2 print "debug-level: " bushound-parser/debug-level]
 	print bushound-parser/parse-file file
 ]
 
