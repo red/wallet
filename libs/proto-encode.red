@@ -582,7 +582,7 @@ proto-encode: context [
 				]
 				if nvalue = none [append/only error reduce ['decode-type 'EnumError 'NotExist varint] return error]
 				either none = ovalue [
-					put value name varint
+					put value name nvalue
 				][
 					either block! = type? ovalue [
 						put value name append ovalue nvalue
