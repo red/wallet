@@ -32,38 +32,42 @@ wallet: context [
 	signed-data: addr-list: min-size: none
 	addr-per-page: 5
 
-	networks: [
-		https://eth.red-lang.org/mainnet
-		https://eth.red-lang.org/rinkeby
-		https://eth.red-lang.org/kovan
-	]
-
-	explorers: [
-		https://etherscan.io/tx/
-		https://rinkeby.etherscan.io/tx/
-		https://kovan.etherscan.io/tx/
-	]
-
-	contracts: [
+	coins: [
 		"ETH" [
-			"mainnet" #[none]
-			"Rinkeby" #[none]
-			"Kovan"	  #[none]
+			;net name		;net server										;explorer server									;chain id			;contract address
+			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							1					#[none]
+			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					4					#[none]
+			"Kovan"			https://eth.red-lang.org/kovan					https://kovan.etherscan.io/tx/						42					#[none]
 		]
 		"RED" [
-			"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
-			"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
+			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							1					"76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
+			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					4					"43df37f66b8b9fececcc3031c9c1d2511db17c42"
+		]
+		"BTC" [
+			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					#[none]				#[none]
+			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			#[none]				#[none]
 		]
 	]
 
-	explorer: explorers/2
-	network: networks/2
-	net-name: "rinkeby"
-	token-name: "ETH"
-	token-contract: none
+	get-network: does [pick find coins/:token-name net-name 2]
+	get-explorer: does [pick find coins/:token-name net-name 3]
+	get-chain-id: does [pick find coins/:token-name net-name 4]
+	get-contract-addr: does [pick find coins/:token-name net-name 5]
 
-	last-dev: none
-	last-ser: none
+	tokens: extract coins 2
+
+	;-- current token name and net name
+	token-name: tokens/1			;-- "ETH"
+	
+	net-names: extract coins/:token-name 5
+	networks: extract/index coins/:token-name 5 2
+	explorers: extract/index coins/:token-name 5 3
+
+	net-name: net-names/2			;-- "Rinkeby"
+	network: get-network
+	explorer: get-explorer
+	token-contract: get-contract-addr
+
 	connected?:		no
 	address-index:	0
 	page:			0
@@ -260,7 +264,7 @@ wallet: context [
 		net-name: face/data/:idx
 		network:  networks/:idx
 		explorer: explorers/:idx
-		token-contract: contracts/:token-name/:net-name
+		token-contract: get-contract-addr
 		do-reload
 	]
 
@@ -269,10 +273,10 @@ wallet: context [
 		net: net-list/selected
 		token-name: face/data/:idx
 
-		net-list/data: extract contracts/:token-name 2
+		net-list/data: extract coins/:token-name 5
 		net: net-list/selected: either net > length? net-list/data [1][net]
 		net-name: net-list/data/:net
-		token-contract: contracts/:token-name/:net-name
+		token-contract: get-contract-addr
 		do-reload
 	]
 	
@@ -340,7 +344,7 @@ wallet: context [
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount name chain-id][
+	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount name][
 		unless check-data [exit]
 
 		notify-user
@@ -388,12 +392,7 @@ wallet: context [
 			]
 		]
 
-		chain-id: case [
-			net-name = "mainnet" [1]
-			net-name = "Rinkeby" [4]
-			net-name = "Kovan" [42]
-		]
-		signed-data: key/get-signed-data name address-index tx chain-id
+		signed-data: key/get-signed-data name address-index tx get-chain-id
 
 		either all [
 			signed-data
@@ -497,8 +496,8 @@ wallet: context [
 		text 50 "Device:"
 		dev-list: drop-list data key/get-valid-names key/valid-device-names 135 select 1 :do-select-dev
 		btn-send: button "Send" :do-send disabled
-		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
+		token-list: drop-list data tokens 60 select 1 :do-select-token
+		net-list:   drop-list data net-names select 2 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
