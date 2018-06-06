@@ -38,6 +38,7 @@ wallet: context [
 			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							1					#[none]
 			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					4					#[none]
 			"Kovan"			https://eth.red-lang.org/kovan					https://kovan.etherscan.io/tx/						42					#[none]
+			"Ropsten"		https://eth.red-lang.org/ropsten				https://ropsten.etherscan.io/tx/					3					#[none]
 		]
 		"RED" [
 			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							1					"76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
