@@ -56,14 +56,15 @@ wallet: context [
 
 	tokens: extract coins 2
 
-	;-- current token name and net name
-	token-name: tokens/1			;-- "ETH"
+	;-- current token name
+	token-name: tokens/1			;-- default "ETH"
 	
 	net-names: extract coins/:token-name 5
 	networks: extract/index coins/:token-name 5 2
 	explorers: extract/index coins/:token-name 5 3
 
-	net-name: net-names/2			;-- "Rinkeby"
+	;-- current net name
+	net-name: net-names/2			;-- default "Rinkeby"
 	network: get-network
 	explorer: get-explorer
 	token-contract: get-contract-addr

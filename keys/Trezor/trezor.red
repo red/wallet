@@ -22,6 +22,8 @@ trezor: context [
 	error: make block! 10
 	msg-id: 0
 	pin-get: make string! 16
+	pin-msg: none
+	pin-req: none
 	pin-ret: -1
 	request-pin-state: 'Init							;-- Init/Requesting/HasRequested/TrezorError
 
@@ -50,24 +52,25 @@ trezor: context [
 
 	request-pin: does [
 		if request-pin-state <> 'Init [return request-pin-state]
-		request-pin-cmd
-		if request-pin-state <> 'Init [return request-pin-state]
 
-		request-pin-state: 'Requesting
+		pin-req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 0]]
+		put pin-req 'show_display false
+		pin-msg: 'EthereumGetAddress
 		clear pin-get
+		request-pin-state: 'Requesting
+
+		request-pin-cmd
 		view/no-wait/flags pin-dlg 'modal
+
 		request-pin-state
 	]
 
-	request-pin-cmd: func [return: [word!]
+	request-pin-cmd: func [
+		return:		[word!]
 		/local
-			req		[map!]
-			len		[intger! block! word!]
+			len		[integer! block! word!]
 	][
-
-		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 0]]
-		put req 'show_display false
-		len: encode-and-write 'EthereumGetAddress req
+		len: encode-and-write pin-msg pin-req
 		if word! = type? len [
 			request-pin-state: 'TrezorError
 			return request-pin-state
@@ -79,11 +82,10 @@ trezor: context [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
-		if msg-id = trezor-message/get-id 'EthereumAddress [
+		if msg-id = trezor-message/get-id pin-msg [ 
 			request-pin-state: 'HasRequested
-			return request-pin-state
+			request-pin-state
 		]
-
 		if msg-id <> trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'TrezorError
 			return request-pin-state
@@ -211,34 +213,22 @@ trezor: context [
 		clear command-buffer
 		len: message-read command-buffer
 		if block! = type? len [return 'EthereumGetAddress-ReadFailed]
+		if msg-id = trezor-message/get-id 'PinMatrixRequest [
+			request-pin-state: 'Requesting
+			clear pin-get
+			pin-req: req
+			pin-msg: 'EthereumGetAddress
+
+			view/flags pin-dlg 'modal
+		]
+
 		if msg-id = trezor-message/get-id 'EthereumAddress [
 			len: proto-encode/decode trezor-message/messages 'EthereumAddress res command-buffer
 			if block! = type? len [return 'EthereumGetAddress-DecodeFailed]
 			return len
 		]
 
-		if msg-id <> trezor-message/get-id 'PinMatrixRequest [return 'EthereumGetAddress-NotPinReq]
-		len: PinMatrix
-		if word! = type? len [return to word! append "EthereumGetAddress-PinReq-" to string! len]
-
-		len: read-and-decode 'EthereumAddress res
-		if word! = type? len [return to word! append "EthereumGetAddress-ReadFailed-" to string! len]
-		if msg-id <> trezor-message/get-id 'EthereumAddress [return 'EthereumGetAddress-NotAddrId]
-		len
-	]
-
-	PinMatrix: func [
-		return:			[integer! word!]
-		/local
-			len			[integer! block! word!]
-	][
-		len: proto-encode/decode trezor-message/messages 'PinMatrixRequest make map! [] command-buffer
-		if block! = type? len [return 'DecodeFailed]
-		clear pin-get
-		view/flags pin-dlg 'modal
-		len: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
-		if word! = type? len [return 'WriteFailed]
-		len
+		'GetPublicKey-UnkownId
 	]
 
 	EthereumSignTx: func [
@@ -278,11 +268,12 @@ trezor: context [
 		if block! = type? len [return 'EthereumSignTx-ReadFailed]
 
 		if msg-id = trezor-message/get-id 'PinMatrixRequest [
-			len: PinMatrix
-			if word! = type? len [return to word! append "EthereumSignTx-PinReqSend-" to string! len]
-			clear command-buffer
-			len: message-read command-buffer
-			if block! = type? len [return 'EthereumSignTx-PinReqReadFailed]
+			request-pin-state: 'Requesting
+			clear pin-get
+			pin-req: req
+			pin-msg: 'EthereumSignTx
+
+			view/flags pin-dlg 'modal
 		]
 
 		if msg-id <> trezor-message/get-id 'ButtonRequest [return 'EthereumSignTx-NotButReq]
@@ -302,6 +293,43 @@ trezor: context [
 
 		len: read-and-decode 'EthereumTxRequest res
 		len
+	]
+
+	GetPublicKey: func [
+		ids				[block!]
+		name			[string!]
+		res				[map!]
+		return:			[integer! word!]
+		/local
+			req			[map!]
+			len			[integer! word! block!]
+			state-bak	[integer!]
+	][
+		req: make map! reduce ['address_n ids]
+		put req 'coin_name name
+		len: encode-and-write 'GetPublicKey req
+		if word! = type? len [return to word! append "GetPublicKey-SendFailed-" to string! len]
+
+		clear command-buffer
+		len: message-read command-buffer
+		if block! = type? len [return 'GetPublicKey-ReadFailed]
+
+		if msg-id = trezor-message/get-id 'PinMatrixRequest [
+			request-pin-state: 'Requesting
+			clear pin-get
+			pin-req: req
+			pin-msg: 'GetPublicKey
+
+			view/flags pin-dlg 'modal
+		]
+
+		if msg-id = trezor-message/get-id 'PublicKey [
+			len: proto-encode/decode trezor-message/messages 'PublicKey res command-buffer
+			if block! = type? len [return 'GetPublicKey-DecodeFailed]
+			return len
+		]
+
+		'GetPublicKey-UnkownId
 	]
 
 	encode-and-write: func [
@@ -377,11 +405,6 @@ trezor: context [
 					header/text: "Input Pin Failure! Enter Pin again."
 					request-pin-cmd
 					clear pin-get
-					exit
-				]
-				if msg-id <> trezor-message/get-id 'EthereumAddress [
-					request-pin-state: 'TrezorError
-					unview
 					exit
 				]
 				request-pin-state: 'HasRequested
