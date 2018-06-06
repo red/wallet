@@ -34,12 +34,14 @@ wallet: context [
 		https://eth.red-lang.org/mainnet
 		https://eth.red-lang.org/rinkeby
 		https://eth.red-lang.org/kovan
+		https://eth.red-lang.org/ropsten
 	]
 
 	explorers: [
 		https://etherscan.io/tx/
 		https://rinkeby.etherscan.io/tx/
 		https://kovan.etherscan.io/tx/
+		https://ropsten.etherscan.io/tx/
 	]
 
 	contracts: [
@@ -47,6 +49,7 @@ wallet: context [
 			"mainnet" #[none]
 			"Rinkeby" #[none]
 			"Kovan"	  #[none]
+			"Ropsten" #[none]
 		]
 		"RED" [
 			"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
@@ -385,7 +388,7 @@ wallet: context [
 		text 50 "Device:" dev: text 135 "<No Device>"
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
+		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 2 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
