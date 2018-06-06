@@ -339,9 +339,9 @@ wallet: context [
 	notify-user: does [
 		btn-sign/enabled?: no
 		process-events
-		btn-sign/offset/x: 145
-		btn-sign/size/x: 200
-		btn-sign/text: "please check on your key"
+		btn-sign/offset/x: 133
+		btn-sign/size/x: 225
+		btn-sign/text: "Confirm the transaction on your Ledger"
 		process-events
 	]
 
@@ -526,7 +526,7 @@ wallet: context [
 
 	contract-data-dlg: layout [
 		title "Set Contract data to YES"
-		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
+		text font-size 12 {Please set "Contract data" to "Yes" in the Ethereum app's settings.}
 		return
 		pad 180x10 button "OK" [unview]
 	]
