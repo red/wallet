@@ -55,12 +55,12 @@ wallet: context [
 			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					[(default-purpose) (eth-coin) (default-account) (default-change)]				4					"43df37f66b8b9fececcc3031c9c1d2511db17c42"
 		]
 		"BTC" [
-			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					[(default-purpose) (btc-coin) (default-account) (default-change)]				#[none]				#[none]
-			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			[(default-purpose) (btc-test-coin) (default-account) (default-change)]			#[none]				#[none]
-		]
-		"BTC-Legacy" [
 			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					[(segwit-purpose) (btc-coin) (default-account) (default-change)]				#[none]				#[none]
 			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			[(segwit-purpose) (btc-test-coin) (default-account) (default-change)]			#[none]				#[none]
+		]
+		"BTC-Legacy" [
+			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					[(default-purpose) (btc-coin) (default-account) (default-change)]				#[none]				#[none]
+			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			[(default-purpose) (btc-test-coin) (default-account) (default-change)]			#[none]				#[none]
 		]
 	]
 
@@ -184,6 +184,7 @@ wallet: context [
 		/local
 			name
 			addresses addr n
+			res
 			req-pin-state
 	][
 		update-ui no
@@ -205,42 +206,73 @@ wallet: context [
 			n: page * addr-per-page
 			
 			loop addr-per-page [
-				addr: key/get-eth-address name bip32-path n
-				either string? addr [
-					info-msg/text: "Please wait while loading addresses..."
-				][
-					info-msg/text: case [
-						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
-						addr = 'locked [
-							usb-device/rate: 0:0:3
-							"Please unlock your key"
-						]
-						true [{Please open the "Ethereum" application}]
-					]
-					update-ui yes
-					exit
-				]
-				append addresses rejoin [addr "      <loading>"]
-				addr-list/data: addresses
-				process-events
-				n: n + 1
-			]
-			info-msg/text: "Please wait while loading balances..."
-			update-ui no
-			either error? try [
-				foreach address addr-list/data [
-					addr: copy/part address find address space
-					replace address "   <loading>" form-amount either token-contract [
-						eth/get-balance-token network token-contract addr
+				either any [token-name = "ETH" token-name = "RED"][
+					addr: key/get-eth-address name bip32-path n
+					either string? addr [
+						info-msg/text: "Please wait while loading addresses..."
 					][
-						eth/get-balance network addr
+						info-msg/text: case [
+							addr = 'browser-support-on [{Please set "Browser support" to "No"}]
+							addr = 'locked [
+								usb-device/rate: 0:0:3
+								"Please unlock your key"
+							]
+							true [{Please open the "Ethereum" application}]
+						]
+						update-ui yes
+						exit
 					]
+					append addresses rejoin [addr "      <loading>"]
+					addr-list/data: addresses
 					process-events
+					n: n + 1
+				][
+					print network
+					res: key/get-btc-address name bip32-path n 0 network
+					probe res
+					either map? res [
+						addr: back back tail select res 'origin
+					][
+						addr: 'Failed
+					]
+					either string? addr [
+						info-msg/text: "Please wait while loading addresses..."
+					][
+						info-msg/text: case [
+							addr = 'browser-support-on [{Please set "Browser support" to "No"}]
+							addr = 'locked [
+								usb-device/rate: 0:0:3
+								"Please unlock your key"
+							]
+							true [{Get Address Failed!}]
+						]
+						update-ui yes
+						exit
+					]
+					append addresses replace rejoin [addr "      <loading>"] "   <loading>" form-amount select res 'balance
+					addr-list/data: addresses
+					process-events
+					n: n + 1
 				]
-			][
-				info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
-			][
-				info-msg/text: ""
+			]
+			if any [token-name = "ETH" token-name = "RED"][
+				info-msg/text: "Please wait while loading balances..."
+				update-ui no
+				either error? try [
+					foreach address addr-list/data [
+						addr: copy/part address find address space
+						replace address "   <loading>" form-amount either token-contract [
+							eth/get-balance-token network token-contract addr
+						][
+							eth/get-balance network addr
+						]
+						process-events
+					]
+				][
+					info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
+				][
+					info-msg/text: ""
+				]
 			]
 			update-ui yes
 		]
@@ -292,9 +324,15 @@ wallet: context [
 		net: net-list/selected
 		token-name: face/data/:idx
 
-		net-list/data: extract coins/:token-name 5
+		net-names: extract coins/:token-name 6
+		networks: extract/index coins/:token-name 6 2
+		explorers: extract/index coins/:token-name 6 3
+
+		net-list/data: net-names
 		net: net-list/selected: either net > length? net-list/data [1][net]
 		net-name: net-list/data/:net
+		network:  networks/:net
+		explorer: explorers/:net
 		token-contract: get-contract-addr
 		bip32-path: get-bip32-path
 		do-reload

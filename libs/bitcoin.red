@@ -21,6 +21,7 @@ btc: context [
 		data: get-url network append copy "/addrs/" reduce [address "?unspentOnly=true"]
 		txs: select data 'txrefs
 		clear last-txs
+		if any [txs = [] tx = none] [return last-txs]
 		foreach tx txs [
 			hash: select tx 'tx_hash
 			value: select tx 'value

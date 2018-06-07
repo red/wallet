@@ -191,11 +191,22 @@ key: context [
 		]
 	]
 
-	get-btc-address: func [name [string! none!] bip32-path [block!] idx [integer!] /local bip32][
+	get-btc-address: func [
+		name					[string! none!]
+		bip32-path				[block!]
+		account					[integer!]
+		idx						[integer!]
+		network					[url!]
+		/local
+			bip32				[block!]
+			tmp					[block!]
+	][
 		if name = none [return 'NoDevice]
-		bip32: append poke copy bip32-path 3 (80000000h + idx) 0
+		tmp: copy bip32-path
+		poke tmp 3 (80000000h + account)
+		bip32: append tmp idx
 		case [
-			name = trezor/name [trezor/get-btc-address bip32]
+			name = trezor/name [trezor/get-btc-addresses bip32 network]
 			true ['NotSupport]
 		]
 	]
@@ -209,7 +220,15 @@ key: context [
 		]
 	]
 
-	get-eth-signed-data: func [name [string! none!] bip32-path [block!] idx [integer!] tx [block!] chain-id [integer!] /local bip32][
+	get-eth-signed-data: func [
+		name					[string! none!]
+		bip32-path				[block!]
+		idx						[integer!]
+		tx						[block!]
+		chain-id				[integer!]
+		/local
+			bip32				[block!]
+	][
 		if name = none [return 'NoDevice]
 		bip32: append copy bip32-path idx
 		case [

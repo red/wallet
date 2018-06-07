@@ -60,7 +60,10 @@ trezor: context [
 		request-pin-state: 'Requesting
 
 		request-pin-cmd
-		view/no-wait/flags pin-dlg 'modal
+
+		if request-pin-state <> 'HasRequested [
+			view/no-wait/flags pin-dlg 'modal
+		]
 
 		request-pin-state
 	]
@@ -82,9 +85,9 @@ trezor: context [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
-		if msg-id = trezor-message/get-id pin-msg [ 
+		if msg-id = trezor-message/get-id 'EthereumAddress [ 
 			request-pin-state: 'HasRequested
-			request-pin-state
+			return request-pin-state
 		]
 		if msg-id <> trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'TrezorError
@@ -136,7 +139,72 @@ trezor: context [
 			return reduce ['get-btc-address len]
 		]
 		if res/address = none [return ['NoneAddress]]
-		rejoin ["0x" enbase/base res/address 16]
+		rejoin ["0x" res/address]
+	]
+
+	get-btc-addresses: func [
+		ids				[block!]
+		network			[url!]
+		return:			[block! map!]
+		/local
+			c-list o-list len i addr txs balance total
+	][
+		c-list: copy []
+		o-list: copy []
+		res: make map! []
+
+		total: to-i256 0
+
+		;-- change address
+		ids/4: 1
+		i: 0
+		forever [
+			ids/5: i
+			addr: get-btc-address ids
+			if block? addr [return reduce ['get-btc-addresses addr]]
+			print addr
+
+			txs: btc/get-tx-hash network skip addr 2
+			if txs = [][
+				append c-list reduce [addr none]
+				put res 'change c-list
+				break
+			]
+
+			balance: btc/get-last-balance
+			print balance
+			append c-list reduce [addr balance]
+			total: add256 total balance
+
+			i: i + 1
+		]
+
+		;-- origin address
+		ids/4: 0
+		i: 0
+		forever [
+			ids/5: i
+			addr: get-btc-address ids
+			if block? addr [return reduce ['get-btc-addresses addr]]
+			print addr
+
+			txs: btc/get-tx-hash network skip addr 2
+			if txs = [][
+				append o-list reduce [addr none]
+				put res 'origin o-list
+				break
+			]
+
+			balance: btc/get-last-balance
+			print balance
+			append o-list reduce [addr balance]
+			total: add256 total balance
+
+			i: i + 1
+		]
+
+		put res 'balance total
+		res
 	]
 
 	get-eth-signed-data: func [
