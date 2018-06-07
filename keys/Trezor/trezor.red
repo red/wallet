@@ -110,7 +110,7 @@ trezor: context [
 	]
 
 	get-eth-address: func [
-		idx				[integer!]
+		idx				[block!]
 		/local
 			res len
 	][
@@ -126,8 +126,25 @@ trezor: context [
 		rejoin ["0x" enbase/base res/address 16]
 	]
 
-	get-signed-data: func [
-		idx				[integer!]
+	get-btc-address: func [
+		idx				[block!]
+		/local
+			res len
+	][
+		res: make map! []
+		len: EthereumGetAddress idx res
+		if word! = type? len [
+			if msg-id = trezor-message/get-id 'Failure [
+				return 'Failure
+			]
+			return 'OtherFailure
+		]
+		if res/address = none [return 'NoneAddress]
+		rejoin ["0x" enbase/base res/address 16]
+	]
+
+	get-eth-signed-data: func [
+		idx				[block!]
 		tx				[block!]
 		chain-id		[integer!]
 		/local
@@ -147,7 +164,7 @@ trezor: context [
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
 		req: make map! reduce [
-			'address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]
+			'address_n idx
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
 			'_to tx/4 'value amount 'chain_id chain-id
 		]
@@ -184,7 +201,7 @@ trezor: context [
 	]
 
 	EthereumGetAddress: func [
-		idx				[integer!]
+		idx				[block!]
 		res				[map!]
 		return:			[integer! word!]
 		/local
@@ -193,7 +210,7 @@ trezor: context [
 	][
 		if request-pin-state <> 'HasRequested [return 'Locked]
 
-		req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h 0 idx]]
+		req: make map! reduce ['address_n idx]
 		put req 'show_display false
 		len: encode-and-write 'EthereumGetAddress req
 		if word! = type? len [return to word! append "EthereumGetAddress-SendFailed-" to string! len]

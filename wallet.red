@@ -32,43 +32,58 @@ wallet: context [
 	signed-data: addr-list: min-size: none
 	addr-per-page: 5
 
-	coins: [
+	;-- m / purpose' / coin_type' / account' / change / address_index
+	default-purpose: 80000000h + 44
+	segwit-purpose: 80000000h + 49
+	btc-coin: 80000000h + 0
+	btc-test-coin: 80000000h + 1
+	eth-coin: 80000000h + 60
+	default-account: 80000000h + 0
+	default-change: 0
+
+	coins: compose/deep [
 		"ETH" [
-			;net name		;net server										;explorer server									;chain id			;contract address
-			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							1					#[none]
-			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					4					#[none]
-			"Kovan"			https://eth.red-lang.org/kovan					https://kovan.etherscan.io/tx/						42					#[none]
-			"Ropsten"		https://eth.red-lang.org/ropsten				https://ropsten.etherscan.io/tx/					3					#[none]
+			;net name		;net server										;explorer server									;BIP32 path								;chain id			;contract address
+			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							[(default-purpose) (eth-coin) (default-account) (default-change)]				1					#[none]
+			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					[(default-purpose) (eth-coin) (default-account) (default-change)]				4					#[none]
+			"Kovan"			https://eth.red-lang.org/kovan					https://kovan.etherscan.io/tx/						[(default-purpose) (eth-coin) (default-account) (default-change)]				42					#[none]
+			"Ropsten"		https://eth.red-lang.org/ropsten				https://ropsten.etherscan.io/tx/					[(default-purpose) (eth-coin) (default-account) (default-change)]				3					#[none]
 		]
 		"RED" [
-			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							1					"76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
-			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					4					"43df37f66b8b9fececcc3031c9c1d2511db17c42"
+			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							[(default-purpose) (eth-coin) (default-account) (default-change)]				1					"76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
+			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					[(default-purpose) (eth-coin) (default-account) (default-change)]				4					"43df37f66b8b9fececcc3031c9c1d2511db17c42"
 		]
 		"BTC" [
-			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					#[none]				#[none]
-			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			#[none]				#[none]
+			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					[(default-purpose) (btc-coin) (default-account) (default-change)]				#[none]				#[none]
+			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			[(default-purpose) (btc-test-coin) (default-account) (default-change)]			#[none]				#[none]
+		]
+		"BTC-Legacy" [
+			"mainnet"		https://api.blockcypher.com/v1/btc/main			https://live.blockcypher.com/btc/tx					[(segwit-purpose) (btc-coin) (default-account) (default-change)]				#[none]				#[none]
+			"testnet"		https://api.blockcypher.com/v1/btc/test3		https://live.blockcypher.com/btc-testnet/tx			[(segwit-purpose) (btc-test-coin) (default-account) (default-change)]			#[none]				#[none]
 		]
 	]
 
 	get-network: does [pick find coins/:token-name net-name 2]
 	get-explorer: does [pick find coins/:token-name net-name 3]
-	get-chain-id: does [pick find coins/:token-name net-name 4]
-	get-contract-addr: does [pick find coins/:token-name net-name 5]
+	get-bip32-path: does [pick find coins/:token-name net-name 4]
+	get-chain-id: does [pick find coins/:token-name net-name 5]
+	get-contract-addr: does [pick find coins/:token-name net-name 6]
 
 	tokens: extract coins 2
 
 	;-- current token name
 	token-name: tokens/1			;-- default "ETH"
 	
-	net-names: extract coins/:token-name 5
-	networks: extract/index coins/:token-name 5 2
-	explorers: extract/index coins/:token-name 5 3
+	net-names: extract coins/:token-name 6
+	networks: extract/index coins/:token-name 6 2
+	explorers: extract/index coins/:token-name 6 3
 
 	;-- current net name
 	net-name: net-names/2			;-- default "Rinkeby"
 	network: get-network
 	explorer: get-explorer
 	token-contract: get-contract-addr
+	bip32-path: get-bip32-path
 
 	connected?:		no
 	address-index:	0
@@ -189,7 +204,7 @@ wallet: context [
 			n: page * addr-per-page
 			
 			loop addr-per-page [
-				addr: key/get-address name token-name n
+				addr: key/get-eth-address name bip32-path n
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -267,6 +282,7 @@ wallet: context [
 		network:  networks/:idx
 		explorer: explorers/:idx
 		token-contract: get-contract-addr
+		bip32-path: get-bip32-path
 		do-reload
 	]
 
@@ -279,6 +295,7 @@ wallet: context [
 		net: net-list/selected: either net > length? net-list/data [1][net]
 		net-name: net-list/data/:net
 		token-contract: get-contract-addr
+		bip32-path: get-bip32-path
 		do-reload
 	]
 	
@@ -364,7 +381,7 @@ wallet: context [
 
 		name: get-device-name
 		;-- Edge case: ledger key may locked in this moment
-		unless string? key/get-address name token-name 0 [
+		unless string? key/get-eth-address name bip32-path 0 [
 			reset-sign-button
 			view/flags unlock-dev-dlg 'modal
 			exit
@@ -394,7 +411,7 @@ wallet: context [
 			]
 		]
 
-		signed-data: key/get-signed-data name address-index tx get-chain-id
+		signed-data: key/get-eth-signed-data name bip32-path address-index tx get-chain-id
 
 		either all [
 			signed-data

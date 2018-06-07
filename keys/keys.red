@@ -181,11 +181,21 @@ key: context [
 		]
 	]
 
-	get-address: func [name [string! none!] token-name [string!] idx [integer! block!]][
+	get-eth-address: func [name [string! none!] bip32-path [block!] idx [integer!] /local bip32][
 		if name = none [return 'NoDevice]
+		bip32: append copy bip32-path idx
 		case [
-			name = ledger/name [ledger/get-eth-address idx]
-			name = trezor/name [trezor/get-eth-address idx]
+			name = ledger/name [ledger/get-eth-address bip32]
+			name = trezor/name [trezor/get-eth-address bip32]
+			true ['NotSupport]
+		]
+	]
+
+	get-btc-address: func [name [string! none!] bip32-path [block!] idx [integer!] /local bip32][
+		if name = none [return 'NoDevice]
+		bip32: append poke copy bip32-path 3 (80000000h + idx) 0
+		case [
+			name = trezor/name [trezor/get-btc-address bip32]
 			true ['NotSupport]
 		]
 	]
@@ -199,11 +209,12 @@ key: context [
 		]
 	]
 
-	get-signed-data: func [name [string! none!] idx [integer!] tx [block!] chain-id [integer!]][
+	get-eth-signed-data: func [name [string! none!] bip32-path [block!] idx [integer!] tx [block!] chain-id [integer!] /local bip32][
 		if name = none [return 'NoDevice]
+		bip32: append copy bip32-path idx
 		case [
-			name = ledger/name [ledger/get-signed-data idx tx]
-			name = trezor/name [trezor/get-signed-data idx tx chain-id]
+			name = ledger/name [ledger/get-eth-signed-data bip32 tx]
+			name = trezor/name [trezor/get-eth-signed-data bip32 tx chain-id]
 			true ['NotSupport]
 		]
 	]
