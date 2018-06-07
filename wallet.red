@@ -43,7 +43,7 @@ wallet: context [
 
 	coins: compose/deep [
 		"ETH" [
-			;net name		;net server										;explorer server									;BIP32 path								;chain id			;contract address
+			;net name		;net server										;explorer server									;BIP32 path																		;chain id			;contract address
 			"mainnet"		https://eth.red-lang.org/mainnet				https://etherscan.io/tx/							[(default-purpose) (eth-coin) (default-account) (default-change)]				1					#[none]
 			"Rinkeby"		https://eth.red-lang.org/rinkeby				https://rinkeby.etherscan.io/tx/					[(default-purpose) (eth-coin) (default-account) (default-change)]				4					#[none]
 			"Kovan"			https://eth.red-lang.org/kovan					https://kovan.etherscan.io/tx/						[(default-purpose) (eth-coin) (default-account) (default-change)]				42					#[none]
