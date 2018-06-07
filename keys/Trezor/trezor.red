@@ -68,10 +68,10 @@ trezor: context [
 	request-pin-cmd: func [
 		return:		[word!]
 		/local
-			len		[integer! block! word!]
+			len		[integer! block!]
 	][
 		len: encode-and-write pin-msg pin-req
-		if word! = type? len [
+		if block! = type? len [
 			request-pin-state: 'TrezorError
 			return request-pin-state
 		]
@@ -105,7 +105,7 @@ trezor: context [
 	set-init: func [][
 		res: make map! []
 		len: Initialize res
-		if word! = type? len [return 'InitFailure]
+		if block! = type? len [return reduce ['InitFailure len]]
 		return 'InitSuccess
 	]
 
@@ -116,11 +116,11 @@ trezor: context [
 	][
 		res: make map! []
 		len: EthereumGetAddress idx res
-		if word! = type? len [
+		if block! = type? len [
 			if msg-id = trezor-message/get-id 'Failure [
-				return 'Failure
+				return reduce ['Failure len]
 			]
-			return 'OtherFailure
+			return reduce ['OtherFailure len]
 		]
 		if res/address = none [return 'NoneAddress]
 		rejoin ["0x" enbase/base res/address 16]
@@ -133,11 +133,11 @@ trezor: context [
 	][
 		res: make map! []
 		len: EthereumGetAddress idx res
-		if word! = type? len [
+		if block! = type? len [
 			if msg-id = trezor-message/get-id 'Failure [
-				return 'Failure
+				return reduce ['Failure len]
 			]
-			return 'OtherFailure
+			return reduce ['OtherFailure len]
 		]
 		if res/address = none [return 'NoneAddress]
 		rejoin ["0x" enbase/base res/address 16]
@@ -166,7 +166,7 @@ trezor: context [
 		req: make map! reduce [
 			'address_n idx
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
-			'_to tx/4 'value amount 'chain_id chain-id
+			'to tx/4 'value amount 'chain_id chain-id
 		]
 		if data-len > 0 [
 			put req 'data_length data-len
@@ -174,7 +174,7 @@ trezor: context [
 		]
 		res: make map! []
 		len: EthereumSignTx req res
-		if word! = type? len [return 'SignError]
+		if block! = type? len [return reduce ['SignError len]]
 
 		append tx reduce [
 			to-bin8 res/signature_v
@@ -190,12 +190,12 @@ trezor: context [
 
 	Initialize: func [
 		res				[map!]
-		return:			[integer! word!]
+		return:			[integer! block!]
 		/local
-			len			[integer! word!]
+			len			[integer! block!]
 	][
 		len: encode-and-write 'Initialize #()
-		if word! = type? len [return len]
+		if block! = type? len [return reduce ['Initialize 'Failed len]]
 		len: read-and-decode 'Features res
 		len
 	]
@@ -203,21 +203,19 @@ trezor: context [
 	EthereumGetAddress: func [
 		idx				[block!]
 		res				[map!]
-		return:			[integer! word!]
+		return:			[integer! block!]
 		/local
-			len			[integer! word! block!]
+			len			[integer! block!]
 			req			[map!]
 	][
-		if request-pin-state <> 'HasRequested [return 'Locked]
-
 		req: make map! reduce ['address_n idx]
 		put req 'show_display false
 		len: encode-and-write 'EthereumGetAddress req
-		if word! = type? len [return to word! append "EthereumGetAddress-SendFailed-" to string! len]
+		if block! = type? len [return reduce ['EthereumGetAddress 'SendFailed len]]
 
 		clear command-buffer
 		len: message-read command-buffer
-		if block! = type? len [return 'EthereumGetAddress-ReadFailed]
+		if block! = type? len [return reduce ['EthereumGetAddress 'ReadFailed len]]
 		if msg-id = trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'Requesting
 			clear pin-get
@@ -229,30 +227,27 @@ trezor: context [
 
 		if msg-id = trezor-message/get-id 'EthereumAddress [
 			len: proto-encode/decode trezor-message/messages 'EthereumAddress res command-buffer
-			if block! = type? len [return 'EthereumGetAddress-DecodeFailed]
+			if block! = type? len [return reduce ['EthereumGetAddress 'DecodeFailed len]]
 			return len
 		]
 
-		'GetPublicKey-UnkownId
+		['GetPublicKey 'UnkownId]
 	]
 
 	EthereumSignTx: func [
 		req				[map!]
 		res				[map!]
-		return:			[integer! word!]
+		return:			[integer! block!]
 		/local
-			len			[integer! word! block!]
+			len			[integer! block!]
 			res2		[map!]
 	][
-		if request-pin-state <> 'HasRequested [return 'Locked]
-
 		len: encode-and-write 'EthereumSignTx req
-		if word! = type? len [return to word! append "EthereumSignTx-SendFailed-" to string! len]
-		if len < 0 [return len]
+		if block! = type? len [return reduce ['EthereumSignTx 'SendFailed len]]
 
 		clear command-buffer
 		len: message-read command-buffer
-		if block! = type? len [return 'EthereumSignTx-ReadFailed]
+		if block! = type? len [return reduce ['EthereumSignTx 'ReadFailed len]]
 
 		if msg-id = trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'Requesting
@@ -263,20 +258,20 @@ trezor: context [
 			view/flags pin-dlg 'modal
 		]
 
-		if msg-id <> trezor-message/get-id 'ButtonRequest [return 'EthereumSignTx-NotButReq]
+		if msg-id <> trezor-message/get-id 'ButtonRequest [return ['EthereumSignTx 'NotButReq]]
 
 		res2: make map! []
 		len: proto-encode/decode trezor-message/messages 'ButtonRequest res2 command-buffer
-		if block! = type? len [return 'EthereumSignTx-ButReqDecodeFailed]
+		if block! = type? len [return reduce ['EthereumSignTx 'ButReqDecodeFailed len]]
 
 		len: encode-and-write 'ButtonAck make map! []
-		if word! = type? len [return to word! append "EthereumSignTx-ButAckWrite-" to string! len]
+		if block! = type? len [return reduce ['EthereumSignTx 'ButAckWrite len]]
 
 		res2: make map! []
 		len: read-and-decode 'ButtonRequest res2
-		if word! = type? len [return to word! append "EthereumSignTx-ButReq2Read-" to string! len]
+		if block! = type? len [return reduce ['EthereumSignTx 'ButReq2Read len]]
 		len: encode-and-write 'ButtonAck make map! []
-		if word! = type? len [return to word! append "EthereumSignTx-ButAck2Write-" to string! len]
+		if block! = type? len [return reduce ['EthereumSignTx 'ButAck2Write len]]
 
 		len: read-and-decode 'EthereumTxRequest res
 		len
@@ -286,20 +281,20 @@ trezor: context [
 		ids				[block!]
 		name			[string!]
 		res				[map!]
-		return:			[integer! word!]
+		return:			[integer! block!]
 		/local
 			req			[map!]
-			len			[integer! word! block!]
+			len			[integer! block!]
 			state-bak	[integer!]
 	][
 		req: make map! reduce ['address_n ids]
 		put req 'coin_name name
 		len: encode-and-write 'GetPublicKey req
-		if word! = type? len [return to word! append "GetPublicKey-SendFailed-" to string! len]
+		if block! = type? len [return reduce ['GetPublicKey 'SendFailed len]]
 
 		clear command-buffer
 		len: message-read command-buffer
-		if block! = type? len [return 'GetPublicKey-ReadFailed]
+		if block! = type? len [return reduce ['GetPublicKey 'ReadFailed len]]
 
 		if msg-id = trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'Requesting
@@ -312,17 +307,17 @@ trezor: context [
 
 		if msg-id = trezor-message/get-id 'PublicKey [
 			len: proto-encode/decode trezor-message/messages 'PublicKey res command-buffer
-			if block! = type? len [return 'GetPublicKey-DecodeFailed]
+			if block! = type? len [return reduce ['GetPublicKey 'DecodeFailed len]]
 			return len
 		]
 
-		'GetPublicKey-UnkownId
+		['GetPublicKey 'UnkownId]
 	]
 
 	encode-and-write: func [
 		msg				[word!]
 		value			[map!]
-		return:			[integer! word!]
+		return:			[integer! block!]
 		/local
 			len			[integer! block!]
 	][
@@ -330,24 +325,24 @@ trezor: context [
 		;-- print ["msg: " msg]
 		;-- print ["value: " value]
 		len: proto-encode/encode trezor-message/messages msg value command-buffer
-		if block! = type? len [return 'WriteFailed]
+		if block! = type? len [return reduce ['EncodeFailed len]]
 		len: message-write command-buffer trezor-message/get-id msg
-		if block! = type? len [return 'EncodeFailed]
+		if block! = type? len [return reduce ['WriteFailed len]]
 		len
 	]
 
 	read-and-decode: func [
 		msg				[word!]
 		value			[map!]
-		return:			[integer! word!]
+		return:			[integer! block!]
 		/local
 			len			[integer! block!]
 	][
 		clear command-buffer
 		len: message-read command-buffer
-		if block! = type? len [return 'ReadFailed]
+		if block! = type? len [return reduce ['ReadFailed len]]
 		len: proto-encode/decode trezor-message/messages msg value command-buffer
-		if block! = type? len [return 'DecodeFailed]
+		if block! = type? len [return reduce ['DecodeFailed len]]
 		len
 	]
 
@@ -375,7 +370,7 @@ trezor: context [
 		button "Enter" 205x30 middle [
 			if request-pin-state = 'Requesting [
 				pin-ret: encode-and-write 'PinMatrixAck make map! reduce ['pin pin-get]
-				if word! = type? pin-ret [
+				if block! = type? pin-ret [
 					request-pin-state: 'TrezorError
 					unview
 					exit
