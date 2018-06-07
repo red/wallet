@@ -117,7 +117,7 @@ ledger: context [
 		]
 	]
 
-	get-address: func [idx [integer!] /local data pub-key-len addr-len][
+	get-eth-address: func [idx [integer!] /local data pub-key-len addr-len][
 		data: make binary! 20
 		append data reduce [
 			E0h

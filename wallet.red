@@ -189,7 +189,7 @@ wallet: context [
 			n: page * addr-per-page
 			
 			loop addr-per-page [
-				addr: key/get-address name n
+				addr: key/get-address name token-name n
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -364,7 +364,7 @@ wallet: context [
 
 		name: get-device-name
 		;-- Edge case: ledger key may locked in this moment
-		unless string? key/get-address name 0 [
+		unless string? key/get-address name token-name 0 [
 			reset-sign-button
 			view/flags unlock-dev-dlg 'modal
 			exit

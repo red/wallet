@@ -181,11 +181,11 @@ key: context [
 		]
 	]
 
-	get-address: func [name [string! none!] idx [integer!]][
+	get-address: func [name [string! none!] token-name [string!] idx [integer! block!]][
 		if name = none [return 'NoDevice]
 		case [
-			name = ledger/name [ledger/get-address idx]
-			name = trezor/name [trezor/get-address idx]
+			name = ledger/name [ledger/get-eth-address idx]
+			name = trezor/name [trezor/get-eth-address idx]
 			true ['NotSupport]
 		]
 	]

@@ -109,19 +109,7 @@ trezor: context [
 		return 'InitSuccess
 	]
 
-	get-address: func [
-		idx				[integer!]
-		/local
-			ret
-	][
-		until [
-			ret: _get-address idx
-			ret <> 'Failure
-		]
-		ret
-	]
-
-	_get-address: func [
+	get-eth-address: func [
 		idx				[integer!]
 		/local
 			res len
@@ -232,24 +220,6 @@ trezor: context [
 	]
 
 	EthereumSignTx: func [
-		req				[map!]
-		res				[map!]
-		return:			[integer! word!]
-		/local
-			len			[integer! word!]
-			res2		[map!]
-	][
-		until [
-			len: _EthereumSignTx req res
-			any [
-				integer! = type? len
-				msg-id <> trezor-message/get-id 'Failure
-			]
-		]
-		len
-	]
-
-	_EthereumSignTx: func [
 		req				[map!]
 		res				[map!]
 		return:			[integer! word!]
