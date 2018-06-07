@@ -18,6 +18,7 @@ Red [
 #include %libs/rlp.red
 #include %libs/proto-encode.red
 #include %libs/ethereum.red
+#include %libs/bitcoin.red
 #include %libs/HID/hidapi.red
 #include %keys/keys.red
 
