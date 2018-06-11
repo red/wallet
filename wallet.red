@@ -364,8 +364,8 @@ wallet: context [
 		style field: field 360 font [name: font-fixed size: 10]
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
-		label "To Address:"		addr-to:	  field hint "0x0000000000000000000000000000000000000000" return
-		label "Amount to Send:" amount-field: field 120 hint "0.001" label-unit: label 50 return
+		label "To Address:"		addr-to:	  field return
+		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 120 "21" return
 		label "Gas Limit:"		gas-limit:	  field 120 "21000" return
 		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
