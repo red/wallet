@@ -125,6 +125,7 @@ wallet: context [
 				info-msg/text: ""
 			]
 			update-ui yes
+			do-auto-size addr-list
 		][
 			dev/text: "<No Device>"
 		]
@@ -190,7 +191,9 @@ wallet: context [
 	
 	do-auto-size: function [face [object!]][
 		size: size-text/with face "X"
-		delta: (as-pair size/x * 64 size/y * 5.3) - face/size
+		cols: 64
+		if face/data [foreach line face/data [cols: max cols length? line]]
+		delta: (as-pair size/x * cols size/y * 5.3) - face/size
 		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
 	]
 
