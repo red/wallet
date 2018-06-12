@@ -223,7 +223,9 @@ trezor: context [
 			i: i + 1
 		]
 
-		put res 'balance (i256-to-float total) ;/ 1e8)
+		total: div256 total to-i256 1e8
+		if block? total [total: total/1]
+		put res 'balance i256-to-float total
 		res
 	]
 

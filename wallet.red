@@ -215,7 +215,7 @@ wallet: context [
 		either error? try [
 			foreach address addr-list/data [
 				addr: copy/part address find address space
-				replace address "   <loading>" form-amount either token-contract [
+				replace address "      <loading>" form-amount either token-contract [
 					eth/get-balance-token network token-contract addr
 				][
 					eth/get-balance network addr
@@ -257,7 +257,7 @@ wallet: context [
 			update-ui yes
 			exit
 		]
-		append addresses replace rejoin [addr "      <loading>"] "   <loading>" form-amount select res 'balance
+		append addresses rejoin [addr "      " form-amount select res 'balance]
 		addr-list/data: addresses
 	]
 
@@ -521,9 +521,10 @@ wallet: context [
 		]
 	]
 
-	copy-addr: func [][
+	copy-addr: func [/local addr][
 		if btn-send/enabled? [
-			write-clipboard copy/part pick addr-list/data addr-list/selected 42
+			addr: pick addr-list/data addr-list/selected 
+			write-clipboard copy/part addr find addr space
 		]
 	]
 
