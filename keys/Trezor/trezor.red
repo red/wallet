@@ -155,9 +155,9 @@ trezor: context [
 	get-btc-addresses: func [
 		ids				[block!]
 		network			[url!]
-		return:			[block! map!]
+		return:			[map! word!]
 		/local
-			c-list o-list len i addr txs balance total
+			c-list o-list len i addr txs balance total btc-res
 	][
 		c-list: copy []
 		o-list: copy []
@@ -173,13 +173,16 @@ trezor: context [
 			addr: get-btc-address ids
 			if block? addr [return reduce ['get-btc-addresses addr]]
 
-			if true = btc/balance-empty? network skip addr 2 [
+			btc-res: btc/balance-empty? network skip addr 2
+			if word? btc-res [return 'error]
+			if true = btc-res [
 				append c-list reduce [addr none]
 				put res 'change c-list
 				break
 			]
 
 			txs: btc/get-tx-hash network skip addr 2
+			if word? txs [return 'error]
 			if txs = [][
 				append c-list reduce [addr to-i256 0]
 				put res 'change c-list
@@ -202,13 +205,17 @@ trezor: context [
 			addr: get-btc-address ids
 			if block? addr [return reduce ['get-btc-addresses addr]]
 
-			if true = btc/balance-empty? network skip addr 2 [
+			btc-res: btc/balance-empty? network skip addr 2
+			if word? btc-res [return 'error]
+			if word? btc-res [return 'error]
+			if true = btc-res [
 				append o-list reduce [addr none]
 				put res 'origin o-list
 				break
 			]
 
 			txs: btc/get-tx-hash network skip addr 2
+			if word? txs [return 'error]
 			if txs = [][
 				append o-list reduce [addr to-i256 0]
 				put res 'origin o-list
