@@ -207,7 +207,6 @@ trezor: context [
 
 			btc-res: btc/balance-empty? network skip addr 2
 			if word? btc-res [return 'error]
-			if word? btc-res [return 'error]
 			if true = btc-res [
 				append o-list reduce [addr none]
 				put res 'origin o-list
@@ -229,10 +228,9 @@ trezor: context [
 
 			i: i + 1
 		]
-
-		total: div256 total to-i256 1e8
-		if block? total [total: total/1]
-		put res 'balance i256-to-float total
+		total: i256-to-float total
+		total: total / 1e8
+		put res 'balance total
 		res
 	]
 

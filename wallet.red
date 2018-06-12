@@ -199,10 +199,11 @@ wallet: context [
 				true [{Please open the "Ethereum" application}]
 			]
 			update-ui yes
-			exit
+			return false
 		]
 		append addresses rejoin [addr "      <loading>"]
 		addr-list/data: addresses
+		return true
 	]
 
 	enum-eth-address-balance: func [
@@ -241,7 +242,7 @@ wallet: context [
 		either map? res [
 			addr: pick back back tail select res 'origin 1
 		][
-			addr: 'Failed
+			addr: res
 		]
 		either string? addr [
 			info-msg/text: "Please wait while loading addresses..."
@@ -255,10 +256,11 @@ wallet: context [
 				true [{Get Address Failed!}]
 			]
 			update-ui yes
-			exit
+			return false
 		]
 		append addresses rejoin [addr "      " form-amount select res 'balance]
 		addr-list/data: addresses
+		return true
 	]
 
 	list-addresses: func [
@@ -289,11 +291,11 @@ wallet: context [
 			
 			loop addr-per-page [
 				either any [token-name = "ETH" token-name = "RED"][
-					show-eth-address name n addresses
+					if not show-eth-address name n addresses [exit]
 					process-events
 					n: n + 1
 				][
-					show-btc-address name n addresses
+					if not show-btc-address name n addresses [exit]
 					process-events
 					n: n + 1
 				]
