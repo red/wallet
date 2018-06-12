@@ -179,6 +179,88 @@ wallet: context [
 		;update-ui yes
 	]
 
+	show-eth-address: func [
+		name			[string!]
+		n				[integer!]
+		addresses		[block!]
+		/local
+			addr		[string!]
+	][
+		addr: key/get-eth-address name bip32-path n
+		either string? addr [
+			info-msg/text: "Please wait while loading addresses..."
+		][
+			info-msg/text: case [
+				addr = 'browser-support-on [{Please set "Browser support" to "No"}]
+				addr = 'locked [
+					usb-device/rate: 0:0:3
+					"Please unlock your key"
+				]
+				true [{Please open the "Ethereum" application}]
+			]
+			update-ui yes
+			exit
+		]
+		append addresses rejoin [addr "      <loading>"]
+		addr-list/data: addresses
+	]
+
+	enum-eth-address-balance: func [
+		/local
+			address		[string!]
+			addr		[string!]
+	][
+		info-msg/text: "Please wait while loading balances..."
+		update-ui no
+		either error? try [
+			foreach address addr-list/data [
+				addr: copy/part address find address space
+				replace address "   <loading>" form-amount either token-contract [
+					eth/get-balance-token network token-contract addr
+				][
+					eth/get-balance network addr
+				]
+				process-events
+			]
+		][
+			info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
+		][
+			info-msg/text: ""
+		]
+	]
+
+	show-btc-address: func [
+		name			[string!]
+		n				[integer!]
+		addresses		[block!]
+		/local
+			addr		[string!]
+			res
+	][
+		res: key/get-btc-address name bip32-path n 0 network
+		either map? res [
+			addr: pick back back tail select res 'origin 1
+		][
+			addr: 'Failed
+		]
+		either string? addr [
+			info-msg/text: "Please wait while loading addresses..."
+		][
+			info-msg/text: case [
+				addr = 'browser-support-on [{Please set "Browser support" to "No"}]
+				addr = 'locked [
+					usb-device/rate: 0:0:3
+					"Please unlock your key"
+				]
+				true [{Get Address Failed!}]
+			]
+			update-ui yes
+			exit
+		]
+		append addresses replace rejoin [addr "      <loading>"] "   <loading>" form-amount select res 'balance
+		addr-list/data: addresses
+	]
+
 	list-addresses: func [
 		/prev /next 
 		/local
@@ -207,72 +289,17 @@ wallet: context [
 			
 			loop addr-per-page [
 				either any [token-name = "ETH" token-name = "RED"][
-					addr: key/get-eth-address name bip32-path n
-					either string? addr [
-						info-msg/text: "Please wait while loading addresses..."
-					][
-						info-msg/text: case [
-							addr = 'browser-support-on [{Please set "Browser support" to "No"}]
-							addr = 'locked [
-								usb-device/rate: 0:0:3
-								"Please unlock your key"
-							]
-							true [{Please open the "Ethereum" application}]
-						]
-						update-ui yes
-						exit
-					]
-					append addresses rejoin [addr "      <loading>"]
-					addr-list/data: addresses
+					show-eth-address name n addresses
 					process-events
 					n: n + 1
 				][
-					print network
-					res: key/get-btc-address name bip32-path n 0 network
-					probe res
-					either map? res [
-						addr: back back tail select res 'origin
-					][
-						addr: 'Failed
-					]
-					either string? addr [
-						info-msg/text: "Please wait while loading addresses..."
-					][
-						info-msg/text: case [
-							addr = 'browser-support-on [{Please set "Browser support" to "No"}]
-							addr = 'locked [
-								usb-device/rate: 0:0:3
-								"Please unlock your key"
-							]
-							true [{Get Address Failed!}]
-						]
-						update-ui yes
-						exit
-					]
-					append addresses replace rejoin [addr "      <loading>"] "   <loading>" form-amount select res 'balance
-					addr-list/data: addresses
+					show-btc-address name n addresses
 					process-events
 					n: n + 1
 				]
 			]
 			if any [token-name = "ETH" token-name = "RED"][
-				info-msg/text: "Please wait while loading balances..."
-				update-ui no
-				either error? try [
-					foreach address addr-list/data [
-						addr: copy/part address find address space
-						replace address "   <loading>" form-amount either token-contract [
-							eth/get-balance-token network token-contract addr
-						][
-							eth/get-balance network addr
-						]
-						process-events
-					]
-				][
-					info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
-				][
-					info-msg/text: ""
-				]
+				enum-eth-address-balance
 			]
 			update-ui yes
 		]

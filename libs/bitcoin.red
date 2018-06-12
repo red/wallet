@@ -21,7 +21,7 @@ btc: context [
 		data: get-url network append copy "/addrs/" reduce [address "?unspentOnly=true"]
 		txs: select data 'txrefs
 		clear last-txs
-		if any [txs = [] tx = none] [return last-txs]
+		if any [txs = [] txs = none] [return last-txs]
 		foreach tx txs [
 			hash: select tx 'tx_hash
 			value: select tx 'value
@@ -48,12 +48,12 @@ btc: context [
 		ret
 	]
 
-	balance-empty?: func [network [url!] address [string!] /local data txs tx][
-		get-tx-hash network address
-		if last-txs = [] [return true]
+	balance-empty?: func [network [url!] address [string!] /local data txs][
+		data: get-url network append copy "/addrs/" address
+		txs: select data 'txrefs
+		if any [txs = [] txs = none] [return true]
 		false
 	]
-
 
 ]
 

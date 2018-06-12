@@ -132,9 +132,19 @@ trezor: context [
 		return:			[binary! block!]
 		/local
 			res len
+			coin-name
+			segwit?
 	][
 		res: make map! []
-		len: GetAddress ids "Bitcoin" res
+		coin-name: "Bitcoin"
+		if ids/2 = (80000000h + 1) [
+			coin-name: "Testnet"
+		]
+		segwit?: false
+		if ids/1 = (80000000h + 49) [
+			segwit?: true
+		]
+		len: GetAddress ids coin-name segwit? res
 		if block? len [
 			return reduce ['get-btc-address len]
 		]
@@ -162,17 +172,22 @@ trezor: context [
 			ids/5: i
 			addr: get-btc-address ids
 			if block? addr [return reduce ['get-btc-addresses addr]]
-			print addr
 
-			txs: btc/get-tx-hash network skip addr 2
-			if txs = [][
+			if true = btc/balance-empty? network skip addr 2 [
 				append c-list reduce [addr none]
 				put res 'change c-list
 				break
 			]
 
+			txs: btc/get-tx-hash network skip addr 2
+			if txs = [][
+				append c-list reduce [addr to-i256 0]
+				put res 'change c-list
+				i: i + 1
+				continue
+			]
+
 			balance: btc/get-last-balance
-			print balance
 			append c-list reduce [addr balance]
 			total: add256 total balance
 
@@ -186,24 +201,29 @@ trezor: context [
 			ids/5: i
 			addr: get-btc-address ids
 			if block? addr [return reduce ['get-btc-addresses addr]]
-			print addr
 
-			txs: btc/get-tx-hash network skip addr 2
-			if txs = [][
+			if true = btc/balance-empty? network skip addr 2 [
 				append o-list reduce [addr none]
 				put res 'origin o-list
 				break
 			]
 
+			txs: btc/get-tx-hash network skip addr 2
+			if txs = [][
+				append o-list reduce [addr to-i256 0]
+				put res 'origin o-list
+				i: i + 1
+				continue
+			]
+
 			balance: btc/get-last-balance
-			print balance
 			append o-list reduce [addr balance]
 			total: add256 total balance
 
 			i: i + 1
 		]
 
-		put res 'balance total
+		put res 'balance (i256-to-float total) ;/ 1e8)
 		res
 	]
 
@@ -340,6 +360,7 @@ trezor: context [
 	GetAddress: func [
 		ids				[block!]
 		name			[string!]
+		segwit?			[logic!]
 		res				[map!]
 		return:			[integer! block!]
 		/local
@@ -349,6 +370,9 @@ trezor: context [
 		req: make map! reduce ['address_n ids]
 		put req 'coin_name name
 		put req 'show_display false
+		if segwit? [
+			put req 'script_type 'SPENDP2SHWITNESS
+		]
 		len: PinMatrixSequence 'GetAddress 'Address req res
 		len
 	]
