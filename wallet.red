@@ -302,6 +302,7 @@ wallet: context [
 				enum-eth-address-balance
 			]
 			update-ui yes
+			do-auto-size addr-list
 		]
 	]
 
@@ -382,7 +383,9 @@ wallet: context [
 	
 	do-auto-size: function [face [object!]][
 		size: size-text/with face "X"
-		delta: (as-pair size/x * 64 size/y * 5.3) - face/size
+		cols: 64
+		if face/data [foreach line face/data [cols: max cols length? line]]
+		delta: (as-pair size/x * cols size/y * 5.3) - face/size
 		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
 	]
 
@@ -412,7 +415,7 @@ wallet: context [
 	]
 
 	update-ui: function [enabled? [logic!]][
-		btn-send/enabled?: all [enabled? addr-list/selected]
+		btn-send/enabled?: to-logic all [enabled? addr-list/selected > 0]
 		if page > 0 [btn-prev/enabled?: enabled?]
 		foreach f [btn-more net-list token-list page-info btn-reload][
 			set in get f 'enabled? enabled?
@@ -554,8 +557,8 @@ wallet: context [
 		style field: field 360 font [name: font-fixed size: 10]
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
-		label "To Address:"		addr-to:	  field hint "0x0000000000000000000000000000000000000000" return
-		label "Amount to Send:" amount-field: field 120 hint "0.001" label-unit: label 50 return
+		label "To Address:"		addr-to:	  field return
+		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 120 "21" return
 		label "Gas Limit:"		gas-limit:	  field 120 "21000" return
 		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
