@@ -36,12 +36,14 @@ wallet: context [
 		https://eth.red-lang.org/mainnet
 		https://eth.red-lang.org/rinkeby
 		https://eth.red-lang.org/kovan
+		https://eth.red-lang.org/ropsten
 	]
 
 	explorers: [
 		https://etherscan.io/tx/
 		https://rinkeby.etherscan.io/tx/
 		https://kovan.etherscan.io/tx/
+		https://ropsten.etherscan.io/tx/
 	]
 
 	contracts: [
@@ -49,6 +51,7 @@ wallet: context [
 			"mainnet" #[none]
 			"Rinkeby" #[none]
 			"Kovan"	  #[none]
+			"Ropsten" #[none]
 		]
 		"RED" [
 			"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
@@ -221,6 +224,7 @@ wallet: context [
 				info-msg/text: ""
 			]
 			update-ui yes
+			do-auto-size addr-list
 		]
 	]
 
@@ -293,7 +297,9 @@ wallet: context [
 	
 	do-auto-size: function [face [object!]][
 		size: size-text/with face "X"
-		delta: (as-pair size/x * 64 size/y * 5.3) - face/size
+		cols: 64
+		if face/data [foreach line face/data [cols: max cols length? line]]
+		delta: (as-pair size/x * cols size/y * 5.3) - face/size
 		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
 	]
 
@@ -323,7 +329,7 @@ wallet: context [
 	]
 
 	update-ui: function [enabled? [logic!]][
-		btn-send/enabled?: all [enabled? addr-list/selected]
+		btn-send/enabled?: to-logic all [enabled? addr-list/selected > 0]
 		if page > 0 [btn-prev/enabled?: enabled?]
 		foreach f [btn-more net-list token-list page-info btn-reload][
 			set in get f 'enabled? enabled?
@@ -334,9 +340,9 @@ wallet: context [
 	notify-user: does [
 		btn-sign/enabled?: no
 		process-events
-		btn-sign/offset/x: 145
-		btn-sign/size/x: 200
-		btn-sign/text: "please check on your key"
+		btn-sign/offset/x: 133
+		btn-sign/size/x: 225
+		btn-sign/text: "Confirm the transaction on your Ledger"
 		process-events
 	]
 
@@ -470,8 +476,8 @@ wallet: context [
 		style field: field 360 font [name: font-fixed size: 10]
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
-		label "To Address:"		addr-to:	  field hint "0x0000000000000000000000000000000000000000" return
-		label "Amount to Send:" amount-field: field 120 hint "0.001" label-unit: label 50 return
+		label "To Address:"		addr-to:	  field return
+		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
 		label "Gas Price:"		gas-price:	  field 120 "21" return
 		label "Gas Limit:"		gas-limit:	  field 120 "21000" return
 		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
@@ -498,7 +504,7 @@ wallet: context [
 		dev-list: drop-list data key/get-valid-names key/valid-device-names 135 select 1 :do-select-dev
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan"] select 2 :do-select-network
+		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 2 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
@@ -526,7 +532,7 @@ wallet: context [
 
 	contract-data-dlg: layout [
 		title "Set Contract data to YES"
-		text font-size 12 {Please set "Contract data" to "Yes" in Ethereum app's settings.}
+		text font-size 12 {Please set "Contract data" to "Yes" in the Ethereum app's settings.}
 		return
 		pad 180x10 button "OK" [unview]
 	]
