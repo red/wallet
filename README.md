@@ -10,10 +10,12 @@ Locations used:
 - ```R:\wallet``` as the storage location of the Wallet git repository.
 
 Steps to compile the Red wallet using the Red binary:
-- Download Red for your system and save it to a location of your choice: https://www.red-lang.org/p/download.html. Please use the last stable version and check the sha256-hash after downloading!
+- Download Red for your system and save it to a location of your choice: https://www.red-lang.org/p/download.html. Please use the last automated build and check the sha256-hash after downloading it!
 - Open a terminal
-- Compile the wallet with the following command:  
-```R:\>red-063.exe -r -t Windows R:\wallet\wallet.red```
+- The command you need to type is of the following form:  
+```<location of the Red executable> -r -t <your cross-compilation target> -o <location of the generated binary file> <location of the wallet Red-script```  
+In our case, that would be the following:  
+```R:\red-12jun18-e62b63d5.exe -r -t Windows -o wallet/wallet.exe wallet/wallet.red```
 
 Please wait until the compilation of the wallet has finished.
 The produced binary, in our case ```R:\wallet\wallet.exe``` is a complete application. There is no installation, configuration files or registry entries needed or created. Just use it.
