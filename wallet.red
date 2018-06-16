@@ -57,9 +57,9 @@ wallet: context [
 		]
 	]
 
-	explorer: explorers/2
-	network: networks/2
-	net-name: "rinkeby"
+	explorer:	explorers/1
+	network:	networks/1
+	net-name:	"mainnet"
 	token-name: "ETH"
 	token-contract: none
 
@@ -391,7 +391,7 @@ wallet: context [
 		text 50 "Device:" dev: text 135 "<No Device>"
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 2 :do-select-network
+		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 1 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
