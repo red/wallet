@@ -1,6 +1,21 @@
 # A Desktop Client for Ledger Nano S
 
 # How to build the wallet from source
+
+## Quick and easy way
+
+1. Click on the green "Download" button on top right of this page, and download the ZIP archive of the wallet sources.
+2. Unzip it on your computer.
+3. Download the [latest Red automated build](https://www.red-lang.org/p/download.html) for your platform, rename the file to `red.exe` on Windows, or just `red` on macOS, and put it in the wallet sources folder at root level.
+4. Open a terminal (DOS on Windows) and navigate to the wallet source folder.
+5. Run the following command-line to compile a new wallet binary:
+  * On Windows: `red -r -t Windows wallet.red`
+  * On macOS: `red -r -t macOS wallet.red`
+6. You will get a new `wallet` executable in the same folder. You can further compress it using [UPX](https://upx.github.io/) if you want. In such case, we recommend adding the `--no-compress` compilation option to the above command-lines in order to avoid using the internal Redbin compressor and let UPX do a better overall compression job.
+7. Enjoy your newly built RED Wallet! ;-)
+
+## Full blown installation
+
 We assume Windows as the target platform in the following, but the steps are the same for every supported platform.
 
 Locations used:
