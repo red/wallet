@@ -138,11 +138,12 @@ wallet: context [
 		btn-sign/text: "Sign"
 	]
 
-	do-send: func [face [object!] event [event!]][
+	do-send: func [face [object!] event [event!] /local res][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			network-to/text: net-name
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
+			if res: eth/get-gas-price 'average [gas-price/text: to string! res]
 			gas-limit/text: either token-contract ["79510"]["21000"]
 			reset-sign-button
 			label-unit/text: token-name
