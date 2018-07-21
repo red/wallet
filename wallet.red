@@ -74,7 +74,7 @@ wallet: context [
 		head insert/dup value #" " 8 - ((index? pos) - 1)
 	]
 
-	list-addresses: func [/prev /next /local addresses addr n][
+	list-addresses: func [/prev /next /local addrs addr-balances addr n balances i][
 		update-ui no
 		either ledger/connect [
 			usb-device/rate: none
@@ -82,7 +82,8 @@ wallet: context [
 			dev/text: "Ledger Nano S"
 			process-events
 
-			addresses: clear []
+			addrs: clear []
+			addr-balances: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
 			n: page * addr-per-page
@@ -102,23 +103,26 @@ wallet: context [
 					]
 					exit
 				]
-				append addresses rejoin [addr "      <loading>"]
-				addr-list/data: addresses
+				append addrs addr
+				append addr-balances rejoin [addr "      <loading>"]
+				addr-list/data: addr-balances
 				process-events
 				n: n + 1
 			]
 			info-msg/text: "Please wait while loading balances..."
 			update-ui no
 			either error? try [
-				foreach address addr-list/data [
-					addr: copy/part address find address space
-					replace address "   <loading>" form-amount either token-contract [
-						eth/get-balance-token network token-contract addr
-					][
-						eth/get-balance network addr
-					]
-					process-events
+				balances: either token-contract [
+					eth/get-token-balance network token-contract addrs
+				][
+					eth/get-balance network addrs
 				]
+				i: 1
+				loop addr-per-page [
+					replace pick addr-list/data i "   <loading>" form-amount balances/(i)
+					i: i + 1
+				]
+				process-events
 			][
 				info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
 			][

@@ -94,16 +94,34 @@ eth: context [
 		n / 1e18
 	]
 
-	get-balance-token: func [network [url!] contract [string!] address [string!] /local token-url params][
+	get-token-balance: func [network [url!] contract [string!] address [string! block!] return: [float! block!] /local token-url params i res][
 		token-url: rejoin ["0x" contract]
 		params: make map! 4
 		params/to: token-url
-		params/data: rejoin ["0x70a08231" pad64 copy skip address 2]
-		parse-balance call-rpc network 'eth_call reduce [params 'latest]
+		either string? address [
+			params/data: rejoin ["0x70a08231" pad64 copy skip address 2]
+		][
+			params/data: collect [
+				foreach i address [
+					keep rejoin ["0x70a08231" pad64 copy skip i 2]
+				]
+			]
+		]
+		res: call-rpc network 'eth_call reduce [params 'latest]
+		either block? res [
+			collect [foreach i res [keep parse-balance i]]
+		][
+			parse-balance res
+		]
 	]
 
-	get-balance: func [network [url!] address [string!]][
-		parse-balance call-rpc network 'eth_getBalance reduce [address 'latest]
+	get-balance: func [network [url!] address [string! block!] return: [float! block!] /local res i][
+		res: call-rpc network 'eth_getBalance reduce [address 'latest]
+		either block? res [
+			collect [foreach i res [keep parse-balance i]]
+		][
+			parse-balance res
+		]
 	]
 
 	get-nonce: func [network [url!] address [string!] /local n result][
