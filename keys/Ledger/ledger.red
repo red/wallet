@@ -182,8 +182,8 @@ ledger: context [
 		either all [signed binary? signed][
 			append tx reduce [
 				copy/part signed 1
-				copy/part next signed 32
-				copy/part skip signed 33 32
+				trim/head copy/part next signed 32
+				trim/head copy/part skip signed 33 32
 			]
 			rlp/encode tx
 		][signed]
