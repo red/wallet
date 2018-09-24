@@ -9,25 +9,8 @@ Red [
 	}
 ]
 
-#include %rlp.red
-
-to-bin8: func [v [integer! char!]][
-	to binary! to char! 256 + v and 255
-]
-
-to-bin16: func [v [integer! char!]][	;-- big-endian encoding
-	skip to-binary to-integer v 2
-]
-
-to-bin32: func [v [integer! char!]][	;-- big-endian encoding
-	to-binary to-integer v
-]
-
-to-int16: func [b [binary!]][
-	to-integer copy/part b 2
-]
-
 ledger: context [
+	name: "Ledger Nano S"
 
 	vendor-id:			2C97h
 	product-id:			1
@@ -37,15 +20,28 @@ ledger: context [
 	PACKET_SIZE:		#either config/OS = 'Windows [65][64]
 	MAX_APDU_SIZE:		260
 
-	dongle: none
+	dongle:		none
 	buffer:		make binary! MAX_APDU_SIZE
 	data-frame: make binary! PACKET_SIZE
+
+	request-pin-state: 'Init
 
 	connect: func [][
 		unless dongle [
 			dongle: hid/open vendor-id product-id
 		]
 		dongle
+	]
+
+	init: func [][true]
+
+	close-pin-requesting: does [
+		request-pin-state: 'Init
+	]
+
+	request-pin: func [return: [word!]] [
+		request-pin-state: 'HasRequested
+		request-pin-state
 	]
 
 	read-apdu: func [
@@ -115,37 +111,39 @@ ledger: context [
 		]
 	]
 
-	get-address: func [idx [integer!] /local data pub-key-len addr-len][
+	get-eth-address: func [bip32-path [block!] /local data pub-key-len addr-len][
 		data: make binary! 20
 		append data reduce [
 			E0h
 			02h
 			0
 			0
-			4 * 4 + 1
-			4
-			to-bin32 8000002Ch
-			to-bin32 8000003Ch
-			to-bin32 80000000h
-			to-bin32 idx
+			4 * (length? bip32-path) + 1
+		]
+		append data collect [
+			keep length? bip32-path
+			forall bip32-path [keep to-bin32 bip32-path/1]
 		]
 		write-apdu data
 		data: read-apdu 1
 
-		case [
-			40 < length? data [
-				;-- parse reply data
-				pub-key-len: to-integer data/1
-				addr-len: to-integer pick skip data pub-key-len + 1 1
-				rejoin ["0x" to-string copy/part skip data pub-key-len + 2 addr-len]
+		either 40 < length? data [
+			request-pin-state: 'HasRequested
+			;-- parse reply data
+			pub-key-len: to-integer data/1
+			addr-len: to-integer pick skip data pub-key-len + 1 1
+			rejoin ["0x" to-string copy/part skip data pub-key-len + 2 addr-len]
+		][
+			request-pin-state: 'Requesting
+			case [
+				#{BF00018D} = data ['browser-support-on]
+				#{6804} = data ['locked]
+				#{6700} = data ['plug]
 			]
-			#{BF00018D} = data ['browser-support-on]
-			#{6804} = data ['locked]
-			#{6700} = data ['plug]
 		]
 	]
 
-	sign-eth-tx: func [addr-idx [integer!] tx [block!] /local data max-sz sz signed][
+	sign-eth-tx: func [bip32-path [block!] tx [block!] /local data max-sz sz signed][
 		;-- tx: [nonce, gasprice, startgas, to, value, data]
 		tx-bin: rlp/encode tx
 		chunk: make binary! 200
@@ -158,14 +156,11 @@ ledger: context [
 			chunk/2: 04h
 			chunk/3: either head? tx-bin [0][80h]
 			chunk/4: 0
-			chunk/5: either head? tx-bin [sz + 17][sz]
+			chunk/5: either head? tx-bin [sz + (4 * (length? bip32-path) + 1)][sz]
 			if head? tx-bin [
-				append chunk reduce [
-					4
-					to-bin32 8000002Ch
-					to-bin32 8000003Ch
-					to-bin32 80000000h
-					to-bin32 addr-idx
+				append chunk collect [
+					keep length? bip32-path
+					forall bip32-path [keep to-bin32 bip32-path/1]
 				]
 			]
 			append/part chunk tx-bin sz
@@ -177,7 +172,7 @@ ledger: context [
 		either 4 > length? signed [none][signed]
 	]
 
-	get-signed-data: func [idx tx /local signed][
+	get-eth-signed-data: func [idx tx chain-id /local signed][
 		signed: sign-eth-tx idx tx
 		either all [signed binary? signed][
 			append tx reduce [

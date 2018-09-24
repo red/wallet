@@ -696,12 +696,13 @@ hid: context [
 		serial-number	[c-string!]
 		return:			[int-ptr!]
 		/local
-		devs 			[hid-device-info]
-		cur-dev			[hid-device-info]
-		path-to-open	[c-string!]
-		handle 			[hid-device]
-		tmp				[integer!]
-		id 				[integer!]
+			devs 			[hid-device-info]
+			cur-dev			[hid-device-info]
+			path-to-open	[c-string!]
+			handle 			[hid-device]
+			tmp				[integer!]
+			id 				[integer!]
+			usage			[integer!]
 	][
 		path-to-open: null
 		handle: null
@@ -710,8 +711,13 @@ hid: context [
 		devs: enumerate id
 		cur-dev: devs
 		while [cur-dev <> null] [
-			if cur-dev/id = id [
-				either as logic! serial-number [
+			usage: cur-dev/usage >>> 16
+			if all [
+				cur-dev/id = id
+				usage <> FF01h		;-- debug integerface
+				usage <> F1D0h		;-- fido integerface
+			][
+				either serial-number <> null [
 					tmp: wcscmp serial-number cur-dev/serial-number
 					if tmp = 0 [
 						path-to-open: cur-dev/path

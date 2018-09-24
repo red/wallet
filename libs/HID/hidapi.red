@@ -59,6 +59,7 @@ hid: context [
 			stack/set-last none-value
 		][
 			s/tail: as cell! (p + sz)
+			integer/box sz
 		]
 	]
 
@@ -69,6 +70,7 @@ hid: context [
 			sz	[integer!]
 	][
 		sz: hid/write as int-ptr! dev/value binary/rs-head data binary/rs-length? data
+		integer/box sz
 		;if sz = -1 [
 		;	probe "write error"
 		;]

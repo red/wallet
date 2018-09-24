@@ -91,6 +91,27 @@ int256: context [
 		bin
 	]
 
+	set 'i256-to-string function [bigint [vector!] return: [string!]
+		/local res factor rest chr
+	][
+		res: make string! 64
+		factor: to-i256 10
+		rest: bigint
+		forever [
+			rest: div256/rem rest factor
+			chr: to string! i256-to-int rest/2
+			insert res chr
+			if zero256? rest/1 [break]
+			rest: rest/1
+		]
+		res
+	]
+
+	set 'zero256? function [bigint [vector!] return: [logic!] /local idx][
+		repeat idx length? bigint [if (bigint/:idx) <> 0 [return false]]
+		true
+	]
+
 	less-equal256?: routine [
 		left	[vector!]
 		right	[vector!]

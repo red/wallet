@@ -596,6 +596,7 @@ hid: context [
 			path_to_open	[c-string!]
 			handle			[hid_device]
 			id 				[integer!]
+			usage			[integer!]
 	][
 		path_to_open: null
 		handle: null
@@ -604,7 +605,12 @@ hid: context [
 		id: vendor_id << 16 + product_id
 		cur_dev: devs 
 		while [cur_dev <> null] [
-			if cur_dev/id = id [
+			usage: cur_dev/usage >>> 16
+			if all [
+				cur_dev/id = id
+				usage <> FF01h		;-- debug integerface
+				usage <> F1D0h		;-- fido integerface
+			][
 				either serial-number <> null [
 					if (wcscmp serial-number cur_dev/serial-number) = 0 [
 						path_to_open: cur_dev/path

@@ -17,7 +17,7 @@ Red [
 #include %libs/JSON.red
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
-#include %keys/Ledger/ledger.red
+#include %keys/keys.red
 
 #system [
 	with gui [#include %libs/usb-monitor.reds]
@@ -57,14 +57,22 @@ wallet: context [
 		]
 	]
 
+	chain-ids: [	;-- used by Trezor
+		1			;-- mainnet
+		4			;-- rinkeby
+		42			;-- kovan
+		3			;-- ropsten
+	]
+
 	explorer:	explorers/1
 	network:	networks/1
+	chain-id:	chain-ids/1
 	net-name:	"mainnet"
 	token-name: "ETH"
 	token-contract: none
 
-	connected?:		no
 	address-index:	0
+	key-index:		1
 	page:			0
 
 	process-events: does [loop 10 [do-events/no-wait]]
@@ -75,20 +83,20 @@ wallet: context [
 	]
 
 	list-addresses: func [/prev /next /local addresses addr n][
+		usb-device/rate: none
 		update-ui no
-		either ledger/connect [
-			usb-device/rate: none
-			connected?: yes
-			dev/text: "Ledger Nano S"
+		either keys/connect [
+			dev/data: keys/list
+			dev/selected: key-index
 			process-events
 
 			addresses: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
 			n: page * addr-per-page
-			
+
 			loop addr-per-page [
-				addr: ledger/get-address n
+				addr: keys/get-address n
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -126,9 +134,7 @@ wallet: context [
 			]
 			update-ui yes
 			do-auto-size addr-list
-		][
-			dev/text: "<No Device>"
-		]
+		][usb-device/rate: 0:0:3]
 	]
 
 	reset-sign-button: does [
@@ -158,6 +164,7 @@ wallet: context [
 		net-name: face/data/:idx
 		network:  networks/:idx
 		explorer: explorers/:idx
+		chain-id: chain-ids/:idx
 		token-contract: contracts/:token-name/:net-name
 		do-reload
 	]
@@ -174,7 +181,7 @@ wallet: context [
 		do-reload
 	]
 	
-	do-reload: does [if connected? [list-addresses]]
+	do-reload: does [if keys/key [list-addresses]]
 	
 	do-resize: function [delta [pair!]][
 		ref: as-pair btn-send/offset/x - 10 ui/extra/y / 2
@@ -257,7 +264,7 @@ wallet: context [
 		]
 
 		;-- Edge case: ledger key may locked in this moment
-		unless string? ledger/get-address 0 [
+		unless string? keys/get-address 0 [
 			reset-sign-button
 			view/flags unlock-dev-dlg 'modal
 			exit
@@ -287,7 +294,7 @@ wallet: context [
 			]
 		]
 
-		signed-data: ledger/get-signed-data address-index tx
+		signed-data: keys/get-signed-data address-index tx chain-id
 
 		either all [
 			signed-data
@@ -335,14 +342,14 @@ wallet: context [
 	]
 
 	do-more-addr: func [face event][
-		unless connected? [exit]
+		unless keys/key [exit]
 		page-info/selected: page + 2					;-- page is zero-based
 		list-addresses/next
 		if page > 0 [btn-prev/enabled?: yes]
 	]
 
 	do-prev-addr: func [face event][
-		unless connected? [exit]
+		unless keys/key [exit]
 		if page = 1 [
 			btn-prev/enabled?: no
 			process-events
@@ -388,7 +395,7 @@ wallet: context [
 
 	ui: layout compose [
 		title "RED Wallet"
-		text 50 "Device:" dev: text 135 "<No Device>"
+		text 50 "Device:" dev: drop-list 135 "<No Device>"
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
 		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 1 :do-select-network
@@ -436,38 +443,29 @@ wallet: context [
 		tx-error: area 400x200
 	]
 
-	support-device?: func [
-		vendor-id	[integer!]
-		product-id	[integer!]
-		return:		[logic!]
-	][
-		all [
-			vendor-id = ledger/vendor-id
-			product-id = ledger/product-id
-		]
-	]
-
 	monitor-devices: does [
 		append ui/pane usb-device: make face! [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
 				on-up: func [face [object!] event [event!]][
-					if support-device? face/data/1 face/data/2 [
+					if all [
+						keys/support? face/data/1 face/data/2
+						any [not keys/key keys/state = 'Requesting]
+					][
 						list-addresses
 					]
 				]
 				on-down: func [face [object!] event [event!]][
-					if support-device? face/data/1 face/data/2 [
+					if keys/support? face/data/1 face/data/2 [
 						face/rate: none
-						connected?: no
-						ledger/close
-						dev/text: "<No Device>"
+						keys/close
+						dev/text: keys/list
 						info-msg/text: ""
 						clear addr-list/data
 					]
 				]
 				on-time: func [face event][
-					if connected? [face/rate: none]
+					if keys/key [face/rate: none]
 					list-addresses
 				]
 			]
@@ -477,7 +475,7 @@ wallet: context [
 	setup-actors: does [
 		ui/actors: context [
 			on-close: func [face event][
-				ledger/close
+				keys/close
 			]
 			on-resizing: function [face event] [
 				if any [event/offset/x < min-size/x event/offset/y < min-size/y][exit]

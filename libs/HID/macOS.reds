@@ -855,13 +855,20 @@ hid: context [
 			cur_dev 		[hid-device-info]
 			path_to_open 	[c-string!]
 			handle 			[hid-device]
+			usage			[integer!]
 	][
 		path_to_open: null
 		handle: null
 		devs: enumerate 0 0
 		cur_dev: devs
 		while [cur_dev <> null] [
-			if all [HIWORD(cur_dev/id) = vendor-id  LOWORD(cur_dev/id) = product-id] [
+			usage: cur_dev/usage >>> 16
+			if all [
+				HIWORD(cur_dev/id) = vendor-id
+				LOWORD(cur_dev/id) = product-id
+				usage <> FF01h			;-- debug integerface
+				usage <> F1D0h			;-- fido integerface
+			][
 				either serial-number <> null [
 					if 0 = wcscmp serial-number cur_dev/serial-number [
 						path_to_open: cur_dev/path
