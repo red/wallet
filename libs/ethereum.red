@@ -13,21 +13,25 @@ Red [
 eth: context [
 
 	eth-to-wei: func [eth /local cnt n d scale][
-		cnt: 0
-		scale: to-i256 #{0DE0B6B3A7640000}			;-- 1e18
-		if string? eth [
-			if d: find/tail eth #"." [
-				cnt: length? d
+		either string? eth [
+			string-to-i256 eth 18
+		][
+			cnt: 0
+			scale: to-i256 #{0DE0B6B3A7640000}			;-- 1e18
+			if string? eth [
+				if d: find/tail eth #"." [
+					cnt: length? d
+				]
+				eth: to float! eth
 			]
-			eth: to float! eth
+			if cnt > 0 [
+				n: power 10 cnt
+				eth: eth * n
+				scale: div256 scale to-i256 n
+			]
+			eth: to-i256 any [attempt [to-integer eth] eth]
+			mul256 eth scale
 		]
-		if cnt > 0 [
-			n: power 10 cnt
-			eth: eth * n
-			scale: div256 scale to-i256 n
-		]
-		eth: to-i256 any [attempt [to-integer eth] eth]
-		mul256 eth scale
 	]
 
 	gwei-to-wei: func [gwei][
@@ -90,8 +94,7 @@ eth: context [
 			n: 1
 		][n: 2]
 		n: to-i256 debase/base skip amount n 16
-		n: i256-to-float n
-		n / 1e18
+		form-i256 n 18 18
 	]
 
 	get-balance-token: func [network [url!] contract [string!] address [string!] /local token-url params][

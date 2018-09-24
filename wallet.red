@@ -76,11 +76,6 @@ wallet: context [
 	page:			0
 
 	process-events: does [loop 10 [do-events/no-wait]]
-	
-	form-amount: func [value [float!]][
-		pos: find value: form value #"."
-		head insert/dup value #" " 8 - ((index? pos) - 1)
-	]
 
 	list-addresses: func [/prev /next /local addresses addr n][
 		usb-device/rate: none
@@ -120,7 +115,7 @@ wallet: context [
 			either error? try [
 				foreach address addr-list/data [
 					addr: copy/part address find address space
-					replace address "   <loading>" form-amount either token-contract [
+					replace address "   <loading>" either token-contract [
 						eth/get-balance-token network token-contract addr
 					][
 						eth/get-balance network addr

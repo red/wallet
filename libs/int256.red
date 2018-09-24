@@ -18,7 +18,7 @@ int256: context [
 		make vector! compose/only [integer! 16 (empty)]
 	]
 
-	set 'to-i256 function [value [integer! float! binary!] return: [vector!]][
+	set 'to-i256 function [value [integer! float! binary! string!] return: [vector!]][
 		switch/default type?/word value [
 			integer! [
 				spec: reduce [0 0 0 0 0 0 0 0 0 0 0 0 0 0 value / 65536 value % 65536]
@@ -50,6 +50,24 @@ int256: context [
 					insert spec v
 				]
 				insert/dup spec 0 16 - length? spec
+			]
+			string! [
+				res: to-i256 0
+				factor: to-i256 10
+				bin: value
+				if any [value/1 = #"-" value/1 = #"+"] [
+					bin: next value
+				]
+				while [all [not tail? bin bin/1 <> #"."]][
+					if any [bin/1 < #"0" bin/1 > #"9"][
+						make error! rejoin ["to-i256 invalid char " bin/1]
+					]
+					v: to-i256 to integer! (bin/1 - #"0")
+					res: mul256 res factor
+					res: add256 res v
+					bin: next bin
+				]
+				return res
 			]
 		][make error! "to-i256 error: invalid type!"]
 		
