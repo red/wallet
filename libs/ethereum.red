@@ -77,11 +77,15 @@ eth: context [
 		body/params: params
 		data: json/encode body
 		headers/cookie: cookie data
-		res: json/decode write network compose/only [
-			POST
-			(headers)
-			(to-binary data)
+		res: attempt [
+			write network compose/only [
+				POST
+				(headers)
+				(to-binary data)
+			]
 		]
+		if none? res [return 'Timeout]
+		res: json/decode res
 		unless data: select res 'result [			;-- error
 			data: select res 'error
 		]
@@ -121,5 +125,11 @@ eth: context [
 			n: 1
 		][n: 2]
 		to integer! debase/base skip result n 16
+	]
+
+	send-raw-tx: func [network [url!] data [binary!]][
+		call-rpc network 'eth_sendRawTransaction reduce [
+			rejoin ["0x" enbase/base data 16]
+		]
 	]
 ]

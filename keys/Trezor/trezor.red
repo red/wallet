@@ -154,7 +154,7 @@ trezor: context [
 			put req 'data_initial_chunk tx/6
 		]
 		res: make map! []
-		EthereumSignTx req res
+		if error? try [EthereumSignTx req res][return none]
 
 		append tx reduce [
 			to-bin8 res/signature_v

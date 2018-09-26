@@ -6,6 +6,7 @@ Red [
 	Needs:	 View
 	Version: 0.1.0
 	Tabs: 	 4
+	Company: "Fullstack technologies"
 	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
 	License: {
 		Distributed under the Boost Software License, Version 1.0.
@@ -18,6 +19,7 @@ Red [
 #include %libs/ethereum.red
 #include %libs/HID/hidapi.red
 #include %keys/keys.red
+#include %eth-batch.red
 
 #system [
 	with gui [#include %libs/usb-monitor.reds]
@@ -199,19 +201,27 @@ wallet: context [
 		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
 	]
 
-	check-data: func [/local addr amount balance][
-		addr: trim any [addr-to/text ""]
-		unless all [
+	valid-amount?: func [str [string!] /local num][
+		num: attempt [to float! str]
+		either all [num num > 0.0][num][none]
+	]
+
+	valid-address?: func [addr [string!]][
+		all [
 			addr/1 = #"0"
 			addr/2 = #"x"
 			42 = length? addr
 			debase/base skip addr 2 16
-		][
+		]
+	]
+
+	check-data: func [/local amount balance][
+		unless valid-address? trim any [addr-to/text ""] [
 			addr-to/text: copy "Invalid address"
 			return no
 		]
-		amount: attempt [to float! amount-field/text]
-		either all [amount amount > 0.0][
+		amount: valid-amount? amount-field/text
+		either amount [
 			balance: to float! skip pick addr-list/data addr-list/selected 42
 			if amount > balance [
 				amount-field/text: copy "Insufficient Balance"
@@ -236,20 +246,55 @@ wallet: context [
 	notify-user: does [
 		btn-sign/enabled?: no
 		process-events
-		btn-sign/offset/x: 133
-		btn-sign/size/x: 225
-		btn-sign/text: "Confirm the transaction on your Ledger"
+		btn-sign/offset/x: 132
+		btn-sign/size/x: 230
+		btn-sign/text: "Confirm the transaction on your key"
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local tx nonce price limit amount][
+	sign-transaction: func [
+		from-addr	[string!]
+		to-addr		[string!]
+		gas-price	[string!]
+		gas-limit	[string!]
+		amount		[string!]
+		nonce		[integer!]
+		/local price limit tx value
+	][
+		price: eth/gwei-to-wei gas-price
+		limit: to-integer gas-limit
+		value: eth/eth-to-wei amount
+
+		either token-contract [
+			tx: reduce [
+				nonce
+				price
+				limit
+				debase/base token-contract 16			;-- to address
+				eth/eth-to-wei 0						;-- value
+				rejoin [								;-- data
+					#{a9059cbb}							;-- method ID
+					debase/base eth/pad64 copy skip to-addr 2 16
+					eth/pad64 i256-to-bin value
+				]
+			]
+		][
+			tx: reduce [
+				nonce
+				price
+				limit
+				debase/base skip to-addr 2 16			;-- to address
+				value
+				#{}										;-- data
+			]
+		]
+
+		keys/get-signed-data address-index tx chain-id
+	]
+
+	do-sign-tx: func [face [object!] event [event!] /local nonce][
 		unless check-data [exit]
 
-		notify-user
-
-		price: eth/gwei-to-wei gas-price/text			;-- gas price
-		limit: to-integer gas-limit/text				;-- gas limit
-		amount: eth/eth-to-wei amount-field/text		;-- send amount
 		nonce: eth/get-nonce network addr-from/text		;-- nonce
 		if nonce = -1 [
 			unview
@@ -265,31 +310,15 @@ wallet: context [
 			exit
 		]
 
-		either token-contract [
-			tx: reduce [
-				nonce
-				price
-				limit
-				debase/base token-contract 16			;-- to address
-				eth/eth-to-wei 0						;-- value
-				rejoin [								;-- data
-					#{a9059cbb}							;-- method ID
-					debase/base eth/pad64 copy skip addr-to/text 2 16
-					eth/pad64 i256-to-bin amount
-				]
-			]
-		][
-			tx: reduce [
-				nonce
-				price
-				limit
-				debase/base skip addr-to/text 2 16		;-- to address
-				amount
-				#{}										;-- data
-			]
-		]
+		notify-user
 
-		signed-data: keys/get-signed-data address-index tx chain-id
+		signed-data: sign-transaction
+			addr-from/text
+			addr-to/text
+			gas-price/text
+			gas-limit/text
+			amount-field/text
+			nonce
 
 		either all [
 			signed-data
@@ -305,7 +334,7 @@ wallet: context [
 				mold (to float! gas-price/text) * (to float! gas-limit/text) / 1e9
 				" Ether"
 			]
-			info-nonce/text: mold tx/1
+			info-nonce/text: mold nonce
 			unview
 			view/flags confirm-sheet 'modal
 		][
@@ -313,14 +342,12 @@ wallet: context [
 				unview
 				view/flags contract-data-dlg 'modal
 			]
-			reset-sign-button
 		]
+		reset-sign-button
 	]
 
 	do-confirm: func [face [object!] event [event!] /local result][
-		result: eth/call-rpc network 'eth_sendRawTransaction reduce [
-			rejoin ["0x" enbase/base signed-data 16]
-		]
+		result: eth/send-raw-tx network signed-data
 		unview
 		either string? result [
 			browse rejoin [explorer result]
@@ -434,8 +461,13 @@ wallet: context [
 	]
 
 	tx-error-dlg: layout [
-		title "Send Transaction Error"
+		title "Error!"
 		tx-error: area 400x200
+	]
+
+	alert: func [e][
+		tx-error/text: form e
+		view/flags tx-error-dlg 'modal
 	]
 
 	monitor-devices: does [
@@ -471,6 +503,7 @@ wallet: context [
 		ui/actors: context [
 			on-close: func [face event][
 				keys/close
+				unview/all
 			]
 			on-resizing: function [face event] [
 				if any [event/offset/x < min-size/x event/offset/y < min-size/y][exit]
@@ -480,9 +513,15 @@ wallet: context [
 		]
 
 		addr-list/actors: make object! [
-			on-menu: func [face [object!] event [event!]][
+			on-menu: func [face [object!] event [event!] /local data addr amount][
 				switch event/picked [
 					copy	[copy-addr]
+					batch	[
+						data: pick addr-list/data addr-list/selected
+						addr: copy/part data 42
+						amount: eth/eth-to-wei trim/head copy skip data 42
+						eth-batch/open addr amount
+					]
 				]
 			]
 			on-change: func [face event][
@@ -493,6 +532,7 @@ wallet: context [
 
 		addr-list/menu: [
 			"Copy address"		copy
+			"Batch payment"		batch
 		]
 	]
 
