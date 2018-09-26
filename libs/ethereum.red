@@ -109,8 +109,13 @@ eth: context [
 		parse-balance call-rpc network 'eth_call reduce [params 'latest]
 	]
 
-	get-balance: func [network [url!] address [string!]][
-		parse-balance call-rpc network 'eth_getBalance reduce [address 'latest]
+	get-balance: func [network [url!] address [string! block!] /local res][
+		res: call-rpc network 'eth_getBalance reduce [address 'latest]
+		either block? res [
+			collect [foreach i res [keep parse-balance i]]
+		][
+			parse-balance res
+		]
 	]
 
 	get-nonce: func [network [url!] address [string!] /local n result][

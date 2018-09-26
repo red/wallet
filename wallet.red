@@ -32,6 +32,8 @@ wallet: context [
 	signed-data: addr-list: min-size: none
 	addr-per-page: 5
 
+	fast-api?: yes
+
 	networks: [
 		https://eth.red-lang.org/mainnet
 		https://eth.red-lang.org/rinkeby
@@ -79,7 +81,15 @@ wallet: context [
 
 	process-events: does [loop 10 [do-events/no-wait]]
 
-	list-addresses: func [/prev /next /local addresses addr n][
+	fetch-balance: func [addr [string! block!]][
+		either token-contract [
+			eth/get-balance-token network token-contract addr
+		][
+			eth/get-balance network addr
+		]
+	]
+
+	list-addresses: func [/prev /next /local addr-balances addrs addr entry balances n][
 		usb-device/rate: none
 		update-ui no
 		either keys/connect [
@@ -87,7 +97,8 @@ wallet: context [
 			dev/selected: key-index
 			process-events
 
-			addresses: clear []
+			addrs: clear []
+			addr-balances: clear []
 			if next [page: page + 1]
 			if prev [page: page - 1]
 			n: page * addr-per-page
@@ -107,22 +118,29 @@ wallet: context [
 					]
 					exit
 				]
-				append addresses rejoin [addr "      <loading>"]
-				addr-list/data: addresses
+				append addrs addr
+				append addr-balances rejoin [addr "      <loading>"]
+				addr-list/data: addr-balances
 				process-events
 				n: n + 1
 			]
 			info-msg/text: "Please wait while loading balances..."
 			update-ui no
 			either error? try [
-				foreach address addr-list/data [
-					addr: copy/part address find address space
-					replace address "   <loading>" either token-contract [
-						eth/get-balance-token network token-contract addr
-					][
-						eth/get-balance network addr
+				either fast-api? [
+					balances: fetch-balance addrs
+					n: 1
+					foreach addr addrs [
+						append addr rejoin ["   " balances/:n]
+						n: n + 1
 					]
-					process-events
+					addr-list/data: addrs
+				][
+					foreach entry addr-list/data [
+						addr: copy/part entry find entry space
+						replace entry "   <loading>" fetch-balance addr
+						process-events
+					]
 				]
 			][
 				info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
@@ -175,9 +193,10 @@ wallet: context [
 		net: net-list/selected: either net > length? net-list/data [1][net]
 		net-name: net-list/data/:net
 		token-contract: contracts/:token-name/:net-name
+		fast-api?: either token-contract [no][yes]
 		do-reload
 	]
-	
+
 	do-reload: does [if keys/key [list-addresses]]
 	
 	do-resize: function [delta [pair!]][
