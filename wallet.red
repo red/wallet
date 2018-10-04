@@ -100,10 +100,8 @@ wallet: context [
 		usb-device/rate: none
 		update-ui no
 
-		either all [
-			keys/key
-			not key-locked?
-		][
+		either keys/key [
+			locked?: no
 			addrs: clear []
 			addr-balances: clear []
 			if next [page: page + 1]
@@ -118,6 +116,7 @@ wallet: context [
 					info-msg/text: case [
 						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
 						addr = 'locked [
+							locked?: yes
 							usb-device/rate: 0:0:2
 							"Please unlock your key"
 						]
