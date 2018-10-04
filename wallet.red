@@ -31,6 +31,7 @@ wallet: context [
 
 	signed-data: addr-list: min-size: none
 	addr-per-page: 5
+	locked?: no
 
 	fast-api?: yes
 
@@ -76,7 +77,6 @@ wallet: context [
 	token-contract: none
 
 	address-index:	0
-	key-index:		1
 	page:			0
 
 	process-events: does [loop 10 [do-events/no-wait]]
@@ -89,14 +89,21 @@ wallet: context [
 		]
 	]
 
+	connect: func [][
+		keys/connect
+		dev/data: keys/list
+		dev/selected: keys/index
+		process-events
+	]
+
 	list-addresses: func [/prev /next /local addr-balances addrs addr entry balances n][
 		usb-device/rate: none
 		update-ui no
-		either keys/connect [
-			dev/data: keys/list
-			dev/selected: key-index
-			process-events
 
+		either all [
+			keys/key
+			not key-locked?
+		][
 			addrs: clear []
 			addr-balances: clear []
 			if next [page: page + 1]
@@ -111,7 +118,7 @@ wallet: context [
 					info-msg/text: case [
 						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
 						addr = 'locked [
-							usb-device/rate: 0:0:3
+							usb-device/rate: 0:0:2
 							"Please unlock your key"
 						]
 						true [{Please open the "Ethereum" application}]
@@ -149,7 +156,7 @@ wallet: context [
 			]
 			update-ui yes
 			do-auto-size addr-list
-		][usb-device/rate: 0:0:3]
+		][usb-device/rate: 0:0:2]
 	]
 
 	reset-sign-button: does [
@@ -195,6 +202,14 @@ wallet: context [
 		token-contract: contracts/:token-name/:net-name
 		fast-api?: either token-contract [no][yes]
 		do-reload
+	]
+
+	do-select-device: func [face [object!] event [event!] /local key][
+		if face/data [
+			key: pick face/data face/selected
+			keys/connect-key key
+			list-addresses
+		]
 	]
 
 	do-reload: does [if keys/key [list-addresses]]
@@ -271,6 +286,14 @@ wallet: context [
 		process-events
 	]
 
+	key-locked?: does [
+		locked?: either string? keys/get-address 0 [no][
+			reset-sign-button
+			view/flags unlock-dev-dlg 'modal
+			yes
+		]
+	]
+
 	sign-transaction: func [
 		from-addr	[string!]
 		to-addr		[string!]
@@ -323,11 +346,7 @@ wallet: context [
 		]
 
 		;-- Edge case: ledger key may locked in this moment
-		unless string? keys/get-address 0 [
-			reset-sign-button
-			view/flags unlock-dev-dlg 'modal
-			exit
-		]
+		if key-locked? [exit]
 
 		notify-user
 
@@ -436,7 +455,7 @@ wallet: context [
 
 	ui: layout compose [
 		title "RED Wallet"
-		text 50 "Device:" dev: drop-list 135 "<No Device>"
+		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
 		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 1 :do-select-network
@@ -460,7 +479,7 @@ wallet: context [
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
-		text font-size 12 {Unlock your Ledger key, open the Ethereum app, ensure "Browser support" is "No".}
+		text font-size 12 {Unlock your key. If it's Ledger, ensure "Browser support" is "No".}
 		return
 		pad 262x10 button "OK" [unview]
 	]
@@ -494,25 +513,37 @@ wallet: context [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
 				on-up: func [face [object!] event [event!]][
-					if all [
-						keys/support? face/data/1 face/data/2
-						any [not keys/key keys/state = 'Requesting]
-					][
-						list-addresses
+					if keys/support? face/data/1 face/data/2 [
+						keys/connect-key keys/current
+						if any [keys/new? keys/state = 'Requesting][
+							dev/data: keys/list
+							dev/selected: keys/index
+							list-addresses
+							process-events
+						]
 					]
 				]
-				on-down: func [face [object!] event [event!]][
-					if keys/support? face/data/1 face/data/2 [
+				on-down: func [face [object!] event [event!] /local state][
+					state: keys/state
+					if keys/close-key face/data/1 face/data/2 [
 						face/rate: none
-						keys/close
-						dev/text: keys/list
 						info-msg/text: ""
 						clear addr-list/data
+						if all [keys/index > 0 state <> 'Requesting][
+							connect
+							list-addresses
+						]
+					]
+					if state <> 'Requesting [
+						dev/data: keys/list
+						dev/selected: keys/index
 					]
 				]
 				on-time: func [face event][
-					if keys/key [face/rate: none]
+					face/rate: none
+					unless locked? [connect]
 					list-addresses
+					unless keys/key [face/rate: 0:0:2]
 				]
 			]
 		]

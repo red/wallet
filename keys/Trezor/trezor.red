@@ -11,7 +11,7 @@ Red [
 #include %trezor-driver.red
 
 trezor: context [
-	name: "Trezor"
+	name: "Trezor One"
 
 	vendor-id:	534Ch
 	product-id:	1
@@ -58,7 +58,10 @@ trezor: context [
 
 	connect: does [trezor-driver/connect]
 
-	close: does [trezor-driver/close]
+	close: does [
+		trezor-driver/close
+		request-pin-state: 'Init
+	]
 
 	init: func [][
 		request-pin-state: 'Init

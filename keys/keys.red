@@ -18,56 +18,96 @@ Red [
 
 keys: context [
 
-	dongle: none
+	dongle:		none
 	bip32-path: [8000002Ch 8000003Ch 80000000h idx]
-	list: []
-	key: none
+	list:		[]
+	key:		none
+	index:		0
+	new?:		yes
+	current:	none
 
 	support?: func [
 		vendor-id	[integer!]
 		product-id	[integer!]
 		return:		[logic!]
 	][
-		any [
+		case [
 			all [
 				vendor-id = ledger/vendor-id
 				product-id = ledger/product-id
+			][
+				current: ledger
+				new?: none? find list ledger/name
+				yes
 			]
 			all [
 				vendor-id = trezor/vendor-id
 				product-id = trezor/product-id
+			][
+				current: trezor
+				new?: none? find list trezor/name
+				yes
+			]
+			true [
+				current: none
+				no
 			]
 		]
 	]
 
-	close: func [][
-		if dongle [
+	close-key: func [
+		vendor-id	[integer!]
+		product-id	[integer!]
+		return:		[logic!]
+		/local res
+	][
+		either support? vendor-id product-id [
 			if state = 'HasRequested [
 				finish-pin
-				remove find list key/name
+				remove find list current/name
 			]
-			do [key/close]
-			dongle: none
-			key: none
+			do [current/close]
+			res: either key = current [
+				dongle: none
+				key: none
+				yes
+			][
+				no
+			]
+			index: length? list
+			res
+		][no]
+	]
+
+	close: func [/force /local name][
+		ledger/close
+		trezor/close
+	]
+
+	connect-key: func [device [object! string!]][
+		if string? device [
+			device: either device = ledger/name [ledger][trezor]
+		]
+		do [
+			dongle: device/connect
+			if dongle [
+				key: device
+				unless find list key/name [append list key/name]
+				key/init
+				key/request-pin
+				index: length? list
+			]
 		]
 	]
 
 	connect: func [][
+		if all [dongle new?][close]
+
 		unless dongle [
-			key: ledger
-			dongle: do [key/connect]	;@@ A work around for the limitaion of the compiler
-			if none? dongle [			;-- try Trezor
-				key: trezor
-				dongle: do [key/connect]
-			]
-			either dongle [
-				unless find list key/name [append list key/name]
-				do [
-					key/init
-					key/request-pin
-				]
-			][key: none]
+			connect-key ledger
+			connect-key trezor
 		]
+		if empty? list [key: none]
 		dongle
 	]
 

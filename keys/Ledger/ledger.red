@@ -40,7 +40,7 @@ ledger: context [
 	]
 
 	request-pin: func [return: [word!]] [
-		request-pin-state: 'HasRequested
+		request-pin-state: 'Requesting
 		request-pin-state
 	]
 
@@ -184,7 +184,7 @@ ledger: context [
 		][signed]
 	]
 
-	close: does [hid/close dongle dongle: none]
+	close: does [if dongle [hid/close dongle dongle: none]]
 ]
 
 ;ledger/connect
