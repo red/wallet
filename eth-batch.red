@@ -183,17 +183,18 @@ eth-batch: context [
 	batch-send-dialog: layout [
 		title "Batch Payment"
 		style lbl: text 350 middle font [name: font-fixed size: 11]
+		style btn: button 66
 		text 50 "Account:" batch-addr-from: lbl
 		text 60 "Gas Limit:" batch-gas-limit: field 60
 		text 60 "Gas Price:" batch-gas-price: field 48 "21" return
 
 		payment-list: text-list font list-font data [] 680x400 below
-		button "Add"	[
+		btn "Add"	[
 			add-payment-dialog/text: "Add payment"
 			add-payment-btn/text: "Add"
 			view/flags add-payment-dialog 'modal
 		]
-		button "Edit"	[
+		btn "Edit"	[
 			unless empty? payment-list/data [
 				add-payment-dialog/text: "Edit payment"
 				entry: pick payment-list/data payment-list/selected
@@ -204,12 +205,12 @@ eth-batch: context [
 				view/flags add-payment-dialog 'modal
 			]
 		]
-		button "Remove" [remove at payment-list/data payment-list/selected]
-		button "Import" :do-import-payments
-		button "Export" :do-export-payments
-		pad 0x152
-		batch-result-btn: button "Results" :do-check-result
-		batch-send-btn: button "Send"	:do-batch-payment
+		btn "Remove" [remove at payment-list/data payment-list/selected]
+		btn "Import" :do-import-payments
+		btn "Export" :do-export-payments
+		pad 0x20
+		batch-send-btn: btn "Send"	:do-batch-payment
+		batch-result-btn: btn "Results" :do-check-result
 		do [batch-result-btn/visible?: no]
 	]
 

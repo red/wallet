@@ -94,11 +94,12 @@ keys: context [
 			dongle: device/connect
 			if dongle [
 				key: device
-				unless find list key/name [append list key/name]
 				key/init
-				if 'Init = key/request-pin [
+				either 'Init = key/request-pin [
 					key: none
 					dongle: none
+				][
+					unless find list key/name [append list key/name]
 				]
 				index: length? list
 			]
