@@ -90,6 +90,7 @@ wallet: context [
 	]
 
 	connect: func [][
+		usb-device/rate: none
 		keys/connect
 		dev/data: keys/list
 		dev/selected: keys/index
@@ -97,7 +98,6 @@ wallet: context [
 	]
 
 	list-addresses: func [/prev /next /local addr-balances addrs addr entry balances n][
-		usb-device/rate: none
 		update-ui no
 
 		either keys/key [
@@ -540,6 +540,8 @@ wallet: context [
 				]
 				on-time: func [face event][
 					face/rate: none
+					if all [keys/key keys/state = 'Requesting][exit]
+
 					unless locked? [connect]
 					list-addresses
 					unless keys/key [face/rate: 0:0:2]

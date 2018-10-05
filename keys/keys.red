@@ -82,6 +82,8 @@ keys: context [
 	close: func [/force /local name][
 		ledger/close
 		trezor/close
+		key: none
+		dongle: none
 	]
 
 	connect-key: func [device [object! string!]][
@@ -94,7 +96,10 @@ keys: context [
 				key: device
 				unless find list key/name [append list key/name]
 				key/init
-				key/request-pin
+				if 'Init = key/request-pin [
+					key: none
+					dongle: none
+				]
 				index: length? list
 			]
 		]

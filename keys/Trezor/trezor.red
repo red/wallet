@@ -290,6 +290,10 @@ trezor: context [
 
 	pin-dlg: layout [
 		title "Please enter your PIN"
+		on-close [
+			close-pin-requesting
+			close
+		]
 		style label: text 220 middle
 		style but: button 60x60 "*"
 		style pin-field: field 205 middle
@@ -335,12 +339,7 @@ trezor: context [
 					exit
 				]
 				if trezor-driver/msg-id = trezor-message/get-id 'PassphraseRequest [
-					;no-wait?: false
-					;either no-wait? [
-					;	view/no-wait/flags passphrase-dlg 'modal
-					;][
-						view/flags passphrase-dlg 'modal
-					;]
+					view/flags passphrase-dlg 'modal
 				]
 				request-pin-state: 'HasRequested
 			]
