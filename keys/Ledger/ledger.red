@@ -137,7 +137,7 @@ ledger: context [
 			request-pin-state: 'Requesting
 			case [
 				#{BF00018D} = data ['browser-support-on]
-				#{6804} = data ['locked]
+				#{6804} = data [request-pin-state: 'HasRequested 'locked]
 				#{6700} = data ['plug]
 			]
 		]

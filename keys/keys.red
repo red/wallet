@@ -64,8 +64,8 @@ keys: context [
 		either support? vendor-id product-id [
 			if state = 'HasRequested [
 				finish-pin
-				remove find list current/name
 			]
+			remove find list current/name
 			do [current/close]
 			res: either key = current [
 				dongle: none
