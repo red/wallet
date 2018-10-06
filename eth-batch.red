@@ -35,6 +35,7 @@ eth-batch: context [
 					clear skip tail entry -3
 				]
 			]
+			new-line/all next data yes
 		]
 		data
 	]
@@ -116,9 +117,14 @@ eth-batch: context [
 	do-batch-payment: func [
 		face	[object!]
 		event	[event!]
-		/local from-addr nonce entry addr to-addr amount result idx
+		/local from-addr nonce entry addr to-addr amount result idx saved
 	][
 		if batch-send-btn/text = "Stop" [
+			saved: floating-text/text
+			floating-text/text: copy "Cancel the transaction on your key"
+			center-face/with floating-dlg batch-send-dialog
+			view floating-dlg
+			floating-text/text: saved
 			payment-stop?: yes
 			exit
 		]
@@ -205,7 +211,28 @@ eth-batch: context [
 				view/flags add-payment-dialog 'modal
 			]
 		]
-		btn "Remove" [remove at payment-list/data payment-list/selected]
+		btn "Remove" [
+			dlg: copy [
+				below center
+				text font-size 11 "Are you sure to remove it?"
+				panel [
+					pad 0x0
+					button "Yes" [
+						remove at payment-list/data payment-list/selected
+						unview
+					]
+					button "Cancel" [unview]
+				]
+			]
+			either payment-list/selected > 0 [
+				view/flags dlg 'modal
+			][
+				dlg/6: "Please select an item to remove"
+				clear skip dlg 6
+				append dlg [button "OK" [unview]]
+				view/flags dlg 'modal
+			]
+		]
 		btn "Import" :do-import-payments
 		btn "Export" :do-export-payments
 		pad 0x20
@@ -226,7 +253,7 @@ eth-batch: context [
 	]
 
 	floating-dlg: layout/flags [
-		text font-size 14 "Confirm the transaction on your key"
+		floating-text: text font-size 14 "Confirm the transaction on your key"
 		rate 0:0:3 on-time [unview]
 	] 'no-title
 
