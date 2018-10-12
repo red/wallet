@@ -478,23 +478,23 @@ wallet: context [
 
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
+		below center
 		text font-size 12 {Unlock your key. If it's Ledger, ensure "Browser support" is "No".}
-		return
-		pad 262x10 button "OK" [unview]
+		button "OK" [unview]
 	]
 
 	contract-data-dlg: layout [
 		title "Set Contract data to YES"
+		below center
 		text font-size 12 {Please set "Contract data" to "Yes" in the Ethereum app's settings.}
-		return
-		pad 180x10 button "OK" [unview]
+		button "OK" [unview]
 	]
 
 	nonce-error-dlg: layout [
 		title "Cannot get nonce"
+		below center
 		text font-size 12 {Cannot get nonce, please try again.}
-		return
-		pad 110x10 button "OK" [unview]
+		button "OK" [unview]
 	]
 
 	tx-error-dlg: layout [
