@@ -10,11 +10,9 @@ Red [
 ]
 
 ledger: context [
-	name: "Ledger Nano S"
 
-	vendor-id:			2C97h
-	product-id:			1
-
+	name:				"Ledger Nano S"
+	id:					[2C97h 1]
 	DEFAULT_CHANNEL:	0101h
 	TAG_APDU:			05h
 	PACKET_SIZE:		#either config/OS = 'Windows [65][64]
@@ -28,7 +26,7 @@ ledger: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open vendor-id product-id
+			dongle: hid/open id/1 id/2
 		]
 		dongle
 	]

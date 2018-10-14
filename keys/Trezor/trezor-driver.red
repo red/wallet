@@ -8,31 +8,23 @@ Red [
 
 trezor-driver: context [
 
-	system/catalog/errors/user: make system/catalog/errors/user [trezor-driver: ["trezor-driver [" :arg1 ": (" :arg2 " " :arg3 ")]"]]
+	system/catalog/errors/user: make system/catalog/errors/user [
+		trezor-driver: ["trezor-driver [" :arg1 ": (" :arg2 " " :arg3 ")]"]
+	]
 
 	new-error: func [name [word!] arg2 arg3][
 		cause-error 'user 'trezor-driver [name arg2 arg3]
 	]
 
-	vendor-id:			534Ch
-	product-id:			1
-	ids: reduce [product-id << 16 or vendor-id]
 	dongle: none
 
 	hid-version: 0
 	data-frame: make binary! 65
 	msg-id: 0
 
-	;open: func [_id [integer!] index [integer!] return: [handle!]][
-	;	unless dongle [
-	;		dongle: hid/open _id index
-	;	]
-	;	dongle
-	;]
-
-	connect: func [][
+	connect: func [id [block!]][
 		unless dongle [
-			dongle: hid/open vendor-id product-id
+			dongle: hid/open id/1 id/2
 		]
 		dongle
 	]
@@ -207,7 +199,9 @@ trezor-driver: context [
 		]
 
 		ret: hid/write dongle data-frame
-		if ret < length? data-frame [new-error 'write-report "not equal" reduce [ret length? data-frame]]
+		if ret < length? data-frame [
+			new-error 'write-report "not equal" reduce [ret length? data-frame]
+		]
 		size
 	]
 

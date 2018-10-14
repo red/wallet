@@ -804,37 +804,36 @@ hid: context [
 				]
 				cur_dev: tmp
 
+				;--get the usage page and usage for this device
+				x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
+				y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
+				cur_dev/usage: x << 16 or y
+				;--fill out the record
+				cur_dev/next: null
 
-			;--get the usage page and usage for this device
-			x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
-			y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
-			cur_dev/usage: x << 16 or y
-			;--fill out the record
-			cur_dev/next: null
+				;--fill in the path (ioservice plane)
+				iokit_dev: IOHIDDeviceGetService dev
+				res: IORegistryEntryGetPath iokit_dev
+											kIOServicePlane  ;--have not defined
+											path
+				cur_dev/path: either res = 0 [strdup path][strdup ""]
 
-			;--fill in the path (ioservice plane)
-			iokit_dev: IOHIDDeviceGetService dev
-			res: IORegistryEntryGetPath iokit_dev
-										kIOServicePlane  ;--have not defined
-										path
-			cur_dev/path: either res = 0 [strdup path][strdup ""]
+				;--serial number
+				get_serial_number dev buf BUF_LEN
+				cur_dev/serial-number: dup_wcs buf
+				;--manufacturer and product strings
+				get_manufacturer_string dev buf BUF_LEN
+				cur_dev/manufacturer-string: dup_wcs buf
+				get_product_string dev buf BUF_LEN
+				cur_dev/product-string: dup_wcs buf
 
-			;--serial number
-			get_serial_number dev buf BUF_LEN
-			cur_dev/serial-number: dup_wcs buf
-			;--manufacturer and product strings
-			get_manufacturer_string dev buf BUF_LEN
-			cur_dev/manufacturer-string: dup_wcs buf
-			get_product_string dev buf BUF_LEN
-			cur_dev/product-string: dup_wcs buf
-
-			;--vip/pid
-			cur_dev/id: dev_vid << 16 or dev_pid
-			;--release number
-			cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
-			;--interface number
-			cur_dev/interface-number: -1
-		]
+				;--vip/pid
+				cur_dev/id: dev_vid << 16 or dev_pid
+				;--release number
+				cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
+				;--interface number
+				cur_dev/interface-number: -1
+			]
 			i: i + 1
 		]
 
