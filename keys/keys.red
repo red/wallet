@@ -18,13 +18,15 @@ Red [
 
 keys: context [
 
-	dongle:		none
-	bip32-path: [8000002Ch 8000003Ch 80000000h idx]
-	list:		[]
-	key:		none
-	index:		0
-	new?:		yes
-	current:	none
+	dongle:			none
+	list:			[]
+	key:			none
+	index:			0
+	new?:			yes
+	current:		none
+	bip32-path:		[8000002Ch 8000003Ch 80000000h idx]
+	ledger-path:	[8000002Ch 8000003Ch 80000000h idx]
+	trezor-path:	[8000002Ch 8000003Ch 80000000h 0 idx]
 
 	support?: func [
 		vendor-id	[integer!]
@@ -100,6 +102,7 @@ keys: context [
 					dongle: none
 				][
 					unless find list key/name [append list key/name]
+					bip32-path: either find key/name "Ledger" [ledger-path][trezor-path]
 				]
 				index: length? list
 			]
