@@ -13,20 +13,19 @@ eth-batch: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	payment-stop?: no
-	batch-results: make block! 4
+	sanitized?:			yes
+	payment-stop?:		no
+	batch-results:		make block! 4
 
-	payment-list: none
-	batch-result-btn: none
-	batch-send-btn: none
-	payment-name: none
-	payment-addr: none
-	payment-amount: none
-	add-payment-btn: none
-
-	signed-data: none
-
-	total-balance: none
+	payment-list:		none
+	batch-result-btn:	none
+	batch-send-btn:		none
+	payment-name:		none
+	payment-addr:		none
+	payment-amount:		none
+	add-payment-btn:	none
+	signed-data:		none
+	total-balance:		none
 
 	sanitize-payments: func [data [block! none!] /local entry c][
 		if block? data [
@@ -37,6 +36,7 @@ eth-batch: context [
 			]
 			new-line/all next data yes
 		]
+		sanitized?: yes
 		data
 	]
 
@@ -75,6 +75,7 @@ eth-batch: context [
 	]
 
 	do-add-payment: func [face event /local entry res][
+		unless sanitized? [sanitize-payments payment-list/data]
 		entry: rejoin [
 			pad copy/part trim/head payment-name/text 18 20
 			trim payment-addr/text "        "
@@ -119,7 +120,7 @@ eth-batch: context [
 		event	[event!]
 		/local from-addr nonce entry addr to-addr amount result idx saved
 	][
-		if batch-send-btn/text = "Stop" [
+		either batch-send-btn/text = "Stop" [
 			saved: floating-text/text
 			floating-text/text: copy "Cancel the transaction on your key"
 			center-face/with floating-dlg batch-send-dialog
@@ -127,6 +128,8 @@ eth-batch: context [
 			floating-text/text: saved
 			payment-stop?: yes
 			exit
+		][
+			unless sanitized? [sanitize-payments payment-list/data]
 		]
 		clear batch-results
 		payment-stop?: no
@@ -180,6 +183,7 @@ eth-batch: context [
 				]
 				"×"
 			]
+			sanitized?: no
 			idx: idx + 1
 		]
 		unless empty? batch-results [batch-result-btn/visible?: yes]
@@ -202,6 +206,7 @@ eth-batch: context [
 		]
 		btn "Edit"	[
 			unless empty? payment-list/data [
+				unless sanitized? [sanitize-payments payment-list/data]
 				add-payment-dialog/text: "Edit payment"
 				entry: pick payment-list/data payment-list/selected
 				payment-name/text: copy/part entry find entry #" "
@@ -215,6 +220,7 @@ eth-batch: context [
 			dlg: copy [
 				below center
 				text font-size 11 "Are you sure to remove it?"
+				text "none"
 				panel [
 					pad 0x0
 					button "Yes" [
@@ -225,6 +231,7 @@ eth-batch: context [
 				]
 			]
 			either payment-list/selected > 0 [
+				dlg/8: pick payment-list/data payment-list/selected
 				view/flags dlg 'modal
 			][
 				dlg/6: "Please select an item to remove"
@@ -254,7 +261,7 @@ eth-batch: context [
 
 	floating-dlg: layout/flags [
 		floating-text: text font-size 14 "Confirm the transaction on your key"
-		rate 0:0:3 on-time [unview]
+		rate 0:0:2 on-time [unview]
 	] 'no-title
 
 	actors-init: does [
@@ -271,6 +278,7 @@ eth-batch: context [
 		total-balance: balance
 		clear payment-list/data
 		batch-gas-limit/text: either wallet/token-contract ["79510"]["21000"]
+		if batch-send-dialog/state [unview batch-send-dialog]
 		view batch-send-dialog
 	]
 ]

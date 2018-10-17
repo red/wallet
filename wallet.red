@@ -179,27 +179,38 @@ wallet: context [
 		]
 	]
 
-	do-select-network: func [face [object!] event [event!] /local idx][
-		idx: face/selected
-		
-		net-name: face/data/:idx
+	select-config: func [idx [integer!]][
 		network:  networks/:idx
 		explorer: explorers/:idx
 		chain-id: chain-ids/:idx
 		token-contract: contracts/:token-name/:net-name
+	]
+
+	do-select-network: func [face [object!] event [event!] /local idx][
+		idx: face/selected
+		
+		net-name: face/data/:idx
+		select-config idx
 		do-reload
 	]
 
-	do-select-token: func [face [object!] event [event!] /local idx net][
+	do-select-token: func [face [object!] event [event!] /local idx net n][
 		idx: face/selected
 		net: net-list/selected
 		token-name: face/data/:idx
 
 		net-list/data: extract contracts/:token-name 2
-		net: net-list/selected: either net > length? net-list/data [1][net]
+		n: length? net-list/data
+		net: net-list/selected: either net > n [n][net]
 		net-name: net-list/data/:net
-		token-contract: contracts/:token-name/:net-name
-		fast-api?: either token-contract [no][yes]
+		select-config net
+		fast-api?: either token-contract [
+			clear skip addr-list/menu 2
+			no
+		][
+			append addr-list/menu ["Batch payment" batch]
+			yes
+		]
 		do-reload
 	]
 
