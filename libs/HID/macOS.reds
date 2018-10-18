@@ -1204,6 +1204,7 @@ hid: context [
 			res 		[integer!]
 			ts 			[timespec! value]
 			tv 			[timeval! value]
+			tm			[integer!]
 	][
 		dev: as hid-device device
 		bytes_read: -1
@@ -1239,20 +1240,27 @@ hid: context [
 				]
 			]
 			milliseconds > 0 [
-				gettimeofday  tv  0
-				TIMEVAL_TO_TIMESPEC tv ts
-				ts/sec: ts/sec + (milliseconds / 1000)
-				ts/nsec: ts/nsec + ((milliseconds % 1000) * 1000000)
-				if ts/nsec >= 1000000000 [
-					ts/sec: ts/sec + 1
-					ts/nsec: ts/nsec - 1000000000
-				]
-				res: cond_timedwait dev :dev/condition :dev/mutex ts
-				case [
-					res = 0 [bytes_read: return_data dev data length]
-					res = ETIMEDOUT [bytes_read: 0]
-					true [bytes_read: -1]
+				tm: 0
+				while [tm < milliseconds][
+					gettimeofday  tv  0
+					TIMEVAL_TO_TIMESPEC tv ts
+					ts/nsec: ts/nsec + 100000000
+					if ts/nsec >= 1000000000 [
+						ts/sec: ts/sec + 1
+						ts/nsec: ts/nsec - 1000000000
 					]
+					res: cond_timedwait dev :dev/condition :dev/mutex ts
+					gui/do-events yes
+					bytes_read: case [
+						res = 0 [
+							tm: milliseconds
+							return_data dev data length
+						]
+						res = ETIMEDOUT [0]
+						true [-1]
+					]
+					tm: tm + 100
+				]
 			]
 			true [bytes_read: 0]
 		]
