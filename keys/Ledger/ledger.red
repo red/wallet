@@ -165,7 +165,7 @@ ledger: context [
 			]
 			append/part chunk tx-bin sz
 			write-apdu chunk
-			signed: read-apdu 300
+			signed: read-apdu 600
 			tx-bin: skip tx-bin sz
 		]
 		if signed = #{6A80} [return 'token-error]

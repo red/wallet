@@ -118,18 +118,19 @@ eth-batch: context [
 	do-batch-payment: func [
 		face	[object!]
 		event	[event!]
-		/local from-addr nonce entry addr to-addr amount result idx saved
+		/local from-addr nonce entry addr to-addr amount result idx
 	][
 		either batch-send-btn/text = "Stop" [
-			saved: floating-text/text
 			floating-text/text: copy "Cancel the transaction on your key"
+			floating-dlg/visible?: yes
 			center-face/with floating-dlg batch-send-dialog
-			view floating-dlg
-			floating-text/text: saved
+			view/no-wait floating-dlg
+			floating-text/rate: 0:0:2
 			payment-stop?: yes
 			exit
 		][
 			unless sanitized? [sanitize-payments payment-list/data]
+			if 'ok <> check-payment payment-list/data [exit]
 		]
 		clear batch-results
 		payment-stop?: no
@@ -150,8 +151,11 @@ eth-batch: context [
 
 		batch-send-btn/text: "Stop"
 		idx: 1
+		floating-text/text: copy "Check the transaction on your key"
+		floating-dlg/visible?: yes
 		center-face/with floating-dlg batch-send-dialog
 		view/no-wait floating-dlg
+		floating-text/rate: 0:0:2
 		foreach entry payment-list/data [
 			payment-list/selected: idx
 			wallet/process-events
@@ -193,12 +197,12 @@ eth-batch: context [
 	batch-send-dialog: layout [
 		title "Batch Payment"
 		style lbl: text 350 middle font [name: font-fixed size: 11]
-		style btn: button 66
-		text 50 "Account:" batch-addr-from: lbl
+		style btn: button 68
+		text 55 "Account:" batch-addr-from: lbl
 		text 60 "Gas Limit:" batch-gas-limit: field 60
 		text 60 "Gas Price:" batch-gas-price: field 48 "21" return
 
-		payment-list: text-list font list-font data [] 680x400 below
+		payment-list: text-list font list-font data [] 685x400 below
 		btn "Add"	[
 			add-payment-dialog/text: "Add payment"
 			add-payment-btn/text: "Add"
@@ -260,8 +264,8 @@ eth-batch: context [
 	]
 
 	floating-dlg: layout/flags [
-		floating-text: text font-size 14 "Confirm the transaction on your key"
-		rate 0:0:2 on-time [unview]
+		floating-text: text font-size 14 "Cancel the transaction on your key"
+		rate 0:0:2 on-time [face/rate: none floating-dlg/visible?: no]
 	] 'no-title
 
 	actors-init: does [

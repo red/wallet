@@ -149,7 +149,7 @@ trezor-driver: context [
 	][
 		until [
 			data-frame: clear head data-frame
-			ret: hid/read dongle data-frame (10 * 1000)
+			ret: hid/read dongle data-frame (600 * 1000)
 			ret <> 0
 		]
 		if ret = 0 [return ret]

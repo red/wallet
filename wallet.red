@@ -247,7 +247,7 @@ wallet: context [
 
 	valid-amount?: func [str [string!] /local num][
 		num: attempt [to float! str]
-		either all [num num > 0.0][num][none]
+		either all [num num >= 0.0][num][none]
 	]
 
 	valid-address?: func [addr [string!]][
