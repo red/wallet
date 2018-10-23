@@ -33,10 +33,11 @@ hid: context [
 	open: routine [
 		vendor_id	[integer!]
 		product_id	[integer!]
+		type		[integer!]		;-- 1: normal interface 2: FIDO interface 4: debug interface
 		/local
 			h		[int-ptr!]
 	][
-		h: hid/open vendor_id product_id null
+		h: hid/open vendor_id product_id null type
 		either null? h [stack/set-last none-value][
 			handle/box as-integer h
 		]

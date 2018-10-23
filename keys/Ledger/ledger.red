@@ -28,7 +28,7 @@ ledger: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open vendor-id product-id
+			dongle: hid/open vendor-id product-id 3
 		]
 		dongle
 	]

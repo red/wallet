@@ -32,7 +32,7 @@ trezor-driver: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open vendor-id product-id
+			dongle: hid/open vendor-id product-id 1
 		]
 		dongle
 	]

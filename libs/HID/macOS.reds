@@ -849,6 +849,7 @@ hid: context [
 		vendor-id 		[integer!]
 		product-id		[integer!]
 		serial-number 	[c-string!]
+		type			[integer!]
 		return: 		[int-ptr!]
 		/local
 			devs 			[hid-device-info]
@@ -866,8 +867,11 @@ hid: context [
 			if all [
 				HIWORD(cur_dev/id) = vendor-id
 				LOWORD(cur_dev/id) = product-id
-				usage <> FF01h			;-- debug integerface
-				usage <> F1D0h			;-- fido integerface
+				any [
+					all [type and 1 <> 0 usage <> FF01h usage <> F1D0h]
+					all [type and 2 <> 0 usage = F1D0h]		;-- fido integerface
+					all [type and 4 <> 0 usage = FF01h]		;-- debug integerface
+				]
 			][
 				either serial-number <> null [
 					if 0 = wcscmp serial-number cur_dev/serial-number [

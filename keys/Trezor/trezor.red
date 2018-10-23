@@ -89,10 +89,8 @@ trezor: context [
 
 		if request-pin-state = 'Requesting [
 			either trezor-driver/msg-id = trezor-message/get-id 'PinMatrixRequest [
-				;no-wait?: true
 				view/flags pin-dlg 'modal
 			][
-				;no-wait?: true
 				view/flags passphrase-dlg 'modal
 			]
 		]
