@@ -24,46 +24,32 @@ keys: context [
 	index:			0
 	new?:			yes
 	current:		none
+	support-keys:	reduce [ledger trezor trezor-mt]
 	bip32-path:		[8000002Ch 8000003Ch 80000000h idx]
 	ledger-path:	[8000002Ch 8000003Ch 80000000h idx]
 	trezor-path:	[8000002Ch 8000003Ch 80000000h 0 idx]
 
 	support?: func [
-		vendor-id	[integer!]
-		product-id	[integer!]
-		return:		[logic!]
+		id		[block!]
+		return:	[logic!]
+		/local key
 	][
-		case [
-			all [
-				vendor-id = ledger/vendor-id
-				product-id = ledger/product-id
-			][
-				current: ledger
-				new?: none? find list ledger/name
-				yes
-			]
-			all [
-				vendor-id = trezor/vendor-id
-				product-id = trezor/product-id
-			][
-				current: trezor
-				new?: none? find list trezor/name
-				yes
-			]
-			true [
-				current: none
-				no
+		foreach key support-keys [
+			if id = key/id [
+				current: key
+				new?: none? find list key/name
+				return yes
 			]
 		]
+		no
 	]
 
 	close-key: func [
-		vendor-id	[integer!]
-		product-id	[integer!]
-		return:		[logic!]
+		id		[block!]
+		return: [logic!]
 		/local res
 	][
-		either support? vendor-id product-id [
+		either support? id [
 			if state = 'HasRequested [
 				finish-pin
 			]
@@ -82,39 +68,45 @@ keys: context [
 	]
 
 	close: func [/force /local name][
-		ledger/close
-		trezor/close
+		foreach key support-keys [key/close]
 		key: none
 		dongle: none
 	]
 
-	connect-key: func [device [object! string!]][
+	connect-key: func [device [object! string!] /local handle k][
 		if string? device [
-			device: either device = ledger/name [ledger][trezor]
+			foreach k support-keys [
+				if k/name = device [
+					device: k
+					break
+				]
+			]
 		]
 		do [
-			dongle: device/connect
-			if dongle [
+			handle: device/connect
+			either handle [
 				key: device
 				key/init
 				either 'Init = key/request-pin [
 					key: none
 					dongle: none
 				][
+					dongle: handle
 					unless find list key/name [append list key/name]
 					bip32-path: either find key/name "Ledger" [ledger-path][trezor-path]
 				]
 				index: length? list
+			][
+				current: key
 			]
 		]
 	]
 
-	connect: func [][
+	connect: func [/local k][
 		if all [dongle new?][close]
 
 		unless dongle [
-			connect-key ledger
-			connect-key trezor
+			foreach k support-keys [connect-key k]
 		]
 		if empty? list [key: none]
 		dongle

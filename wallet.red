@@ -523,7 +523,7 @@ wallet: context [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
 				on-up: func [face [object!] event [event!]][
-					if keys/support? face/data/1 face/data/2 [
+					if keys/support? face/data [
 						face/rate: none
 						keys/connect-key keys/current
 						if any [keys/new? keys/state = 'Requesting][
@@ -536,7 +536,7 @@ wallet: context [
 				]
 				on-down: func [face [object!] event [event!] /local state][
 					state: keys/state
-					if keys/close-key face/data/1 face/data/2 [
+					if keys/close-key face/data [
 						face/rate: none
 						info-msg/text: ""
 						clear addr-list/data
