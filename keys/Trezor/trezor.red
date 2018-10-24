@@ -64,6 +64,7 @@ trezor: context [
 	]
 
 	init: func [][
+		if request-pin-state <> 'Init [return request-pin-state]
 		request-pin-state: 'Init
 		trezor-driver/init
 		Initialize #()
@@ -77,7 +78,7 @@ trezor: context [
 	]
 
 	request-pin: func [return: [word!]] [
-		;if request-pin-state <> 'Init [return request-pin-state]
+		if request-pin-state <> 'Init [return request-pin-state]
 
 		pin-req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h]]
 		put pin-req 'show_display false
@@ -90,6 +91,10 @@ trezor: context [
 		if request-pin-state = 'Requesting [
 			either trezor-driver/msg-id = trezor-message/get-id 'PinMatrixRequest [
 				view/flags pin-dlg 'modal
+				if trezor-driver/msg-id = trezor-message/get-id 'PassphraseRequest [
+					request-pin-state: 'Requesting
+					view/flags passphrase-dlg 'modal
+				]
 			][
 				view/flags passphrase-dlg 'modal
 			]
@@ -234,14 +239,12 @@ trezor: context [
 			clear pin-get
 			pin-req: req
 			pin-msg: req-msg
-			no-wait?: false
 			view/flags pin-dlg 'modal
 		]
 
 		if trezor-driver/msg-id = trezor-message/get-id 'PassphraseRequest [
 			clear passphrase-in/text
 			clear confirm-passphrase/text
-			no-wait?: false
 			view/flags passphrase-dlg 'modal
 		]
 
@@ -295,7 +298,7 @@ trezor: context [
 		style label: text 220 middle
 		style but: button 60x60 "*"
 		style pin-field: field 205 middle
-		pad 15x0 header: label "Look at the device for number positions."
+		pad 15x0 pin-header: label "Look at the device for number positions."
 		return pad 15x0
 		but [append pin-show/text "*" append pin-get "7"]
 		but [append pin-show/text "*" append pin-get "8"]
@@ -327,7 +330,7 @@ trezor: context [
 				]
 				if trezor-driver/msg-id = trezor-message/get-id 'Failure [
 					clear pin-show/text
-					header/text: "Input Pin Failure! Enter Pin again."
+					pin-header: "Input Pin Failure! Enter Pin again."
 					request-pin-state: try [request-pin-cmd]
 					if error? request-pin-state [
 						request-pin-state: 'DeviceError
@@ -335,9 +338,6 @@ trezor: context [
 					]
 					clear pin-get
 					exit
-				]
-				if trezor-driver/msg-id = trezor-message/get-id 'PassphraseRequest [
-					view/flags passphrase-dlg 'modal
 				]
 				request-pin-state: 'HasRequested
 			]
@@ -350,47 +350,50 @@ trezor: context [
 		]
 	]
 
-	passphrase-dlg: layout [
-		title "Please enter your passphrase"
-		style label: text 220 middle
-		pad 15x0 header: label "Note: Passphrase is case-sensitive"
-		return
-		text "Passphrase"
-		return
-		passphrase-in: field ""
-		return
-		text "Confirm Passphrase"
-		return
-		confirm-passphrase: field ""
-		return
-		check "Show passphrase"
-		return
-		button "Enter" middle [
-			if request-pin-state = 'Requesting [
-				if passphrase-in/text <> confirm-passphrase/text [
-					header/text: "Input Passphrase Failure! Enter again."
-					clear passphrase-in/text
-					clear confirm-passphrase/text
-					exit
-				]
-				pin-ret: try [encode-and-write 'PassphraseAck make map! reduce ['passphrase confirm-passphrase/text]]
-				if error? pin-ret [
-					request-pin-state: 'DeviceError
-					unview
-					exit
-				]
-				pin-ret: try [trezor-driver/message-read clear command-buffer]
-				if any [error? pin-ret trezor-driver/msg-id = trezor-message/get-id 'Failure] [
-					request-pin-state: 'DeviceError
-					unview
-					exit
-				]
-				request-pin-state: 'HasRequested
+	on-passphrase-enter: func [face event][
+		if request-pin-state = 'Requesting [
+			if passphrase-in/text <> confirm-passphrase/text [
+				header/text: "Passphrases do not match!"
+				clear passphrase-in/text
+				clear confirm-passphrase/text
+				exit
 			]
-			clear passphrase-in/text
-			clear confirm-passphrase/text
-			unview
+			pin-ret: try [encode-and-write 'PassphraseAck make map! reduce ['passphrase confirm-passphrase/text]]
+			if error? pin-ret [
+				request-pin-state: 'DeviceError
+				unview
+				exit
+			]
+			pin-ret: try [trezor-driver/message-read clear command-buffer]
+			if any [error? pin-ret trezor-driver/msg-id = trezor-message/get-id 'Failure] [
+				request-pin-state: 'DeviceError
+				unview
+				exit
+			]
+			request-pin-state: 'HasRequested
 		]
+		clear passphrase-in/text
+		clear confirm-passphrase/text
+		unview
 	]
 
+	passphrase-dlg: layout [
+		title "Please enter your passphrase"
+		on-close [
+			clear passphrase-in/text
+			clear confirm-passphrase/text
+			on-passphrase-enter none none
+		]
+		below center
+		header: text "Note: Passphrase is case-sensitive" 
+		panel [text 130 "Passphrase:" passphrase-in: field 180 ""]
+		panel [text 130 "Confirm Passphrase:" confirm-passphrase: field 180 "" ]
+		check "Show passphrase" [
+			show-passphrase?: either face/data [none]['password]
+			passphrase-in/flags: show-passphrase?
+			confirm-passphrase/flags: show-passphrase?
+		]
+		button "Enter" :on-passphrase-enter
+		with [passphrase-in/flags: 'password confirm-passphrase/flags: 'password]
+	]
 ]

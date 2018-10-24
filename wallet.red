@@ -524,6 +524,7 @@ wallet: context [
 			actors: object [
 				on-up: func [face [object!] event [event!]][
 					if keys/support? face/data/1 face/data/2 [
+						face/rate: none
 						keys/connect-key keys/current
 						if any [keys/new? keys/state = 'Requesting][
 							dev/data: keys/list
