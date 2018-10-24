@@ -2,7 +2,6 @@ Red/System [
 	Title:	"Hidapi"
 	Author: "Huang Yongzhao"
 	File: 	%macOS.reds
-	Needs:	View
 	Tabs: 	4
 	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
 	License: {
@@ -10,6 +9,14 @@ Red/System [
 		See https://github.com/red/red/blob/master/BSL-License.txt
 	}
 ]
+
+#define IUNKNOWN_C_GUTS [
+    _reserved			[int-ptr!]
+	QueryInterface		[QueryInterface!]
+	AddRef				[AddRef!]
+	Release				[Release!]
+]
+
 hid: context [
 	#define	EINVAL		22		;/* Invalid argument */
 	#define kIOHIDSerialNumberKey               "SerialNumber"
@@ -133,6 +140,76 @@ hid: context [
 		schedule 			[int-ptr!]
 		cancel 				[int-ptr!]
 		perform 			[int-ptr!]
+	]
+
+	IOUSBInterfaceInterface: alias struct! [
+		IUNKNOWN_C_GUTS
+		CreateInterfaceAsyncEventSource	[function! [this [this!] source [int-ptr!] return: [integer!]]]
+		GetInterfaceAsyncEventSource	[int-ptr!]
+		CreateInterfaceAsyncPort		[function! [this [this!] port [int-ptr!] return: [integer!]]]
+		GetInterfaceAsyncPort			[function! [this [this!] return: [integer!]]]
+		USBInterfaceOpen				[function! [this [this!] return: [integer!]]]
+		USBInterfaceClose				[function! [this [this!] return: [integer!]]]
+		GetInterfaceClass				[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetInterfaceSubClass			[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetInterfaceProtocol			[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetDeviceVendor					[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceProduct				[function! [this [this!] product [int-ptr!] return: [integer!]]]
+		GetDeviceReleaseNumber			[function! [this [this!] relnum [int-ptr!] return: [integer!]]]
+		GetConfigurationValue			[function! [this [this!] value [int-ptr!] return: [integer!]]]
+		GetInterfaceNumber				[function! [this [this!] inum [int-ptr!] return: [integer!]]]
+		GetAlternateSetting				[function! [this [this!] alt [int-ptr!] return: [integer!]]]
+		GetNumEndpoints					[function! [this [this!] endpt [int-ptr!] return: [integer!]]]
+		GetLocationID					[function! [this [this!] id [int-ptr!] return: [integer!]]]
+		GetDevice						[function! [this [this!] device [int-ptr!] return: [integer!]]]
+		SetAlternateInterface			[function! [this [this!] alt [byte!] return: [integer!]]]
+		GetBusFrameNumber				[int-ptr!]
+		ControlRequest					[function! [this [this!] pipeRef [byte!] req [int-ptr!] return: [integer!]]]
+		ControlRequestAsync				[function! [this [this!] pipeRef [byte!] req [int-ptr!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		GetPipeProperties				[function! [this [this!] pipeRef [byte!] dir [byte-ptr!] num [byte-ptr!] type [byte-ptr!] size [int-ptr!] interval [byte-ptr!] return: [integer!]]]
+		GetPipeStatus					[function! [this [this!] pipeRef [byte!] return: [integer!]]]
+		AbortPipe						[function! [this [this!] pipeRef [byte!] return: [integer!]]]
+		ResetPipe						[function! [this [this!] pipeRef [byte!] return: [integer!]]]
+		ClearPipeStall					[function! [this [this!] pipeRef [byte!] return: [integer!]]]
+		ReadPipe						[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [int-ptr!] return: [integer!]]]
+		WritePipe						[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [int-ptr!] return: [integer!]]]
+		ReadPipeAsync					[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [int-ptr!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		WritePipeAsync					[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [int-ptr!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		ReadIsochPipeAsync				[int-ptr!]
+		WriteIsochPipeAsync				[int-ptr!]
+		ControlRequestTO				[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] req [int-ptr!] return: [integer!]]]
+		ControlRequestAsyncTO			[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] req [int-ptr!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		ReadPipeTO						[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [int-ptr!] dataTimeout [integer!] completionTimeout [integer!] return: [integer!]]]
+		WritePipeTO						[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [integer!] dataTimeout [integer!] completionTimeout [integer!] return: [integer!]]]
+		ReadPipeAsyncTO					[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [integer!] dataTimeout [integer!] completionTimeout [integer!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		WritePipeAsyncTO				[function! [this [this!] pipeRef [byte!] buf [byte-ptr!] size [integer!] dataTimeout [integer!] completionTimeout [integer!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		USBInterfaceGetStringIndex		[function! [this [this!] si [byte-ptr!] return: [integer!]]]
+		USBInterfaceOpenSeize			[function! [this [this!] return: [integer!]]]
+		ClearPipeStallBothEnds			[function! [this [this!] pipeRef [byte!] return: [integer!]]]
+		SetPipePolicy					[function! [this [this!] pipeRef [byte!] size [integer!] interval [byte!] return: [integer!]]]
+		GetBandwidthAvailable			[function! [this [this!] bandwidth [int-ptr!] return: [integer!]]]
+		GetEndpointProperties			[function! [this [this!] alt [byte!] endpt [byte!] dir [byte!] type [byte-ptr!] size [int-ptr!] interval [byte-ptr!] return: [integer!]]]
+		LowLatencyReadIsochPipeAsync	[int-ptr!]
+		LowLatencyWriteIsochPipeAsync	[int-ptr!]
+		LowLatencyCreateBuffer			[int-ptr!]
+		LowLatencyDestroyBuffer			[int-ptr!]
+		GetBusMicroFrameNumber			[int-ptr!]
+		GetFrameListTime				[int-ptr!]
+		GetIOUSBLibVersion				[function! [this [this!] libver [int-ptr!] familiyver [int-ptr!] return: [integer!]]]
+		FindNextAssociatedDescriptor	[int-ptr!]
+		FindNextAltInterface			[int-ptr!]
+		GetBusFrameNumberWithTime		[int-ptr!]
+		GetPipePropertiesV2				[int-ptr!]
+		GetPipePropertiesV3				[int-ptr!]
+		GetEndpointPropertiesV3			[int-ptr!]
+		SupportsStreams					[int-ptr!]
+		CreateStreams					[int-ptr!]
+		GetConfiguredStreams			[int-ptr!]
+		ReadStreamsPipeTO				[int-ptr!]
+		WriteStreamsPipeTO				[int-ptr!]
+		ReadStreamsPipeAsyncTO			[int-ptr!]
+		WriteStreamsPipeAsyncTO			[int-ptr!]
+		AbortStreamsPipe				[int-ptr!]
 	]
 
 	#import [
