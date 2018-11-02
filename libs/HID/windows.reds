@@ -214,32 +214,38 @@ hid: context [
 				return: 		[logic!]
 			]
 		]
-
+		"Ole32.dll" stdcall [
+			IIDFromString: "IIDFromString" [
+				str				[c-string!]
+				ppiid			[int-ptr!]
+				return:			[integer!]
+			]
+		]
 		"kernel32.dll" stdcall [
 			CreateEvent: "CreateEventA" [
-				lpEventAttributes	[integer!]
-				bManualReset		[integer!]
-				bInitialState		[integer!]
-				lpName				[integer!]
-				return:				[integer!]
+				lpEventAttributes				[integer!]
+				bManualReset					[integer!]
+				bInitialState					[integer!]
+				lpName							[integer!]
+				return:							[integer!]
 			]
 			CloseHandle: "CloseHandle" [
-				hObject	[integer!]
-				return: [integer!]
+				hObject							[integer!]
+				return: 						[integer!]
 			]
 			CreateFileA: "CreateFileA" [
-				lpFileName				[c-string!]
-				dwDesiredAccess			[integer!]
-				dwShareMode				[integer!]
-				lpSecurityAttributes	[integer!]
-				dwCreationDisposition	[integer!]
-				dwFlagsAndAttributes	[integer!]
-				hTemplateFile			[integer!]
-				return:					[integer!]
+				lpFileName						[c-string!]
+				dwDesiredAccess					[integer!]
+				dwShareMode						[integer!]
+				lpSecurityAttributes			[integer!]
+				dwCreationDisposition			[integer!]
+				dwFlagsAndAttributes			[integer!]
+				hTemplateFile					[integer!]
+				return:							[integer!]
 			]
 			LocalFree: "LocalFree" [
-				hMem	[int-ptr!]
-				return:	[int-ptr!]
+				hMem							[int-ptr!]
+				return:							[int-ptr!]
 			]
 			WriteFile:	"WriteFile" [
 				handle		[integer!]
@@ -305,13 +311,13 @@ hid: context [
 		"setupapi.dll" stdcall [
 			SetupDiGetClassDevs: "SetupDiGetClassDevsA" [
 				ClassGuid						[int-ptr!]
-				Enumerator						[integer!]
+				Enumerator						[c-string!]
 				hwndParent						[integer!]
 				Flags							[integer!]
-				return: 						[integer!]
+				return: 						[int-ptr!]
 			]
 			SetupDiEnumDeviceInterfaces: "SetupDiEnumDeviceInterfaces" [
-				DeviceInfoSet 					[integer!]
+				DeviceInfoSet 					[int-ptr!]
 				DeviceInfoData					[integer!]
 				InterfaceClassGuid				[int-ptr!]
 				MemberIndex						[integer!]
@@ -328,11 +334,11 @@ hid: context [
 				return: 						[logic!]
 			]
 			SetupDiDestroyDeviceInfoList: "SetupDiDestroyDeviceInfoList" [
-				handle							[integer!]
+				handle							[int-ptr!]
 				return: 						[logic!]
 			]
 			SetupDiEnumDeviceInfo: "SetupDiEnumDeviceInfo" [
-				DeviceInfoSet 					[integer!]
+				DeviceInfoSet 					[int-ptr!]
 				MemberIndex						[integer!]
 				DeviceInfoData					[dev-info-data]
 				return: 						[logic!]
@@ -347,8 +353,39 @@ hid: context [
 				RequiredSize					[int-ptr!]
 				return: 						[logic!]
 			]
+			SetupDiGetDeviceInstanceIdA: "SetupDiGetDeviceInstanceIdA" [
+				DeviceInfoSet 					[int-ptr!]
+				DeviceInfoData					[dev-info-data]
+				buffer							[byte-ptr!]
+				buffersize						[integer!]
+				size							[int-ptr!]
+				return:							[logic!]
+			]
+			SetupDiOpenDevRegKey: "SetupDiOpenDevRegKey" [
+				DeviceInfoSet 					[int-ptr!]
+				DeviceInfoData					[dev-info-data]
+				scope							[integer!]
+				HwProfile						[integer!]
+				keyType							[integer!]
+				samDesired						[integer!]
+				return:							[integer!]
+			]
 		]
-
+		"Advapi32.dll" stdcall [
+			RegQueryValueExW: "RegQueryValueExW" [
+				hKey			[integer!]
+				lpValueName		[c-string!]
+				lpReserved		[int-ptr!]
+				lpType			[int-ptr!]
+				lpData			[byte-ptr!]
+				lpcbData		[int-ptr!]
+				return:			[integer!]
+			]
+			RegCloseKey: "RegCloseKey" [
+				hKey			[integer!]
+				return:			[integer!]
+			]
+		]
 		"winusb.dll" stdcall [
 			WinUsb_Initialize: "WinUsb_Initialize" [
 				DeviceHandle					[int-ptr!]
@@ -575,37 +612,80 @@ hid: context [
 			pass				[integer!]
 	][
 		HidClassGuid: [4D1E55B2h 11CFF16Fh 1100CB88h 30000011h]
-		DevClassGuid: [C6C374A6h 4CB82285h 641743ABh 3D50EA7Ch]
-
 		pass: 1
 		root: null
 		cur-dev: null
 		devinterface-detail: null
 		device-info-set: as int-ptr! INVALID-HANDLE-VALUE
+		driver_name: as c-string! system/stack/allocate 64
+		wstr: as c-string! system/stack/allocate 256
+
 		until [
-			either pass	= 1 [guid-ptr: DevClassGuid][guid-ptr: HidClassGuid]
+			raw-usb?: no
 			device-index: 0
+			guid-ptr: HidClassGuid
 
 			;--Initialize the Windows objects.
 			set-memory as byte-ptr! devinfo-data null-byte size? devinfo-data
 			devinfo-data/cbSize: size? dev-info-data
 			devinterface-data/cbSize: size? dev-interface-data
 
+			if pass	= 1 [
+				device-info-set: SetupDiGetClassDevs
+									null
+									"USB"
+									null
+									(DIGCF_PRESENT or 4)
+				i: 0
+				forever [
+					unless SetupDiEnumDeviceInfo device-info-set i devinfo-data [break]
+					SetupDiGetDeviceInstanceIdA device-info-set devinfo-data as byte-ptr! wstr 256 null
+					if null <> strstr wstr "MI_00" [
+						hex-str: strstr wstr "VID_"
+						either null? hex-str [skip?: yes][
+							hex-str: hex-str + 4
+							vid: strtol hex-str null 16
+							hex-str: (strstr hex-str "PID_") + 4
+							pid: strtol hex-str null 16
+							either pid << 16 + vid = id [raw-usb?: yes break][skip?: yes]
+						]
+					]
+					i: i + 1
+				]
+
+				if raw-usb? [
+					guid-ptr: null
+					;-- get GUID of the device
+					i: SetupDiOpenDevRegKey device-info-set devinfo-data 1 0 1 131097
+					len1: 0
+					len: 80
+					nt-res: RegQueryValueExW i #u16 "DeviceInterfaceGUIDs" null :len1 as byte-ptr! wstr :len
+					if nt-res = 2 [
+						nt-res: RegQueryValueExW i #u16 "DeviceInterfaceGUID" null :len1 as byte-ptr! wstr :len
+					]
+					RegCloseKey i
+
+					if zero? nt-res [
+						IIDFromString wstr as int-ptr! driver_name
+						guid-ptr: as int-ptr! driver_name
+					]
+				]
+				SetupDiDestroyDeviceInfoList device-info-set
+			]
+
 			;--information for all the devices belonging to the HID class.
-			device-info-set: as int-ptr! SetupDiGetClassDevs
-											guid-ptr
-											null
-											null
-											(DIGCF_PRESENT or DIGCF_DEVICEINTERFACE)
+			device-info-set: SetupDiGetClassDevs
+								guid-ptr
+								null
+								null
+								(DIGCF_PRESENT or DIGCF_DEVICEINTERFACE)
 
 			;--Iterate over each device in the HID class, looking for the right one.
-			driver_name: as c-string! system/stack/allocate 64
-			wstr: as c-string! system/stack/allocate 256
 			forever [
 				write-handle: as int-ptr! INVALID-HANDLE-VALUE
 				required-size: 0
 				attrib: as HIDD-ATTRIBUTES allocate size? HIDD-ATTRIBUTES
-				res: SetupDiEnumDeviceInterfaces	(as integer! device-info-set)
+				res: SetupDiEnumDeviceInterfaces	device-info-set
 													null
 													guid-ptr
 													device-index
@@ -649,7 +729,7 @@ hid: context [
 					]
 				][
 					forever [
-						if false = SetupDiEnumDeviceInfo (as integer! device-info-set) i devinfo-data [
+						if false = SetupDiEnumDeviceInfo device-info-set i devinfo-data [
 							skip?: yes
 							break
 						]
@@ -779,7 +859,7 @@ hid: context [
 				if all [raw-usb? root <> null][break]
 			]
 			;close the device information handle
-			SetupDiDestroyDeviceInfoList as integer! device-info-set
+			SetupDiDestroyDeviceInfoList device-info-set
 			pass: pass + 1
 			pass > 2
 		]

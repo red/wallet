@@ -115,14 +115,7 @@ trezor: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req			[map!]
-			res			[map!]
-			nonce
-			gas_price
-			gas_limit
-			amount
-			signed
-			data-len
+			req res nonce gas_price gas_limit amount signed data-len
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
@@ -436,14 +429,7 @@ trezor-mt: make context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req			[map!]
-			res			[map!]
-			nonce
-			gas_price
-			gas_limit
-			amount
-			signed
-			data-len
+			req res nonce gas_price gas_limit amount signed data-len
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
@@ -454,7 +440,7 @@ trezor-mt: make context [
 			'address_n ids
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
 			'to tx/4 'value amount 'chain_id chain-id
-				]
+		]
 		if data-len > 0 [
 			put req 'data_length data-len
 			put req 'data_initial_chunk tx/6
