@@ -2,7 +2,6 @@ Red/System [
 	Title:	"Hidapi"
 	Author: "Huang Yongzhao"
 	File: 	%macOS.reds
-	Needs:	View
 	Tabs: 	4
 	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
 	License: {
@@ -10,6 +9,14 @@ Red/System [
 		See https://github.com/red/red/blob/master/BSL-License.txt
 	}
 ]
+
+#define IUNKNOWN_C_GUTS [
+    _reserved			[int-ptr!]
+	QueryInterface		[QueryInterface!]
+	AddRef				[AddRef!]
+	Release				[Release!]
+]
+
 hid: context [
 	#define	EINVAL		22		;/* Invalid argument */
 	#define kIOHIDSerialNumberKey               "SerialNumber"
@@ -23,6 +30,7 @@ hid: context [
 	#define kIOHIDProductIDKey                  "ProductID"
 	#define kIOHIDMaxInputReportSizeKey         "MaxInputReportSize"
 	#define BUF_LEN 							256
+	#define kCFNumberSInt8Type					1
 	#define kCFNumberSInt32Type  				3
 	#define HID_CFSTR(cStr)						[CFStringCreateWithCString 0 cStr 08000100h]
 	#define LOWORD(param) (param and FFFFh << 16 >> 16)
@@ -33,6 +41,36 @@ hid: context [
 	#define kIOHIDReportTypeOutput 				1
 	#define	ETIMEDOUT							60
 
+	this!: alias struct! [vtbl [integer!]]
+
+	UUID!: alias struct! [
+		data1	[integer!]
+		data2	[integer!]
+		data3	[integer!]
+		data4	[integer!]
+	]
+
+	QueryInterface!: alias function! [
+		this		[this!]
+		riid		[UUID! value]
+		ppvObject	[int-ptr!]
+		return:		[integer!]
+	]
+
+	AddRef!: alias function! [
+		this		[this!]
+		return:		[integer!]
+	]
+
+	Release!: alias function! [
+		this		[this!]
+		return:		[integer!]
+	]
+
+	IOUSBFindInterfaceRequest: alias struct! [
+		class-subclass	 [integer!]
+		protocol-setting [integer!]
+	]
 
 	hid_mgr: as int-ptr! 0
 	kCFStringEncodingUTF32LE: 1C000100h
@@ -114,6 +152,14 @@ hid: context [
 		max_input_report_len 	[integer!]  ;CFIndex alias int
 		input_reports 			[input_report]
 
+		raw-usb?				[logic!]
+		dev-ifc					[this!]
+		pipe-ifc				[this!]
+		read-id					[integer!]
+		write-id				[integer!]
+		read-sz					[integer!]
+		ifc-source				[integer!]
+
 		thread 					[pthread_t]
 		mutex 					[pthread_mutex_t value]   ;pthread_mutex_t is int
 		condition 				[pthread_cond_t value]
@@ -133,6 +179,122 @@ hid: context [
 		schedule 			[int-ptr!]
 		cancel 				[int-ptr!]
 		perform 			[int-ptr!]
+	]
+
+	IOUSBDeviceInterface: alias struct! [
+		IUNKNOWN_C_GUTS
+		CreateDeviceAsyncEventSource	[function! [this [this!] source [int-ptr!] return: [integer!]]]
+		GetDeviceAsyncEventSource		[function! [this [this!] return: [int-ptr!]]]
+		CreateDeviceAsyncPort			[function! [this [this!] port [int-ptr!] return: [integer!]]]
+		GetDeviceAsyncPort				[function! [this [this!] return: [integer!]]]
+		USBDeviceOpen					[function! [this [this!] return: [integer!]]]
+		USBDeviceClose					[function! [this [this!] return: [int-ptr!]]]
+		GetDeviceClass					[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetDeviceSubClass				[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetDeviceProtocol				[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetDeviceVendor					[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceProduct				[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceReleaseNumber			[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceAddress				[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceBusPowerAvailable		[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceSpeed					[function! [this [this!] vender [byte-ptr!] return: [integer!]]]
+		GetNumberOfConfigurations		[function! [this [this!] vender [byte-ptr!] return: [integer!]]]
+		GetLocationID					[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetConfigurationDescriptorPtr	[integer!]
+		GetConfiguration				[function! [this [this!] vender [byte-ptr!] return: [integer!]]]
+		SetConfiguration				[function! [this [this!] vender [byte-ptr!] return: [integer!]]]
+		GetBusFrameNumber				[integer!]
+		ResetDevice						[function! [this [this!] return: [integer!]]]
+		DeviceRequest					[function! [this [this!] req [int-ptr!] return: [integer!]]]
+		DeviceRequestAsync				[integer!]
+		CreateInterfaceIterator			[function! [this [this!] req [IOUSBFindInterfaceRequest] iter [int-ptr!] return: [integer!]]]
+		USBDeviceOpenSeize				[function! [this [this!] return: [integer!]]]
+		DeviceRequestTO					[integer!]
+		DeviceRequestAsyncTO			[integer!]
+		USBDeviceSuspend				[function! [this [this!] suspend [logic!] return: [integer!]]]
+		USBDeviceAbortPipeZero			[integer!]
+		USBGetManufacturerStringIndex	[function! [this [this!] req [byte-ptr!] return: [integer!]]]
+		USBGetProductStringIndex		[function! [this [this!] req [byte-ptr!] return: [integer!]]]
+		USBGetSerialNumberStringIndex	[function! [this [this!] req [byte-ptr!] return: [integer!]]]
+		USBDeviceReEnumerate			[function! [this [this!] options [integer!] return: [integer!]]]
+		GetBusMicroFrameNumber			[integer!]
+		GetIOUSBLibVersion				[integer!]
+		GetBusFrameNumberWithTime		[integer!]
+		GetUSBDeviceInformation			[integer!]
+		RequestExtraPower				[integer!]
+		ReturnExtraPower				[integer!]
+		GetExtraPowerAllocated			[integer!]
+		GetBandwidthAvailableForDevice	[function! [this [this!] req [int-ptr!] return: [integer!]]]
+	]
+
+	IOUSBInterfaceInterface: alias struct! [	;IOUSBInterfaceInterface550
+		IUNKNOWN_C_GUTS
+		CreateInterfaceAsyncEventSource	[function! [this [this!] source [int-ptr!] return: [integer!]]]
+		GetInterfaceAsyncEventSource	[int-ptr!]
+		CreateInterfaceAsyncPort		[function! [this [this!] port [int-ptr!] return: [integer!]]]
+		GetInterfaceAsyncPort			[function! [this [this!] return: [integer!]]]
+		USBInterfaceOpen				[function! [this [this!] return: [integer!]]]
+		USBInterfaceClose				[function! [this [this!] return: [integer!]]]
+		GetInterfaceClass				[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetInterfaceSubClass			[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetInterfaceProtocol			[function! [this [this!] intfClass [c-string!] return: [integer!]]]
+		GetDeviceVendor					[function! [this [this!] vender [int-ptr!] return: [integer!]]]
+		GetDeviceProduct				[function! [this [this!] product [int-ptr!] return: [integer!]]]
+		GetDeviceReleaseNumber			[function! [this [this!] relnum [int-ptr!] return: [integer!]]]
+		GetConfigurationValue			[function! [this [this!] value [int-ptr!] return: [integer!]]]
+		GetInterfaceNumber				[function! [this [this!] inum [int-ptr!] return: [integer!]]]
+		GetAlternateSetting				[function! [this [this!] alt [int-ptr!] return: [integer!]]]
+		GetNumEndpoints					[function! [this [this!] endpt [int-ptr!] return: [integer!]]]
+		GetLocationID					[function! [this [this!] id [int-ptr!] return: [integer!]]]
+		GetDevice						[function! [this [this!] device [int-ptr!] return: [integer!]]]
+		SetAlternateInterface			[function! [this [this!] alt [byte!] return: [integer!]]]
+		GetBusFrameNumber				[int-ptr!]
+		ControlRequest					[function! [this [this!] pipeRef [integer!] req [int-ptr!] return: [integer!]]]
+		ControlRequestAsync				[function! [this [this!] pipeRef [integer!] req [int-ptr!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		GetPipeProperties				[function! [this [this!] pipeRef [integer!] dir [int-ptr!] num [int-ptr!] type [int-ptr!] size [int-ptr!] interval [int-ptr!] return: [integer!]]]
+		GetPipeStatus					[function! [this [this!] pipeRef [integer!] return: [integer!]]]
+		AbortPipe						[function! [this [this!] pipeRef [integer!] return: [integer!]]]
+		ResetPipe						[function! [this [this!] pipeRef [integer!] return: [integer!]]]
+		ClearPipeStall					[function! [this [this!] pipeRef [integer!] return: [integer!]]]
+		ReadPipe						[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [int-ptr!] return: [integer!]]]
+		WritePipe						[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [integer!] return: [integer!]]]
+		ReadPipeAsync					[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [integer!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		WritePipeAsync					[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [integer!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		ReadIsochPipeAsync				[int-ptr!]
+		WriteIsochPipeAsync				[int-ptr!]
+		ControlRequestTO				[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] req [int-ptr!] return: [integer!]]]
+		ControlRequestAsyncTO			[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] req [int-ptr!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		ReadPipeTO						[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [int-ptr!] dataTimeout [integer!] completionTimeout [integer!] return: [integer!]]]
+		WritePipeTO						[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [integer!] dataTimeout [integer!] completionTimeout [integer!] return: [integer!]]]
+		ReadPipeAsyncTO					[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [integer!] dataTimeout [integer!] completionTimeout [integer!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		WritePipeAsyncTO				[function! [this [this!] pipeRef [integer!] buf [byte-ptr!] size [integer!] dataTimeout [integer!] completionTimeout [integer!] callback [int-ptr!] refCon [int-ptr!] return: [integer!]]]
+		USBInterfaceGetStringIndex		[function! [this [this!] si [byte-ptr!] return: [integer!]]]
+		USBInterfaceOpenSeize			[function! [this [this!] return: [integer!]]]
+		ClearPipeStallBothEnds			[function! [this [this!] pipeRef [integer!] return: [integer!]]]
+		SetPipePolicy					[function! [this [this!] pipeRef [integer!] size [integer!] interval [byte!] return: [integer!]]]
+		GetBandwidthAvailable			[function! [this [this!] bandwidth [int-ptr!] return: [integer!]]]
+		GetEndpointProperties			[function! [this [this!] alt [byte!] endpt [byte!] dir [byte!] type [byte-ptr!] size [int-ptr!] interval [byte-ptr!] return: [integer!]]]
+		LowLatencyReadIsochPipeAsync	[int-ptr!]
+		LowLatencyWriteIsochPipeAsync	[int-ptr!]
+		LowLatencyCreateBuffer			[int-ptr!]
+		LowLatencyDestroyBuffer			[int-ptr!]
+		GetBusMicroFrameNumber			[int-ptr!]
+		GetFrameListTime				[int-ptr!]
+		GetIOUSBLibVersion				[function! [this [this!] libver [int-ptr!] familiyver [int-ptr!] return: [integer!]]]
+		FindNextAssociatedDescriptor	[int-ptr!]
+		FindNextAltInterface			[int-ptr!]
+		GetBusFrameNumberWithTime		[int-ptr!]
+		GetPipePropertiesV2				[int-ptr!]
+		GetPipePropertiesV3				[int-ptr!]
+		GetEndpointPropertiesV3			[int-ptr!]
+		SupportsStreams					[int-ptr!]
+		CreateStreams					[int-ptr!]
+		GetConfiguredStreams			[int-ptr!]
+		ReadStreamsPipeTO				[int-ptr!]
+		WriteStreamsPipeTO				[int-ptr!]
+		ReadStreamsPipeAsyncTO			[int-ptr!]
+		WriteStreamsPipeAsyncTO			[int-ptr!]
+		AbortStreamsPipe				[int-ptr!]
 	]
 
 	#import [
@@ -312,11 +474,45 @@ hid: context [
 				report			[byte-ptr!]
 				reportLength	[integer!]
 				return: 		[integer!]
-				]
+			]
 			IOHIDDeviceUnscheduleFromRunLoop: "IOHIDDeviceUnscheduleFromRunLoop" [
 				device 			[int-ptr!]
 				runloop			[int-ptr!]
 				runLoopMode		[int-ptr!]
+			]
+			IOServiceMatching: "IOServiceMatching" [
+				name			[c-string!]
+				return:			[integer!]
+			]
+			IOServiceGetMatchingServices: "IOServiceGetMatchingServices" [
+				masterPort		[integer!]
+				matching		[integer!]
+				existing		[int-ptr!]
+				return:			[integer!]
+			]
+			IOIteratorNext: "IOIteratorNext" [
+				iterate			[integer!]
+				return:			[int-ptr!]
+			]
+			IORegistryEntryGetName: "IORegistryEntryGetName" [
+				dev				[int-ptr!]
+				name			[byte-ptr!]
+				return:			[integer!]
+			]
+			IOCreatePlugInInterfaceForService: "IOCreatePlugInInterfaceForService" [
+				dev				[int-ptr!]
+				typeID			[int-ptr!]
+				interfaceID		[int-ptr!]
+				interface		[int-ptr!]
+				score			[int-ptr!]
+				return:			[integer!]
+			]
+			IORegistryEntryCreateCFProperty: "IORegistryEntryCreateCFProperty" [
+				entry			[int-ptr!]
+				key				[int-ptr!]
+				allocator		[integer!]
+				options			[integer!]
+				return:			[int-ptr!]
 			]
 		]
 		"/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation" cdecl [
@@ -354,7 +550,7 @@ hid: context [
 				number 		[int-ptr!]
 				theType 	[integer!]
 				valuePtr	[int-ptr!]
-				return: 	[logic!]
+				return: 	[integer!]
 			]
 			CFRelease: "CFRelease" [
 				cf 			[int-ptr!]
@@ -400,7 +596,30 @@ hid: context [
 			CFRunLoopWakeUp: "CFRunLoopWakeUp" [
 				rl 			[int-ptr!]
 			]
-
+			CFUUIDGetConstantUUIDWithBytes: "CFUUIDGetConstantUUIDWithBytes" [
+				allocator	[int-ptr!]
+				byte0		[byte!]
+				byte1		[byte!]
+				byte2		[byte!]
+				byte3		[byte!]
+				byte4		[byte!]
+				byte5		[byte!]
+				byte6		[byte!]
+				byte7		[byte!]
+				byte8		[byte!]
+				byte9		[byte!]
+				byte10		[byte!]
+				byte11		[byte!]
+				byte12		[byte!]
+				byte13		[byte!]
+				byte14		[byte!]
+				byte15		[byte!]
+				return:		[int-ptr!]
+			]
+			CFUUIDGetUUIDBytes: "CFUUIDGetUUIDBytes" [
+				guid		[int-ptr!]
+				return:		[UUID! value]
+			]
 		]
 	]
 
@@ -459,7 +678,6 @@ hid: context [
 			return 0
 		]
 	]
-
 
 	new-hid-device: func [
 		return: 	[hid-device]
@@ -804,37 +1022,36 @@ hid: context [
 				]
 				cur_dev: tmp
 
+				;--get the usage page and usage for this device
+				x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
+				y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
+				cur_dev/usage: x << 16 or y
+				;--fill out the record
+				cur_dev/next: null
 
-			;--get the usage page and usage for this device
-			x: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsagePageKey)
-			y: get_int_property dev as c-string! HID_CFSTR(kIOHIDPrimaryUsageKey)
-			cur_dev/usage: x << 16 or y
-			;--fill out the record
-			cur_dev/next: null
+				;--fill in the path (ioservice plane)
+				iokit_dev: IOHIDDeviceGetService dev
+				res: IORegistryEntryGetPath iokit_dev
+											kIOServicePlane  ;--have not defined
+											path
+				cur_dev/path: either res = 0 [strdup path][strdup ""]
 
-			;--fill in the path (ioservice plane)
-			iokit_dev: IOHIDDeviceGetService dev
-			res: IORegistryEntryGetPath iokit_dev
-										kIOServicePlane  ;--have not defined
-										path
-			cur_dev/path: either res = 0 [strdup path][strdup ""]
+				;--serial number
+				get_serial_number dev buf BUF_LEN
+				cur_dev/serial-number: dup_wcs buf
+				;--manufacturer and product strings
+				get_manufacturer_string dev buf BUF_LEN
+				cur_dev/manufacturer-string: dup_wcs buf
+				get_product_string dev buf BUF_LEN
+				cur_dev/product-string: dup_wcs buf
 
-			;--serial number
-			get_serial_number dev buf BUF_LEN
-			cur_dev/serial-number: dup_wcs buf
-			;--manufacturer and product strings
-			get_manufacturer_string dev buf BUF_LEN
-			cur_dev/manufacturer-string: dup_wcs buf
-			get_product_string dev buf BUF_LEN
-			cur_dev/product-string: dup_wcs buf
-
-			;--vip/pid
-			cur_dev/id: dev_vid << 16 or dev_pid
-			;--release number
-			cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
-			;--interface number
-			cur_dev/interface-number: -1
-		]
+				;--vip/pid
+				cur_dev/id: dev_vid << 16 or dev_pid
+				;--release number
+				cur_dev/release-number: get_int_property dev as c-string! HID_CFSTR(kIOHIDVersionNumberKey)
+				;--interface number
+				cur_dev/interface-number: -1
+			]
 			i: i + 1
 		]
 
@@ -858,6 +1075,9 @@ hid: context [
 			handle 			[hid-device]
 			usage			[integer!]
 	][
+		handle: open-usb vendor-id product-id
+		if handle <> null [return as int-ptr! handle]
+
 		path_to_open: null
 		handle: null
 		devs: enumerate 0 0
@@ -1075,7 +1295,6 @@ hid: context [
 			code 	[integer!]
 			ctx 	[CFRunLoopSourceContext value]
 			a		[integer!]
-
 	][
 		code: 0
 		dev: as hid-device param
@@ -1138,9 +1357,19 @@ hid: context [
 		return: 	[integer!]
 		/local
 			dev 	[hid-device]
+			this	[this!]
+			ifc		[IOUSBInterfaceInterface]
+			res		[integer!]
 	][
 		dev: as hid-device device
-		set_report dev kIOHIDReportTypeOutput data length
+		either dev/raw-usb? [
+			this: dev/pipe-ifc
+			ifc: as IOUSBInterfaceInterface this/vtbl
+			res: ifc/WritePipe this dev/write-id data length
+			either zero? res [length][-1]
+		][
+			set_report dev kIOHIDReportTypeOutput data length
+		]
 	]
 
 	set_report: func [
@@ -1182,6 +1411,20 @@ hid: context [
 		return -1
 	]
 
+	async-io-callback: func [
+		[cdecl]
+		refcon	[int-ptr!]
+		result	[integer!]
+		arg0	[integer!]
+		/local
+			dev [hid-device]
+	][
+		dev: as hid-device refcon
+		dev/read-sz: arg0
+		dev/input_reports: as input_report 1
+		pthread_cond_signal :dev/condition
+	]
+
 	read: func [
 		device 		[int-ptr!]
 		data 		[byte-ptr!]
@@ -1209,8 +1452,22 @@ hid: context [
 			ts 			[timespec! value]
 			tv 			[timeval! value]
 			tm			[integer!]
-	][
+			this		[this!]
+			ifc			[IOUSBInterfaceInterface]
+	][		
 		dev: as hid-device device
+		if dev/raw-usb? [
+			this: dev/pipe-ifc
+			ifc: as IOUSBInterfaceInterface this/vtbl
+			ifc/ReadPipeAsync
+				this
+				dev/read-id
+				data
+				64
+				as int-ptr! :async-io-callback
+				device
+		]
+
 		bytes_read: -1
 		pthread_mutex_lock :dev/mutex
 		if dev/input_reports <> null [
@@ -1258,7 +1515,12 @@ hid: context [
 					bytes_read: case [
 						res = 0 [
 							tm: milliseconds
-							return_data dev data length
+							either dev/raw-usb? [
+								dev/input_reports: null
+								dev/read-sz
+							][
+								return_data dev data length
+							]
 						]
 						res = ETIMEDOUT [0]
 						true [-1]
@@ -1310,9 +1572,28 @@ hid: context [
 	close: func [
 		device 	[int-ptr!]
 		/local
-			dev [hid-device]
+			dev		[hid-device]
+			this	[this!]
+			pipe	[IOUSBInterfaceInterface]
+			dev-ifc	[IOUSBDeviceInterface]
 	][
 		dev: as hid-device device
+
+		if dev/raw-usb? [
+			this: dev/pipe-ifc
+			pipe: as IOUSBInterfaceInterface this/vtbl
+			pipe/USBInterfaceClose this
+			pipe/Release this
+
+			this: dev/dev-ifc
+			dev-ifc: as IOUSBDeviceInterface this/vtbl
+			dev-ifc/USBDeviceClose this
+			dev-ifc/Release this
+
+			free_hid_device dev
+			exit
+		]
+
 		;--disconnect the report callback before close
 		if dev/disconnected = 0 [
 			IOHIDDeviceRegisterInputReportCallback 	dev/device_handle
@@ -1362,24 +1643,26 @@ hid: context [
 			next 	[input_report]
 	][
 		;--delete any input reports still left over
-		rpt: dev/input_reports
-		while [rpt <> null] [
-			next: rpt/next
-			free rpt/data
-			free as byte-ptr! rpt
-			rpt: next
-		]
+		unless dev/raw-usb? [
+			rpt: dev/input_reports
+			while [rpt <> null] [
+				next: rpt/next
+				free rpt/data
+				free as byte-ptr! rpt
+				rpt: next
+			]
 
-		;--free the string and report buffer. the check for null
-		;--is necessary here as CFRelease doesn't handle null like
-		;--free and others do
-		if dev/run_loop_mode <> null [
-			CFRelease dev/run_loop_mode
+			;--free the string and report buffer. the check for null
+			;--is necessary here as CFRelease doesn't handle null like
+			;--free and others do
+			if dev/run_loop_mode <> null [
+				CFRelease dev/run_loop_mode
+			]
+			if dev/source <> null [
+				CFRelease dev/source
+			]
+			free as byte-ptr! dev/input_report_buf
 		]
-		if dev/source <> null [
-			CFRelease dev/source
-		]
-		free as byte-ptr! dev/input_report_buf
 
 		;--clean up the thread objects
 		pthread_barrier_destroy as pthread_barrier_t :dev/shutdown_barrier
@@ -1389,5 +1672,155 @@ hid: context [
 
 		;--free the structure itself
 		free as byte-ptr! dev
+	]
+
+	kIOUSBDeviceUserClientTypeID: CFUUIDGetConstantUUIDWithBytes null
+		#"^(9D)" #"^(C7)" #"^(B7)" #"^(80)" #"^(9E)" #"^(C0)" #"^(11)" #"^(D4)"
+		#"^(A5)" #"^(4F)" #"^(00)" #"^(0A)" #"^(27)" #"^(05)" #"^(28)" #"^(61)"
+
+	kIOCFPlugInInterfaceID: CFUUIDGetConstantUUIDWithBytes null
+	    #"^(C2)" #"^(44)" #"^(E8)" #"^(58)" #"^(10)" #"^(9C)" #"^(11)" #"^(D4)"
+		#"^(91)" #"^(D4)" #"^(00)" #"^(50)" #"^(E4)" #"^(C6)" #"^(42)" #"^(6F)"
+
+	kIOUSBDeviceInterfaceID: CFUUIDGetConstantUUIDWithBytes null
+		#"^(5C)" #"^(81)" #"^(87)" #"^(D0)" #"^(9E)" #"^(F3)" #"^(11)" #"^(D4)"
+		#"^(8B)" #"^(45)" #"^(00)" #"^(0A)" #"^(27)" #"^(05)" #"^(28)" #"^(61)"
+
+	kIOUSBInterfaceUserClientTypeID: CFUUIDGetConstantUUIDWithBytes null
+		#"^(2D)" #"^(97)" #"^(86)" #"^(C6)" #"^(9E)" #"^(F3)" #"^(11)" #"^(D4)"
+		#"^(AD)" #"^(51)" #"^(00)" #"^(0A)" #"^(27)" #"^(05)" #"^(28)" #"^(61)"
+
+	kIOUSBInterfaceInterfaceID550: CFUUIDGetConstantUUIDWithBytes null
+		#"^(6A)" #"^(E4)" #"^(4D)" #"^(3F)" #"^(EB)" #"^(45)" #"^(48)" #"^(7F)"
+		#"^(8E)" #"^(8E)" #"^(B9)" #"^(3B)" #"^(99)" #"^(F8)" #"^(EA)" #"^(9E)"
+
+	open-usb: func [
+		vendor-id	[integer!]
+		product-id 	[integer!]
+		return: 	[hid-device]
+		/local
+			usb-dev			[hid-device]
+			dev 			[int-ptr!]
+			iter			[integer!]
+			dict			[integer!]
+			interface		[integer!]
+			p-itf			[integer!]
+			score			[integer!]
+			vid				[integer!]
+			pid				[integer!]
+			this			[this!]
+			itf				[IOUSBInterfaceInterface]
+			dev-ifc			[IOUSBDeviceInterface]
+			guid			[UUID! value]
+			req				[IOUSBFindInterfaceRequest value]
+			i				[integer!]
+			dir				[integer!]
+			num				[integer!]
+			type			[integer!]
+			size			[integer!]
+			interval		[integer!]
+			saved			[int-ptr!]
+			buf				[byte-ptr!]
+	][
+		iter: 0
+		dict: IOServiceMatching "IOUSBHostDevice"
+		IOServiceGetMatchingServices kIOMasterPortDefault dict :iter
+
+		while [
+			dev: IOIteratorNext iter
+			dev <> null
+		][
+			interface: 0
+			p-itf: as-integer :interface
+			score: 0
+			IOCreatePlugInInterfaceForService
+					dev
+					kIOUSBDeviceUserClientTypeID
+					kIOCFPlugInInterfaceID
+					:p-itf
+					:score
+
+			this: as this! p-itf
+			itf: as IOUSBInterfaceInterface this/vtbl
+			guid: CFUUIDGetUUIDBytes kIOUSBDeviceInterfaceID
+			itf/QueryInterface this guid :interface
+			itf/Release this
+
+			vid: 0 pid: 0
+			this: as this! interface
+			dev-ifc: as IOUSBDeviceInterface this/vtbl
+			dev-ifc/GetDeviceVendor this :vid
+			dev-ifc/GetDeviceProduct this :pid
+			if all [vid = vendor-id pid = product-id][break]
+		]
+		IOObjectRelease as int-ptr! iter
+
+		if null? dev [return null]
+
+		usb-dev: new-hid-device
+		usb-dev/raw-usb?: yes
+		usb-dev/dev-ifc: this
+		dev-ifc/USBDeviceOpen this
+		dev-ifc/ResetDevice this
+
+		req/class-subclass: FFFFFFFFh
+		req/protocol-setting: FFFFFFFFh
+		saved: system/stack/align
+		push 0
+		dev-ifc/CreateInterfaceIterator this :req :iter
+		system/stack/top: saved
+		while [
+			dev: IOIteratorNext iter
+			dev <> null
+		][
+			IOCreatePlugInInterfaceForService
+				dev
+				kIOUSBInterfaceUserClientTypeID
+				kIOCFPlugInInterfaceID
+				:p-itf
+				:score
+
+			this: as this! p-itf
+			itf: as IOUSBInterfaceInterface this/vtbl
+			guid: CFUUIDGetUUIDBytes kIOUSBInterfaceInterfaceID550
+			itf/QueryInterface this guid :interface
+			itf/Release this
+			
+			this: as this! interface
+			itf: as IOUSBInterfaceInterface this/vtbl
+			if 0 <> itf/USBInterfaceOpen this [continue]
+
+			num: 0
+			itf/GetNumEndpoints this :num
+
+			dir: 0 type: 0 size: 0 interval: 0
+			i: 1
+			while [i <= num][
+				saved: system/stack/align
+				push 0
+				itf/GetPipeProperties this i :dir :score :type :size :interval
+				system/stack/top: saved
+				if dir = 0 [usb-dev/write-id: i]
+				if dir = 1 [usb-dev/read-id: i]
+
+				itf/ClearPipeStall this i
+				i: i + 1
+			]
+			break
+		]
+
+		saved: system/stack/align
+		push 0 push 0
+		itf/CreateInterfaceAsyncEventSource this :usb-dev/ifc-source
+		system/stack/top: saved
+
+		CFRunLoopAddSource
+			CFRunLoopGetCurrent
+			as int-ptr! usb-dev/ifc-source
+			as int-ptr! kCFRunLoopDefaultMode
+
+		IOObjectRelease as int-ptr! iter
+		usb-dev/pipe-ifc: this
+		usb-dev
 	]
 ]
