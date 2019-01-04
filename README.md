@@ -1,4 +1,4 @@
-# A Desktop Client for Ledger Nano S
+# A Desktop Client for Ledger Nano S and TREZOR hardware keys
 
 # How to build the wallet from source
 
