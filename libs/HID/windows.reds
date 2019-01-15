@@ -765,7 +765,9 @@ hid: context [
 					;--check validity of write-handle
 					if write-handle = (as int-ptr! INVALID-HANDLE-VALUE) [
 						CloseHandle (as integer! write-handle)
-						return null
+						free as byte-ptr! devinterface-detail
+						device-index: device-index + 1
+						continue
 					]
 
 					;--Get the Vendor ID and Product ID for this device.
