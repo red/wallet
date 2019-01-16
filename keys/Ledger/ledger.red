@@ -26,7 +26,7 @@ ledger: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open id/1 id/2 3
+			dongle: hid/open id/1 id/2 1
 		]
 		dongle
 	]
