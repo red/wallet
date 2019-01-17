@@ -135,4 +135,8 @@ keys: context [
 		change back tail bip32-path idx
 		do [key/get-eth-signed-data bip32-path tx chain-id]
 	]
+
+	ledger-nano-s?: does [
+		find key/name "Ledger"
+	]
 ]

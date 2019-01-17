@@ -82,6 +82,7 @@ wallet: context [
 	page:			0
 
 	cfg: none
+	ledger-legacy-path: [8000002Ch 8000003Ch 80000000h idx]
 	#include %settings.red
 
 	process-events: does [loop 10 [do-events/no-wait]]
@@ -303,6 +304,14 @@ wallet: context [
 		foreach f [btn-more net-list token-list page-info btn-reload][
 			set in get f 'enabled? enabled?
 		]
+		if enabled? [
+			my-addr-text/text: "My Addresses"
+			if keys/ledger-nano-s? [
+				if 4 = length? keys/ledger-path [
+					my-addr-text/text: "My Addresses (Legacy)"
+				]
+			]
+		]
 		process-events
 	]
 
@@ -491,7 +500,17 @@ wallet: context [
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
-		text bold "My Addresses" pad 280x0 
+		my-addr-text: text 185 bold "My Addresses" on-dbl-click [
+			if keys/ledger-nano-s? [
+				keys/ledger-path: either 4 = length? keys/ledger-path [
+					keys/trezor-path
+				][
+					ledger-legacy-path
+				]
+				keys/bip32-path: keys/ledger-path
+				do-reload
+			]
+		] pad 160x0
 		text bold "Balances" right return pad 0x-10
 		
 		addr-list: text-list font list-font 530x100 return middle
