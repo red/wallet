@@ -20,6 +20,7 @@ Red [
 #include %libs/HID/hidapi.red
 #include %keys/keys.red
 #include %eth-batch.red
+#include %eth-tokens.red
 
 #system [
 	with gui [#include %libs/usb-monitor.reds]
@@ -55,11 +56,11 @@ wallet: context [
 			"Rinkeby" #[none]
 			"Kovan"	  #[none]
 			"Ropsten" #[none]
-		]
+		] 18 "Ethereum"
 		"RED" [
 			"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
 			"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
-		]
+		] 18 "Red Community Token (RED)"
 	]
 
 	chain-ids: [	;-- used by Trezor
@@ -75,15 +76,19 @@ wallet: context [
 	net-name:	"mainnet"
 	token-name: "ETH"
 	token-contract: none
+	token-decimals: 18
 
 	address-index:	0
 	page:			0
+
+	cfg: none
+	#include %settings.red
 
 	process-events: does [loop 10 [do-events/no-wait]]
 
 	fetch-balance: func [addr [string! block!]][
 		either token-contract [
-			eth/get-balance-token network token-contract addr
+			eth/get-balance-token network token-contract addr token-decimals
 		][
 			eth/get-balance network addr
 		]
@@ -194,11 +199,25 @@ wallet: context [
 		do-reload
 	]
 
-	do-select-token: func [face [object!] event [event!] /local idx net n][
+	do-select-token: func [face [object!] event [event!] /local idx net n tokens info][
 		idx: face/selected
+		if idx = 1 [				;-- add tokens
+			tokens: make block! 10
+			foreach [sym addrs dec name] skip contracts 4 [
+				append tokens name
+			]
+			eth-tokens/do-config face tokens
+			face/selected: 2
+			if face/extra = 2 [exit]
+			idx: 2
+		]
+
+		face/extra: idx				;-- save index
 		net: net-list/selected
 		token-name: face/data/:idx
 
+		info: find contracts token-name
+		token-decimals: info/3
 		net-list/data: extract contracts/:token-name 2
 		n: length? net-list/data
 		net: net-list/selected: either net > n [n][net]
@@ -238,10 +257,10 @@ wallet: context [
 	]
 	
 	do-auto-size: function [face [object!]][
-		size: size-text/with face "X"
+		size: size-text/with face "XXXXXXXXXX"
 		cols: 64
 		if face/data [foreach line face/data [cols: max cols length? line]]
-		delta: (as-pair size/x * cols size/y * 5.3) - face/size
+		delta: (as-pair size/x * cols / 10 size/y * 5.3) - face/size
 		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
 	]
 
@@ -467,7 +486,7 @@ wallet: context [
 		title "RED Wallet"
 		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
-		token-list: drop-list data ["ETH" "RED"] 60 select 1 :do-select-token
+		token-list: drop-list data ["Add Tokens"] 80 select 2 :do-select-token
 		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 1 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
@@ -475,9 +494,9 @@ wallet: context [
 		text bold "My Addresses" pad 280x0 
 		text bold "Balances" right return pad 0x-10
 		
-		addr-list: text-list font list-font 520x100 return middle
+		addr-list: text-list font list-font 530x100 return middle
 		
-		info-msg: text 285x20
+		info-msg: text 290x20
 		text right 50 "Page:" tight
 		page-info: drop-list 40 
 			data collect [repeat p 10 [keep form p]]
@@ -485,6 +504,7 @@ wallet: context [
 			:do-page
 		btn-prev: button "Prev" disabled :do-prev-addr 
 		btn-more: button "More" :do-more-addr
+		do [token-list/extra: 2]
 	]
 
 	unlock-dev-dlg: layout [
@@ -566,6 +586,7 @@ wallet: context [
 		ui/actors: context [
 			on-close: func [face event][
 				keys/close
+				save-cfg
 				unview/all
 			]
 			on-resizing: function [face event] [
@@ -600,9 +621,11 @@ wallet: context [
 	]
 
 	run: does [
+		eth-tokens/init
 		min-size: ui/extra: ui/size
 		setup-actors
 		monitor-devices
+		load-cfg
 		do-auto-size addr-list
 		view/flags ui 'resize
 	]

@@ -92,29 +92,35 @@ eth: context [
 		data
 	]
 
-	parse-balance: function [amount][
+	parse-balance: function [amount decimals][
 		either (length? amount) % 2 <> 0 [
 			poke amount 2 #"0"
 			n: 1
 		][n: 2]
 		n: to-i256 debase/base skip amount n 16
-		form-i256 n 18 18
+		form-i256 n decimals decimals
 	]
 
-	get-balance-token: func [network [url!] contract [string!] address [string!] /local token-url params][
+	get-balance-token: func [
+		network		[url!]
+		contract	[string!]
+		address		[string!]
+		decimals	[integer!]
+		/local token-url params
+	][
 		token-url: rejoin ["0x" contract]
 		params: make map! 4
 		params/to: token-url
 		params/data: rejoin ["0x70a08231" pad64 copy skip address 2]
-		parse-balance call-rpc network 'eth_call reduce [params 'latest]
+		parse-balance call-rpc network 'eth_call reduce [params 'latest] decimals
 	]
 
 	get-balance: func [network [url!] address [string! block!] /local res][
 		res: call-rpc network 'eth_getBalance reduce [address 'latest]
 		either block? res [
-			collect [foreach i res [keep parse-balance i]]
+			collect [foreach i res [keep parse-balance i 18]]
 		][
-			parse-balance res
+			parse-balance res 18
 		]
 	]
 
