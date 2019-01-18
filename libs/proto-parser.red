@@ -33,6 +33,7 @@ proto-parser: context [
 		if syntax2 <> syntax-version [exit]
 
 		items: copy []
+		items2: copy []
 
 		enum-rule: [
 			copy type to [any space "{"] [any space "{"] (clear items)
@@ -48,21 +49,22 @@ proto-parser: context [
 		]
 
 		message-rule: [
-			copy type to [any space "{"] [any space "{"] (clear items)
+			copy type2 to [any space "{"] [any space "{"] (clear items2)
 			any [
 				[any space "}" break] |
 				[any space "reserved" some space thru ";"] |
+				[some space "enum" some space enum-rule] |
 				[any space
 					copy tags to [any space "="] [any space "="] any space
 					copy number to [[any space "[" to ";"] | [any space ";"]] thru ";"
 					(
 						tag: split tags space
 						if 2 = length? tag [insert tag "optional"]
-						append/only items reduce [to integer! number to word! tag/1 to word! tag/2 to word! tag/3]
+						append/only items2 reduce [to integer! number to word! tag/1 to word! tag/2 to word! tag/3]
 					)
 				]
 			]
-			(append/only blk reduce ['message to word! type copy items])
+			(append/only blk reduce ['message to word! type2 copy items2])
 		]
 
 		rules: [
