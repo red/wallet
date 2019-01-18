@@ -10,7 +10,7 @@ Red [
 	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]
 
-
+#include %../../libs/int256.red
 #include %../../libs/int-encode.red
 #include %../../libs/proto-encode.red
 #include %trezor-message.red
@@ -62,6 +62,7 @@ bushound-parser: context [
 			len
 			res
 			name
+			plen
 	][
 		content: read file
 
@@ -129,23 +130,28 @@ bushound-parser: context [
 
 			if debug-level > 1 [print ["debug-2:: " last-phase ": package: " package]]
 
-			if any [package/1 <> to integer! #{00} package/2 <> to integer! #{3f}] [return data-item]
-			either all [package/3 = to integer! #{ff} package/4 = to integer! #{ff}][
+			plen: length? package
+			if all [
+				plen <> 64
+				plen <> 65
+			][return data-item]
+			if plen = 65 [package: next package]
+			either all [package/2 = to integer! #{ff} package/3 = to integer! #{ff}][
 				print ["------------------------------------------------------"]
 				print [last-phase ": get hid version"]
 				print ["------------------------------------------------------" lf]
 			][
-				either all [package/3 = to integer! #{23} package/4 = to integer! #{23}][
-					message-id: to-int16 skip package 4
-					message-size: to-int32 skip package 6
+				either all [package/2 = to integer! #{23} package/3 = to integer! #{23}][
+					message-id: to-int16 skip package 3
+					message-size: to-int32 skip package 5
 					count: 0
 					clear message
-					either message-size > (65 - 10) [
-						count: 65 - 10
-						append message copy/part skip package 10 count
+					either message-size > (64 - 9) [
+						count: 64 - 9
+						append message copy/part skip package 9 count
 						
 					][
-						if message-size <> 0 [append message copy/part skip package 10 message-size]
+						if message-size <> 0 [append message copy/part skip package 9 message-size]
 						count: message-size
 						print ["------------------------------------------------------"]
 						if debug-level > 0 [print ["debug-1:: " last-phase ": message: " message]]
@@ -160,9 +166,9 @@ bushound-parser: context [
 				][
 					either message-size > (63 + count) [
 						count: count + 63
-						append message copy/part skip package 2 63
+						append message copy/part skip package 1 63
 					][
-						append message copy/part skip package 2 (message-size - count)
+						append message copy/part skip package 1 (message-size - count)
 						count: message-size
 						print ["------------------------------------------------------"]
 						if debug-level > 0 [print ["debug-1:: " last-phase ": message: " message]]
@@ -187,7 +193,7 @@ main: does [
 	file: to file! system/options/args/1
 	print system/options/args/2
 	if system/options/args/2 <> none [bushound-parser/debug-level: to integer! system/options/args/2 print "debug-level: " bushound-parser/debug-level]
-	print bushound-parser/parse-file file
+	print try [bushound-parser/parse-file file]
 ]
 
 
