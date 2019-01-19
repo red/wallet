@@ -24,7 +24,7 @@ keys: context [
 	index:			0
 	new?:			yes
 	current:		none
-	support-keys:	reduce [ledger trezor-old trezor trezor-mt]
+	support-keys:	reduce [ledger trezor-old trezor]
 	bip32-path:		[8000002Ch 8000003Ch 80000000h idx]
 	ledger-path:	[8000002Ch 8000003Ch 80000000h idx]
 	trezor-path:	[8000002Ch 8000003Ch 80000000h 0 idx]

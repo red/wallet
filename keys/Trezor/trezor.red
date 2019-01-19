@@ -11,7 +11,7 @@ Red [
 #include %trezor-driver.red
 
 trezor-old: context [
-	name:	"Trezor One Old"
+	name:	"Trezor One"
 	id:		[534Ch 1]
 
 	command-buffer: make binary! 1000
@@ -29,7 +29,9 @@ trezor-old: context [
 
 	driver: make trezor-driver []
 
-	system/catalog/errors/user: make system/catalog/errors/user [trezor: ["trezor [" :arg1 ": (" :arg2 " " :arg3 ")]"]]
+	system/catalog/errors/user: make system/catalog/errors/user [
+		trezor: ["trezor [" :arg1 ": (" :arg2 " " :arg3 ")]"]
+	]
 
 	new-error: func [name [word!] arg2 arg3][
 		cause-error 'user 'trezor [name arg2 arg3]
@@ -377,6 +379,7 @@ trezor: context [
 	name:	"Trezor One"
 	id:		[1209h 53C1h]
 
+	model:	"1"
 	command-buffer: make binary! 1000
 
 	pin-get: make string! 16
@@ -396,7 +399,9 @@ trezor: context [
 		]
 	]
 
-	system/catalog/errors/user: make system/catalog/errors/user [trezor: ["trezor [" :arg1 ": (" :arg2 " " :arg3 ")]"]]
+	system/catalog/errors/user: make system/catalog/errors/user [
+		trezor: ["trezor [" :arg1 ": (" :arg2 " " :arg3 ")]"]
+	]
 
 	new-error: func [name [word!] arg2 arg3][
 		cause-error 'user 'trezor [name arg2 arg3]
@@ -409,21 +414,30 @@ trezor: context [
 		request-pin-state: 'Init
 	]
 
-	init: func [][
+	init: func [/local res][
 		if request-pin-state <> 'Init [return request-pin-state]
 		request-pin-state: 'Init
 		driver/init
-		Initialize #()
+		res: make map! 20
+		Initialize res
+		model: res/model
+		name: either model = "1" ["Trezor One"]["Trezor Model T"]
 	]
 
 	close-pin-requesting: does [
-		if request-pin-state = 'Requesting [
-			unview/only pin-dlg
+		either model = "1" [
+			if request-pin-state = 'Requesting [
+				unview/only pin-dlg
+			]
+			request-pin-state: 'Init
+		][
+			request-pin-state: 'Requesting
 		]
-		request-pin-state: 'Init
 	]
 
 	request-pin: func [return: [word!]] [
+		if model = "T" [return request-pin-state: 'Requesting]
+
 		if request-pin-state <> 'Init [return request-pin-state]
 
 		pin-req: make map! reduce ['address_n reduce [8000002Ch 8000003Ch 80000000h]]
@@ -544,11 +558,12 @@ trezor: context [
 
 		if driver/msg-id = trezor-message/get-id 'PinMatrixRequest [
 			request-pin-state: 'Requesting
-			clear pin-get
-			pin-req: req
-			pin-msg: 'EthereumSignTx
-
-			view/flags pin-dlg 'modal
+			if model = "1" [
+				clear pin-get
+				pin-req: req
+				pin-msg: 'EthereumSignTx
+				view/flags pin-dlg 'modal
+			]
 		]
 
 		if driver/msg-id <> trezor-message/get-id 'ButtonRequest [
@@ -573,18 +588,29 @@ trezor: context [
 		encode-and-write req-msg req
 		driver/message-read clear command-buffer
 
-		if driver/msg-id = trezor-message/get-id 'PinMatrixRequest [
-			request-pin-state: 'Requesting
-			clear pin-get
-			pin-req: req
-			pin-msg: req-msg
-			view/flags pin-dlg 'modal
-		]
+		either model = "1" [
+			if driver/msg-id = trezor-message/get-id 'PinMatrixRequest [
+				request-pin-state: 'Requesting
+				clear pin-get
+				pin-req: req
+				pin-msg: req-msg
+				view/flags pin-dlg 'modal
+			]
 
-		if driver/msg-id = trezor-message/get-id 'PassphraseRequest [
-			clear passphrase-in/text
-			clear confirm-passphrase/text
-			view/flags passphrase-dlg 'modal
+			if driver/msg-id = trezor-message/get-id 'PassphraseRequest [
+				clear passphrase-in/text
+				clear confirm-passphrase/text
+				view/flags passphrase-dlg 'modal
+			]
+		][
+			either any [
+				driver/msg-id = trezor-message/get-id 'PinMatrixRequest
+				driver/msg-id = trezor-message/get-id 'PassphraseRequest
+			][
+				request-pin-state: 'Requesting
+			][
+				request-pin-state: 'HasRequested
+			]
 		]
 
 		if driver/msg-id = trezor-message/get-id res-msg [
@@ -737,202 +763,5 @@ trezor: context [
 		]
 		button "Enter" :on-passphrase-enter
 		with [passphrase-in/flags: 'password confirm-passphrase/flags: 'password]
-	]
-]
-
-trezor-mt: make context [
-	name:	"Trezor Model T"
-	id:		[1209h 53C1h]
-	driver: make trezor-driver [
-		init: does [
-			hid-version: 1
-		]
-	]
-
-	command-buffer: make binary! 1000
-	request-pin-state: 'Init		;-- Init/Requesting/HasRequested/DeviceError
-	serialized_tx: make binary! 500
-
-	system/catalog/errors/user: make system/catalog/errors/user [
-		trezor: ["trezor [" :arg1 ": (" :arg2 " " :arg3 ")]"]
-	]
-
-	new-error: func [name [word!] arg2 arg3][
-		cause-error 'user 'trezor [name arg2 arg3]
-	]
-
-	connect: does [driver/connect id]
-
-	close: does [
-		driver/close
-		request-pin-state: 'Init
-	]
-
-	close-pin-requesting: does [
-		request-pin-state: 'Requesting
-	]
-
-	request-pin: func [return: [word!]] [
-		request-pin-state: 'Requesting
-	]
-
-	init: func [][
-		request-pin-state: 'Init
-		driver/init
-		Initialize #()
-	]
-
-	get-eth-address: func [
-		ids				[block!]
-		return:			[string!]
-		/local
-			res len
-	][
-		res: make map! []
-		EthereumGetAddress ids res
-		if res/address = none [new-error 'get-eth-address "addr none" res]
-		rejoin ["0x" enbase/base res/address 16]
-	]
-
-	get-eth-signed-data: func [
-		ids				[block!]
-		tx				[block!]
-		chain-id		[integer!]
-		return:			[binary!]
-		/local
-			req res nonce gas_price gas_limit amount signed data-len
-	][
-		nonce: trim/head to binary! tx/1
-		gas_price: trim/head i256-to-bin tx/2
-		gas_limit: trim/head to binary! tx/3
-		amount: trim/head i256-to-bin tx/5
-		data-len: length? tx/6
-		req: make map! reduce [
-			'address_n ids
-			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
-			'to tx/4 'value amount 'chain_id chain-id
-		]
-		if data-len > 0 [
-			put req 'data_length data-len
-			put req 'data_initial_chunk tx/6
-		]
-		res: make map! []
-		if error? try [EthereumSignTx req res][return none]
-
-		append tx reduce [
-			to-bin8 res/signature_v
-			res/signature_r
-			res/signature_s
-		]
-		rlp/encode tx
-	]
-
-	;===================
-	;-- commands
-	;===================
-
-	Initialize: func [
-		res				[map!]
-		return:			[integer!]
-	][
-		WriteAndRead 'Initialize 'Features #() res
-	]
-
-	EthereumGetAddress: func [
-		ids				[block!]
-		res				[map!]
-		return:			[integer!]
-		/local
-			req			[map!]
-	][
-		req: make map! reduce ['address_n ids]
-		put req 'show_display false
-		PinMatrixSequence 'EthereumGetAddress 'EthereumAddress req res
-	]
-
-	EthereumSignTx: func [
-		req				[map!]
-		res				[map!]
-		return:			[integer!]
-		/local
-			res2		[map!]
-	][
-		encode-and-write 'EthereumSignTx req
-		driver/message-read clear command-buffer
-
-		if driver/msg-id = trezor-message/get-id 'PinMatrixRequest [
-			request-pin-state: 'Requesting
-		]
-
-		if driver/msg-id <> trezor-message/get-id 'ButtonRequest [
-			new-error 'EthereumSignTx "not ButtonRequest" driver/msg-id
-		]
-
-		res2: make map! []
-		proto-encode/decode trezor-message/messages 'ButtonRequest res2 command-buffer
-		res2: make map! []
-		WriteAndRead 'ButtonAck 'ButtonRequest #() res2
-		WriteAndRead 'ButtonAck 'EthereumTxRequest #() res
-				]
-
-	;-- A Sequence like this, GetAbcd -> [PinMatrixRequest -> PinMatrixAck -> GetAbcd] -> Abcd
-	PinMatrixSequence: func [
-		req-msg			[word!]
-		res-msg			[word!]
-		req				[map!]
-		res				[map!]
-		return:			[integer!]
-	][
-		encode-and-write req-msg req
-		driver/message-read clear command-buffer
-
-		either any [
-			driver/msg-id = trezor-message/get-id 'PinMatrixRequest
-			driver/msg-id = trezor-message/get-id 'PassphraseRequest
-		][
-			request-pin-state: 'Requesting
-		][
-			request-pin-state: 'HasRequested
-		]
-
-		if driver/msg-id = trezor-message/get-id res-msg [
-			return proto-encode/decode trezor-message/messages res-msg res command-buffer
-		]
-
-		new-error 'PinMatrixSequence "unknown id" driver/msg-id
-	]
-
-	WriteAndRead: func [
-		req-msg			[word!]
-		res-msg			[word!]
-		req				[map!]
-		res				[map!]
-		return:			[integer!]
-	][
-		encode-and-write req-msg req
-		driver/message-read clear command-buffer
-		if driver/msg-id = trezor-message/get-id res-msg [
-			return proto-encode/decode trezor-message/messages res-msg res command-buffer
-		]
-
-		new-error 'WriteAndRead "unknown id" driver/msg-id
-	]
-
-	encode-and-write: func [
-		msg				[word!]
-		value			[map!]
-		return:			[integer!]
-	][
-		proto-encode/encode trezor-message/messages msg value clear command-buffer
-		driver/message-write command-buffer trezor-message/get-id msg
-	]
-
-	read-and-decode: func [
-		msg				[word!]
-		value			[map!]
-		return:			[integer!]
-	][
-		driver/message-read clear command-buffer
-		proto-encode/decode trezor-message/messages msg value command-buffer
 	]
 ]
