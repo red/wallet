@@ -190,6 +190,7 @@ wallet: context [
 		explorer: explorers/:idx
 		chain-id: chain-ids/:idx
 		token-contract: contracts/:token-name/:net-name
+		unless string? token-contract [token-contract: none]
 	]
 
 	do-select-network: func [face [object!] event [event!] /local idx][
