@@ -80,7 +80,7 @@ eth-tokens: context [
 
 	make-tokens-list: function [][
 		foreach [addr sym dec name] ERC20-tokens [
-			token: rejoin [name " (" sym #")"]
+			token: rejoin [sym " (" name #")"]
 			info: reduce [sym addr dec token]
 			repend TOKENS-LIST [token info]
 		]

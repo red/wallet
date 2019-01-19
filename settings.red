@@ -56,7 +56,7 @@ load-cfg: func [/local cfg-dir cfg-content][
 					"RED" [
 						"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
 						"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
-					] 18 "Red Community Token (RED)"
+					] 18 "RED (Red Community Token)"
 				]
 				Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
 			]
