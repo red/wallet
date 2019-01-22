@@ -526,7 +526,6 @@ proto-encode: context [
 	]
 
 	decode-type: func [
-		repeated?			[logic!]
 		wire-type			[word!]
 		name				[word!]
 		value				[map!]
@@ -559,7 +558,7 @@ proto-encode: context [
 				if wire-type = 'string [
 					nvalue: to string! nvalue
 				]
-				either repeated? [
+				either not none? ovalue [
 					either block! = type? ovalue [
 						put value name append ovalue nvalue
 					][
@@ -575,7 +574,7 @@ proto-encode: context [
 				vlen: decode-varint data
 				len: length? varint-buffer
 				if len > 8 [new-error 'decode-type "too large" reduce [wire-type name varint-buffer]]
-				either repeated? [
+				either not none? ovalue [
 					either block! = type? ovalue [
 						put value name append ovalue copy varint-buffer
 					][
@@ -591,7 +590,7 @@ proto-encode: context [
 				vlen: decode-varint data
 				len: length? varint-buffer
 				varint: to integer! back back back back tail varint-buffer
-				either repeated? [
+				either not none? ovalue [
 					either block! = type? ovalue [
 						put value name append ovalue varint
 					][
@@ -612,7 +611,7 @@ proto-encode: context [
 				][
 					varint: true
 				]
-				either repeated? [
+				either not none? ovalue [
 					either block! = type? ovalue [
 						put value name append ovalue varint
 					][
@@ -640,7 +639,7 @@ proto-encode: context [
 			len: try [decode true wire-type nres nvalue]
 			if error? len [new-error 'decode-type len reduce [wire-type name sub-ctx/1]]
 			if len <> varint [new-error 'decode-type "not equal" reduce [len varint]]
-			either repeated? [
+			either not none? ovalue [
 				either block! = type? ovalue [
 					put value name append ovalue nres
 				][
@@ -664,7 +663,7 @@ proto-encode: context [
 					if varint = sub-msg/1 [nvalue: sub-msg/2 break]
 				]
 				if nvalue = none [new-error 'decode-type "not found" reduce [wire-type name varint]]
-				either repeated? [
+				either not none? ovalue [
 					either block! = type? ovalue [
 						put value name append ovalue nvalue
 					][
@@ -704,14 +703,27 @@ proto-encode: context [
 			wire-type-id2: get-wire-type-id sub/3
 			if all [sub/1 = field-number wire-type-id = wire-type-id2][
 				repeated?: sub/2 = 'repeated
-				len: try [decode-type repeated? sub/3 sub/4 value pos]
-				if error? len [new-error 'decode-each len reduce [pos/1 msg varint]]
+				len: try [decode-type sub/3 sub/4 value pos]
+				if error? len [new-error 'decode-each len reduce [index? pos msg wire-type-id field-number]]
 				pos: skip data len
 				ret: ret + len
+				break
 			]
 		]
 
-		if ret = 0 [new-error 'decode-each "unknown varint" reduce [pos/1 msg varint]]
+		if ret = 0 [
+			wire-type-name: switch/default wire-type-id [
+				0			['uint64]
+				2			['bytes]
+			][
+				new-error 'decode-each "unsupported type"
+					reduce [index? pos msg wire-type-id field-number]
+			]
+			len: try [decode-type wire-type-name 'unknown value pos]
+			if error? len [new-error 'decode-each len reduce [index? pos msg wire-type-id field-number]]
+			pos: skip data len
+			ret: ret + len
+		]
 
 		ret
 	]
