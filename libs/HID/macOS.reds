@@ -1733,13 +1733,14 @@ hid: context [
 			interface: 0
 			p-itf: as-integer :interface
 			score: 0
-			IOCreatePlugInInterfaceForService
+			if 0 <> IOCreatePlugInInterfaceForService
 					dev
 					kIOUSBDeviceUserClientTypeID
 					kIOCFPlugInInterfaceID
 					:p-itf
-					:score
+					:score [continue]
 
+			IOObjectRelease as int-ptr! dev
 			this: as this! p-itf
 			itf: as IOUSBInterfaceInterface this/vtbl
 			guid: CFUUIDGetUUIDBytes kIOUSBDeviceInterfaceID
@@ -1773,13 +1774,14 @@ hid: context [
 			dev: IOIteratorNext iter
 			dev <> null
 		][
-			IOCreatePlugInInterfaceForService
+			if 0 <> IOCreatePlugInInterfaceForService
 				dev
 				kIOUSBInterfaceUserClientTypeID
 				kIOCFPlugInInterfaceID
 				:p-itf
-				:score
+				:score [continue]
 
+			IOObjectRelease as int-ptr! dev
 			this: as this! p-itf
 			itf: as IOUSBInterfaceInterface this/vtbl
 			guid: CFUUIDGetUUIDBytes kIOUSBInterfaceInterfaceID550
