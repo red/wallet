@@ -263,7 +263,8 @@ wallet: context [
 		cols: 64
 		if face/data [foreach line face/data [cols: max cols length? line]]
 		delta: (as-pair size/x * cols / 10 size/y * 5.3) - face/size
-		ui/size: ui/size + delta + 8x10					;-- triggers a resizing event
+		size: ui/size + delta + 8x10
+		if all [size/x >= min-size/x size/y >= min-size/y][ui/size: size]
 	]
 
 	valid-amount?: func [str [string!] /local num][
@@ -593,7 +594,6 @@ wallet: context [
 				on-time: func [face event][
 					face/rate: none
 					if all [keys/key keys/state = 'Requesting][exit]
-
 					unless locked? [connect]
 					list-addresses
 					unless keys/key [face/rate: 0:0:2]

@@ -38,7 +38,7 @@ ledger: context [
 	]
 
 	request-pin: func [return: [word!]] [
-		request-pin-state: 'Requesting
+		if request-pin-state = 'Init [request-pin-state: 'Requesting]
 		request-pin-state
 	]
 
