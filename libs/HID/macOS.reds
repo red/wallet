@@ -1075,8 +1075,10 @@ hid: context [
 			handle 			[hid-device]
 			usage			[integer!]
 	][
-		handle: open-usb vendor-id product-id
-		if handle <> null [return as int-ptr! handle]
+		if type and 1000h = 0 [						; 1000h: HID only
+			handle: open-usb vendor-id product-id
+			if handle <> null [return as int-ptr! handle]
+		]
 
 		path_to_open: null
 		handle: null
@@ -1279,6 +1281,7 @@ hid: context [
 	][
 		rpt: dev/input_reports
 		len: either length < rpt/len [length][rpt/len]
+		if zero? len [return 0]
 		memcpy data rpt/data len
 		dev/input_reports: rpt/next
 		free rpt/data
@@ -1721,6 +1724,7 @@ hid: context [
 			interval		[integer!]
 			saved			[int-ptr!]
 			buf				[byte-ptr!]
+			kr				[integer!]
 	][
 		iter: 0
 		dict: IOServiceMatching "IOUSBHostDevice"
@@ -1733,14 +1737,16 @@ hid: context [
 			interface: 0
 			p-itf: as-integer :interface
 			score: 0
-			if 0 <> IOCreatePlugInInterfaceForService
+			kr: IOCreatePlugInInterfaceForService
 					dev
 					kIOUSBDeviceUserClientTypeID
 					kIOCFPlugInInterfaceID
 					:p-itf
-					:score [continue]
+					:score
+			IOObjectRelease dev
 
-			IOObjectRelease as int-ptr! dev
+			if any [kr <> 0 zero? p-itf][continue]
+
 			this: as this! p-itf
 			itf: as IOUSBInterfaceInterface this/vtbl
 			guid: CFUUIDGetUUIDBytes kIOUSBDeviceInterfaceID
@@ -1774,14 +1780,16 @@ hid: context [
 			dev: IOIteratorNext iter
 			dev <> null
 		][
-			if 0 <> IOCreatePlugInInterfaceForService
+			kr: IOCreatePlugInInterfaceForService
 				dev
 				kIOUSBInterfaceUserClientTypeID
 				kIOCFPlugInInterfaceID
 				:p-itf
-				:score [continue]
+				:score
+			IOObjectRelease dev
 
-			IOObjectRelease as int-ptr! dev
+			if any [kr <> 0 zero? p-itf][continue]
+
 			this: as this! p-itf
 			itf: as IOUSBInterfaceInterface this/vtbl
 			guid: CFUUIDGetUUIDBytes kIOUSBInterfaceInterfaceID550

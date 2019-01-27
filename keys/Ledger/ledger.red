@@ -26,7 +26,7 @@ ledger: context [
 
 	connect: func [][
 		unless dongle [
-			dongle: hid/open id/1 id/2 1
+			dongle: hid/open id/1 id/2 1001h
 		]
 		dongle
 	]
@@ -54,6 +54,8 @@ ledger: context [
 			]
 
 			data: data-frame
+
+			if empty? data [continue]
 
 			;-- sanity check the frame
 			if DEFAULT_CHANNEL <> to-int16 data [
