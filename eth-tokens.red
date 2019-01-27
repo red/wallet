@@ -27,6 +27,8 @@ eth-tokens: context [
 		idx: all-tokens-list/selected - 1
 		cur-idx: current-tokens-list/selected
 		name: pick all-tokens-list/data idx * 2 + 1		;-- token fullname
+		if find current-tokens-list/data name [exit]	;-- already added
+		
 		data: pick all-tokens-list/data idx * 2 + 2		;-- [sym address decimals name]
 		poke data 2 reduce ["mainnet" data/2]			;-- [sym ["mainnet" address] decimals name]
 		either cur-idx > 0 [
