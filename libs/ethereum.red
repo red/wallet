@@ -143,4 +143,20 @@ eth: context [
 			rejoin ["0x" enbase/base data 16]
 		]
 	]
+	
+	get-url: func [url [url!] return: [map!]
+		/local res 
+	][
+		unless error? res: try [read url][
+			return json/decode res
+		]
+
+		json/decode read url
+	]
+
+	get-gas-price: func [speed [word!] return: [float! none!] /local network res][
+		if all [speed <> 'average speed <> 'fastest speed <> 'safeLow speed <> 'fast][return none]
+		network: https://ethgasstation.info/json/ethgasAPI.json
+		either all [map? res: try [get-url network] res: select res speed][to float! res / 10.0][none]
+	]
 ]

@@ -517,9 +517,9 @@ wallet: context [
 		
 		addr-list: text-list font list-font 530x100 return middle
 		
-		info-msg: text 290x20
+		info-msg: text 280x20
 		text right 50 "Page:" tight
-		page-info: drop-list 40 
+		page-info: drop-list 50 
 			data collect [repeat p 10 [keep form p]]
 			select (page + 1)
 			:do-page
@@ -631,6 +631,14 @@ wallet: context [
 			on-change: func [face event][
 				address-index: page * addr-per-page + face/selected - 1
 				btn-send/enabled?: to-logic face/selected
+			]
+		]
+
+		send-dialog/rate: 0:0:1
+		send-dialog/actors: make object! [
+			on-time: func [face event /local res][
+				face/rate: none
+				if res: eth/get-gas-price 'fast [gas-price/text: to string! res]
 			]
 		]
 
