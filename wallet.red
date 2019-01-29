@@ -4,7 +4,7 @@ Red [
 	File: 	 %wallet.red
 	Icon:	 %assets/RED-token.ico
 	Needs:	 View
-	Version: 0.2.1
+	Version: 0.3.0
 	Tabs: 	 4
 	Company: "Fullstack technologies"
 	Rights:  "Copyright (C) 2018 Red Foundation. All rights reserved."
