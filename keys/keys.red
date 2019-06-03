@@ -24,6 +24,7 @@ keys: context [
 	index:			0
 	new?:			yes
 	current:		none
+	coin-type:		'ETH
 	support-keys:	reduce [ledger trezor-old trezor]
 	bip32-path:		[8000002Ch 8000003Ch 80000000h idx]
 	ledger-path:	[8000002Ch 8000003Ch 80000000h idx]
@@ -124,7 +125,12 @@ keys: context [
 
 	get-address: func [idx [integer!]][
 		change back tail bip32-path idx
-		do [key/get-eth-address bip32-path]
+		do [
+			switch coin-type [
+				ETH [key/get-eth-address bip32-path]
+				BTC [key/get-btc-address bip32-path]
+			]
+		]
 	]
 
 	get-signed-data: func [
@@ -133,7 +139,12 @@ keys: context [
 		chain-id	[integer!]
 	][
 		change back tail bip32-path idx
-		do [key/get-eth-signed-data bip32-path tx chain-id]
+		do [
+			switch coin-type [
+				ETH [key/get-eth-signed-data bip32-path tx chain-id]
+				BTC [key/get-btc-signed-data bip32-path tx]
+			]
+		]
 	]
 
 	ledger-nano-s?: does [

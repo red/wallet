@@ -51,8 +51,13 @@ wallet: context [
 	]
 
 	contracts: [
+		;-- Token name | NetWorks | Decimal places | Fullname
+		"BTC" [
+			"MainNet" #[none]
+			"TestNet" #[none]
+		] 8 "Bitcoin"
 		"ETH" [
-			"mainnet" #[none]
+			"MainNet" #[none]
 			"Rinkeby" #[none]
 			"Kovan"	  #[none]
 			"Ropsten" #[none]
@@ -73,6 +78,7 @@ wallet: context [
 	explorer:	explorers/1
 	network:	networks/1
 	chain-id:	chain-ids/1
+	coin-type:	'ETH
 	net-name:	"mainnet"
 	token-name: "ETH"
 	token-contract: none
@@ -88,10 +94,15 @@ wallet: context [
 	process-events: does [loop 10 [do-events/no-wait]]
 
 	fetch-balance: func [addr [string! block!]][
-		either token-contract [
-			eth/get-balance-token network token-contract addr token-decimals
-		][
-			eth/get-balance network addr
+		switch coin-type [
+			ETH [
+				either token-contract [
+					eth/get-balance-token network token-contract addr token-decimals
+				][
+					eth/get-balance network addr
+				]
+			]
+			BTC [btc/get-balance network addr]
 		]
 	]
 
@@ -190,12 +201,13 @@ wallet: context [
 		explorer: explorers/:idx
 		chain-id: chain-ids/:idx
 		token-contract: contracts/:token-name/:net-name
+		coin-type: either token-name = "BTC" ['BTC]['ETH]
+		keys/coin-type: coin-type
 		unless string? token-contract [token-contract: none]
 	]
 
 	do-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
-		
 		net-name: face/data/:idx
 		select-config idx
 		do-reload
@@ -205,7 +217,7 @@ wallet: context [
 		idx: face/selected
 		if idx = 1 [				;-- add tokens
 			tokens: make block! 10
-			foreach [sym addrs dec name] skip contracts 4 [
+			foreach [sym addrs dec name] skip contracts 8 [
 				append tokens name
 			]
 			eth-tokens/do-config face tokens
