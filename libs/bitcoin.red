@@ -7,9 +7,6 @@ Red [
 	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]
 
-#include %JSON.red
-#include %int256.red
-
 btc: context [
 
 	system/catalog/errors/user: make system/catalog/errors/user [btc-api: ["btc-api [" :arg1 ": (" :arg2 " " :arg3 ")]"]]
@@ -27,13 +24,11 @@ btc: context [
 		/local res 
 	][
 		if all [not error? res: try [read url] map? res: json/decode res][return res]
-
-		wait 0.5
 		if map? res: json/decode read url [return res]
 		new-error 'get-url "server error" url
 	]
 
-	get-balance: func [network [url!] address [string!] return: [none! vector!]
+	get-addr-balance: func [network [url!] address [string!] return: [none! vector!]
 		/local url resp err-no err-msg data balance
 	][
 		url: rejoin [network "/address/" address]
@@ -41,7 +36,7 @@ btc: context [
 		err-no: select resp 'err_no
 		if 0 <> err-no [
 			err-msg: select resp 'err_msg
-			new-error 'get-balance "server error" reduce [url err-no err-msg]
+			new-error 'get-addr-balance "server error" reduce [url err-no err-msg]
 		]
 
 		unless data: select resp 'data [return none]
@@ -137,8 +132,6 @@ btc: context [
 		]
 
 		if all [not error? res: try [write url command] map? res: json/decode res][return res]
-
-		wait 0.5
 		if map? res: json/decode write url command [return res]
 		new-error 'post-url "server error" [url command]
 	]
@@ -174,5 +167,4 @@ btc: context [
 		unless txid: select data 'txid [new-error 'decode-tx "no txid" url]
 		txid
 	]
-
 ]

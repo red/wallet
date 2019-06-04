@@ -277,7 +277,7 @@ ledger: context [
 		chunk: read-apdu 50
 		if 2 > length? chunk [throw-error "Ledger: final-hash-input data too short" ]
 		if #{9000} <> back back tail chunk [
-			throw-error "Ledger final-hash-input unknown"]
+			throw-error "Ledger final-hash-input unknown"
 		]
 		copy/part chunk (length? chunk) - 2
 	]
@@ -298,7 +298,7 @@ ledger: context [
 		chunk: read-apdu 50
 		if 2 > length? chunk [throw-error "Ledger: sign-untrusted-hash data too short"]
 		if #{9000} <> back back tail chunk [
-			throw-error "Ledger: sign-untrusted-hash unknown"]
+			throw-error "Ledger: sign-untrusted-hash unknown"
 		]
 		copy/part chunk (length? chunk) - 2
 	]

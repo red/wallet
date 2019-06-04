@@ -6,9 +6,6 @@ Red [
 	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
 ]
 
-#if error? try [_ripemd160_red_][
-#do [_ripemd160_red_: yes]
-
 #system [
 	#include %ripemd160.reds
 ]
@@ -46,8 +43,5 @@ context [
 		if file? data [data: read/binary data]
 		_ripemd160 data
 	]
-
-]
-
 
 ]

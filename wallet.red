@@ -21,6 +21,7 @@ throw-error: func [msg [string! block!]][
 #include %libs/int256.red
 #include %libs/JSON.red
 #include %libs/ethereum.red
+#include %libs/bitcoin.red
 #include %libs/HID/hidapi.red
 #include %keys/keys.red
 #include %eth-batch.red
@@ -94,9 +95,9 @@ wallet: context [
 	explorer:	explorers/BTC/1
 	network:	networks/BTC/1
 	chain-id:	chain-ids/1
-	coin-type:	'ETH
+	coin-type:	'BTC
 	net-name:	"mainnet"
-	token-name: "ETH"
+	token-name: "BTC"
 	token-contract: none
 	token-decimals: 18
 
@@ -105,11 +106,12 @@ wallet: context [
 
 	cfg: none
 	ledger-legacy-path: [8000002Ch 8000003Ch 80000000h idx]
+
 	#include %settings.red
 
 	process-events: does [loop 10 [do-events/no-wait]]
 
-	fetch-balance: func [addr [string! block!]][
+	fetch-balance: func [addr [string! block! integer!]][
 		switch coin-type [
 			ETH [
 				either token-contract [
@@ -118,7 +120,7 @@ wallet: context [
 					eth/get-balance network addr
 				]
 			]
-			BTC [btc/get-balance network addr]
+			BTC [keys/get-balance network addr]
 		]
 	]
 
@@ -143,7 +145,6 @@ wallet: context [
 
 			loop addr-per-page [
 				addr: keys/get-address n
-				if 
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -154,7 +155,7 @@ wallet: context [
 							usb-device/rate: 0:0:2
 							"Please unlock your key"
 						]
-						true [{Please open the "Ethereum" application}]
+						true [{Please open an application on the key}]
 					]
 					exit
 				]
@@ -176,9 +177,15 @@ wallet: context [
 					]
 					addr-list/data: addrs
 				][
+					n: page * addr-per-page
 					foreach entry addr-list/data [
-						addr: copy/part entry find entry space
-						replace entry "   <loading>" fetch-balance addr
+						either coin-type = 'BTC [
+							replace entry "   <loading>" fetch-balance n
+							n: n + 1
+						][
+							addr: copy/part entry find entry space
+							replace entry "   <loading>" fetch-balance addr
+						]
 						process-events
 					]
 				]
@@ -338,7 +345,7 @@ wallet: context [
 		if enabled? [
 			my-addr-text/text: "My Addresses"
 			if keys/ledger-nano-s? [
-				if 4 = length? keys/ledger-path [
+				if all [coin-type = 'ETH 4 = length? keys/ledger-path][
 					my-addr-text/text: "My Addresses (Legacy)"
 				]
 			]

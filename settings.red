@@ -13,10 +13,12 @@ Red [
 cfg-path: none
 
 apply-cfg: function [][
-	ETH: cfg/Ethereum
-	append token-list/data extract ETH/tokens 4
-	wallet/contracts: ETH/tokens
-	keys/ledger-path: ETH/Ledger-Path
+	Coins: cfg/Coins
+	append token-list/data extract Coins/tokens 4
+	wallet/coin-type: Coins/coin-type
+	wallet/contracts: Coins/tokens
+	keys/set-coin-type: Coins/coin-type
+	keys/ledger-path: Coins/Ledger-Path
 	if cfg/win-pos [ui/offset: cfg/win-pos]
 ]
 
@@ -25,8 +27,9 @@ save-cfg: function [][
 	if offset/x < 0 [offset/x: 0]
 	if offset/y < 0 [offset/y: 0]
 	cfg/win-pos:  offset
-	cfg/Ethereum/tokens: wallet/contracts
-	cfg/Ethereum/Ledger-Path: keys/ledger-path
+	cfg/coin-type: wallet/coin-type
+	cfg/Coins/tokens: wallet/contracts
+	cfg/Coins/Ledger-Path: keys/ledger-path
 
 	save/header cfg-path cfg [Purpose: "RED Wallet Configuration File"]
 ]
@@ -45,8 +48,13 @@ load-cfg: func [/local cfg-dir cfg-content][
 		skip cfg-content 2
 	][
 		[
-			Ethereum: [
+			Coins: [
+				;-- Token name | NetWorks | Decimal places | Fullname
 				tokens: [
+					"BTC" [
+						"MainNet" #[none]
+						"TestNet" #[none]
+					] 8 "Bitcoin"
 					"ETH" [
 						"mainnet" #[none]
 						"Rinkeby" #[none]
@@ -60,7 +68,8 @@ load-cfg: func [/local cfg-dir cfg-content][
 				]
 				Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
 			]
-			win-pos:	  #[none]
+			coin-type:	BTC
+			win-pos:	#[none]
 		]
 	]
 	apply-cfg
