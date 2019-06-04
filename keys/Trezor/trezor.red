@@ -490,6 +490,25 @@ trezor: context [
 		rejoin ["0x" enbase/base res/address 16]
 	]
 
+	get-btc-address: func [
+		ids				[block!]
+		return:			[string!]
+		/local res len coin-name segwit?
+	][
+		res: make map! []
+		coin-name: "Bitcoin"
+		if ids/2 = (80000000h + 1) [
+			coin-name: "Testnet"
+		]
+		segwit?: false
+		if ids/1 = (80000000h + 49) [
+			segwit?: true
+		]
+		GetAddress ids coin-name segwit? res
+		if res/address = none [new-error 'get-btc-address "addr none" res]
+		res/address
+	]
+
 	get-eth-signed-data: func [
 		ids				[block!]
 		tx				[block!]
@@ -521,6 +540,12 @@ trezor: context [
 			res/signature_s
 		]
 		rlp/encode tx
+	]
+
+	get-btc-signed-data: func [
+		tx			[block!]
+	][
+		SignTxSequence tx
 	]
 
 	;===================
@@ -575,6 +600,281 @@ trezor: context [
 		res2: make map! []
 		WriteAndRead 'ButtonAck 'ButtonRequest #() res2
 		WriteAndRead 'ButtonAck 'EthereumTxRequest #() res
+	]
+
+	SignTxSequence: func [
+		tx				[block!]
+		return:			[block! binary!]
+		/local
+			input-segwit?
+			coin_name res-in req sub-req
+			request_type details request_index tx_hash serialized
+			tx-input tx-output pre-input pre-output script_type addr-name addr
+			last-request_type
+			last-output-remove
+			bin
+	][
+		clear serialized_tx
+		last-request_type: none
+		last-output-remove: false
+
+		coin_name: "Bitcoin"
+		if tx/inputs/1/path/2 = (80000000h + 1) [
+			coin_name: "Testnet"
+		]
+		input-segwit?: false
+		if tx/inputs/1/path/1 = (80000000h + 49) [
+			input-segwit?: true
+		]
+		res-in: make map! []
+
+		;-- first step, send "SignTx" message
+		SignTx length? tx/outputs length? tx/inputs coin_name 0 res-in
+
+		forever [
+			probe res-in
+			request_type: select res-in 'request_type
+			if request_type = 'TXINPUT [
+				details: select res-in 'details
+				serialized: select res-in 'serialized
+				request_index: select details 'request_index
+				tx_hash: select details 'tx_hash
+				if all [tx_hash = none request_index <> none] [
+					tx-input: tx/inputs/(request_index + 1)
+					pre-output: FindOutputByAddr tx-input/info/outputs tx-input/addr
+					script_type: either pre-output/2 = "P2SH" ['SPENDP2SHWITNESS]['SPENDADDRESS]
+					sub-req: make map! reduce [
+								'address_n tx-input/path
+								'prev_hash debase/base tx-input/tx-hash 16
+								'prev_index pre-output/1
+								'sequence select tx-input/info/inputs/1 'sequence
+								'script_type script_type]
+					if pre-output/2 = "P2SH" [
+						put sub-req 'amount trim/head i256-to-bin pre-output/3
+					]
+					req: make map! []
+					put req 'inputs reduce [sub-req]
+					req: make map! reduce ['tx req]
+					probe req
+					clear res-in
+					WriteAndRead 'TxAck 'TxRequest req res-in
+				]
+				if all [tx_hash <> none request_index <> none] [
+					tx-input: FindInputByTxid tx/inputs tx_hash
+					pre-input: tx-input/info/inputs/(request_index + 1)
+					sub-req: make map! reduce [
+								'prev_hash debase/base pre-input/prev-tx-hash 16
+								'prev_index pre-input/prev-position
+								'script_sig debase/base pre-input/script-hex 16
+								'sequence select tx-input/info/inputs/1 'sequence]
+					req: make map! []
+					put req 'inputs reduce [sub-req]
+					req: make map! reduce ['tx req]
+					probe req
+					clear res-in
+					WriteAndRead 'TxAck 'TxRequest req res-in
+				]
+				if serialized [
+					if all [last-request_type = 'TXOUTPUT last-output-remove] [remove back tail serialized_tx]
+					last-output-remove: false
+					append serialized_tx select serialized 'serialized_tx
+					probe serialized_tx
+				]
+			]
+			
+			if request_type = 'TXMETA [
+				details: select res-in 'details
+				request_index: select details 'request_index
+				tx_hash: select details 'tx_hash
+				if all [tx_hash <> none request_index = none][
+					tx-input: FindInputByTxid tx/inputs tx_hash
+					sub-req: make map! reduce [
+								'version tx-input/info/version
+								'lock_time tx-input/info/lock_time
+								'inputs_cnt length? tx-input/info/inputs
+								'outputs_cnt length? tx-input/info/outputs]
+					req: make map! reduce ['tx sub-req]
+					probe req
+					clear res-in
+					WriteAndRead 'TxAck 'TxRequest req res-in
+				]
+			]
+
+			if request_type = 'TXOUTPUT [
+				details: select res-in 'details
+				serialized: select res-in 'serialized
+				request_index: select details 'request_index
+				tx_hash: select details 'tx_hash
+				if all [tx_hash <> none request_index <> none] [
+					tx-input: FindInputByTxid tx/inputs tx_hash
+					pre-output: tx-input/info/outputs/(request_index + 1)
+					sub-req: make map! reduce [
+								'amount trim/head i256-to-bin pre-output/value
+								'script_pubkey debase/base pre-output/script-hex 16]
+					req: make map! []
+					put req 'bin_outputs reduce [sub-req]
+					req: make map! reduce ['tx req]
+					probe req
+					clear res-in
+					WriteAndRead 'TxAck 'TxRequest req res-in
+				]
+				if all [tx_hash = none request_index <> none] [
+					tx-output: tx/outputs/(request_index + 1)
+					either tx-output/path <> none [
+						addr-name: 'address_n
+						addr: tx-output/path
+						either tx-output/path/1 = (80000000h + 49) [
+							script_type: 'PAYTOP2SHWITNESS
+						][
+							script_type: 'PAYTOADDRESS
+						]
+					][
+						addr-name: 'address
+						addr: tx-output/addr
+						either coin_name = "Bitcoin" [
+							either addr/1 = #"3" [
+								script_type: 'PAYTOP2SHWITNESS
+							][
+								script_type: 'PAYTOADDRESS
+							]
+						][
+							either addr/1 = #"2" [
+								script_type: 'PAYTOP2SHWITNESS
+							][
+								script_type: 'PAYTOADDRESS
+							]
+						]
+					]
+					if not input-segwit? [
+						script_type: 'PAYTOADDRESS
+					]
+					sub-req: make map! reduce [
+								addr-name addr
+								'amount trim/head i256-to-bin tx-output/value
+								'script_type script_type]
+					req: make map! []
+					put req 'outputs reduce [sub-req]
+					req: make map! reduce ['tx req]
+					probe req
+					clear res-in
+					encode-and-write 'TxAck req
+					trezor-driver/message-read clear command-buffer
+					either trezor-driver/msg-id = trezor-message/get-id 'TxRequest [
+						proto-encode/decode trezor-message/messages 'TxRequest res-in command-buffer
+					][
+						either trezor-driver/msg-id = trezor-message/get-id 'ButtonRequest [
+							clear res-in
+							proto-encode/decode trezor-message/messages 'ButtonRequest res-in command-buffer
+
+							encode-and-write 'ButtonAck make map! []
+
+							clear res-in
+							read-and-decode 'TxRequest res-in
+							if trezor-driver/msg-id = trezor-message/get-id 'ButtonRequest [
+								clear res-in
+								proto-encode/decode trezor-message/messages 'ButtonRequest res-in command-buffer
+
+								encode-and-write 'ButtonAck make map! []
+
+								clear res-in
+								read-and-decode 'TxRequest res-in
+							]
+						][
+							new-error 'SignTxSequence "not support" 'trezor-driver/msg-id
+						]
+					]
+				]
+				if serialized [
+					bin: select serialized 'serialized_tx
+					if all [last-request_type = 'TXOUTPUT last-output-remove] [remove back tail serialized_tx]
+					either all [bin/1 = #{02} 33 = length? bin][
+						last-output-remove: true
+					][
+						last-output-remove: false
+					]
+					append serialized_tx bin
+					probe serialized_tx
+				]
+			]
+			if request_type = 'TXFINISHED [
+				serialized: select res-in 'serialized
+				if serialized [
+					;if all [last-request_type = 'TXOUTPUT last-output-remove] [remove back tail serialized_tx]
+					;last-output-remove: false
+					append serialized_tx select serialized 'serialized_tx
+					probe serialized_tx
+				]
+				break
+			]
+			last-request_type: request_type
+		]
+		serialized_tx
+	]
+
+	FindOutputByAddr: func [
+		outputs			[block!]
+		addr			[string!]
+		return:			[block!]
+		/local
+			i item
+	][
+		i: 0
+		foreach item outputs [
+			if item/addresses/1 = addr [
+				return reduce [i item/type item/value]
+			]
+			i: i + 1
+		]
+		new-error 'FindOutputByAddr "not found" reduce [outputs addr]
+	]
+
+	FindInputByTxid: func [
+		inputs			[block!]
+		txid			[binary!]
+		return:			[block!]
+		/local
+			i item prev-hash
+	][
+		tx-hash: enbase/base txid 16
+		foreach item inputs [
+			if item/tx-hash = tx-hash [
+				return item
+			]
+		]
+		new-error 'FindInputByTxid "not found" reduce [inputs txid]
+	]
+
+	;-- base message transfer
+	SignTx: func [
+		outputs_count	[integer!]
+		inputs_count	[integer!]
+		coin_name		[string!]
+		lock_time		[integer!]
+		res				[map!]
+		return:			[integer!]
+		/local
+			req			[map!]
+	][
+		req: make map! reduce ['outputs_count outputs_count 'inputs_count inputs_count 'coin_name coin_name 'lock_time lock_time]
+		PinMatrixSequence 'SignTx 'TxRequest req res
+	]
+
+	GetAddress: func [
+		ids				[block!]
+		name			[string!]
+		segwit?			[logic!]
+		res				[map!]
+		return:			[integer!]
+		/local
+			req			[map!]
+	][
+		req: make map! reduce ['address_n ids]
+		put req 'coin_name name
+		put req 'show_display false
+		if segwit? [
+			put req 'script_type 'SPENDP2SHWITNESS
+		]
+		PinMatrixSequence 'GetAddress 'Address req res
 	]
 
 	;-- A Sequence like this, GetAbcd -> [PinMatrixRequest -> PinMatrixAck -> GetAbcd] -> Abcd

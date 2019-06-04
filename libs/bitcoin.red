@@ -32,6 +32,7 @@ btc: context [
 		/local url resp err-no err-msg data balance
 	][
 		url: rejoin [network "/address/" address]
+?? url
 		resp: get-url url
 		err-no: select resp 'err_no
 		if 0 <> err-no [
