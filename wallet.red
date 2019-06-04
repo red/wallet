@@ -14,6 +14,10 @@ Red [
 	}
 ]
 
+throw-error: func [msg [string! block!]][
+	cause-error 'user 'message form reduce msg
+]
+
 #include %libs/int256.red
 #include %libs/JSON.red
 #include %libs/ethereum.red
@@ -37,17 +41,29 @@ wallet: context [
 	fast-api?: yes
 
 	networks: [
-		https://eth.red-lang.org/mainnet
-		https://eth.red-lang.org/rinkeby
-		https://eth.red-lang.org/kovan
-		https://eth.red-lang.org/ropsten
+		BTC [
+			https://chain.api.btc.com/v3
+			https://tchain.api.btc.com/v3
+		]
+		ETH [
+			https://eth.red-lang.org/mainnet
+			https://eth.red-lang.org/rinkeby
+			https://eth.red-lang.org/kovan
+			https://eth.red-lang.org/ropsten
+		]
 	]
 
 	explorers: [
-		https://etherscan.io/tx/
-		https://rinkeby.etherscan.io/tx/
-		https://kovan.etherscan.io/tx/
-		https://ropsten.etherscan.io/tx/
+		BTC [
+			https://blockchain.info/tx/
+			https://testnet.blockchain.info/tx/
+		]
+		ETH [
+			https://etherscan.io/tx/
+			https://rinkeby.etherscan.io/tx/
+			https://kovan.etherscan.io/tx/
+			https://ropsten.etherscan.io/tx/
+		]
 	]
 
 	contracts: [
@@ -75,8 +91,8 @@ wallet: context [
 		3			;-- ropsten
 	]
 
-	explorer:	explorers/1
-	network:	networks/1
+	explorer:	explorers/BTC/1
+	network:	networks/BTC/1
 	chain-id:	chain-ids/1
 	coin-type:	'ETH
 	net-name:	"mainnet"
@@ -127,6 +143,7 @@ wallet: context [
 
 			loop addr-per-page [
 				addr: keys/get-address n
+				if 
 				either string? addr [
 					info-msg/text: "Please wait while loading addresses..."
 				][
@@ -197,12 +214,12 @@ wallet: context [
 	]
 
 	select-config: func [idx [integer!]][
-		network:  networks/:idx
-		explorer: explorers/:idx
+		coin-type: either token-name = "BTC" ['BTC]['ETH]
+		network:  networks/:coin-type/:idx
+		explorer: explorers/:coin-type/:idx
 		chain-id: chain-ids/:idx
 		token-contract: contracts/:token-name/:net-name
-		coin-type: either token-name = "BTC" ['BTC]['ETH]
-		keys/coin-type: coin-type
+		keys/set-coin-type coin-type
 		unless string? token-contract [token-contract: none]
 	]
 
@@ -515,7 +532,7 @@ wallet: context [
 		return
 		
 		my-addr-text: text 185 bold "My Addresses" on-dbl-click [
-			if keys/ledger-nano-s? [
+			if all [coin-type = 'ETH keys/ledger-nano-s?][
 				keys/ledger-path: either 4 = length? keys/ledger-path [
 					keys/trezor-path
 				][

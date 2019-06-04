@@ -13,6 +13,7 @@ Red [
 #include %../libs/int-encode.red
 #include %../libs/proto-encode.red
 #include %../libs/rlp.red
+#include %../libs/btc-addr.red
 #include %Ledger/ledger.red
 #include %Trezor/trezor.red
 
@@ -24,11 +25,14 @@ keys: context [
 	index:			0
 	new?:			yes
 	current:		none
-	coin-type:		'ETH
+	coin-type:		'BTC
 	support-keys:	reduce [ledger trezor-old trezor]
-	bip32-path:		[8000002Ch 8000003Ch 80000000h idx]
+	eth-path:		[]
+	bip32-path:		[80000031h 80000000h 80000000h 0 idx]	;-- btc-segwit
 	ledger-path:	[8000002Ch 8000003Ch 80000000h idx]
 	trezor-path:	[8000002Ch 8000003Ch 80000000h 0 idx]
+	btc-segwit:		[80000031h 80000000h 80000000h 0 idx]
+	btc-legacy:		[8000002Ch 80000000h 80000000h 0 idx]
 
 	support?: func [
 		id		[block!]
@@ -74,6 +78,14 @@ keys: context [
 		dongle: none
 	]
 
+	set-coin-type: func [type][
+		coin-type: type
+		switch type [
+			BTC [bip32-path: btc-segwit]
+			ETH [bip32-path: eth-path]
+		]
+	]
+
 	connect-key: func [device [object! string!] /local handle k][
 		if string? device [
 			foreach k support-keys [
@@ -94,7 +106,7 @@ keys: context [
 				][
 					dongle: handle
 					unless find list key/name [append list key/name]
-					bip32-path: either find key/name "Ledger" [ledger-path][trezor-path]
+					eth-path: either find key/name "Ledger" [ledger-path][trezor-path]
 				]
 				index: length? list
 			][
