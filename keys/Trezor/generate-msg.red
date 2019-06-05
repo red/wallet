@@ -20,6 +20,7 @@ print proto-parser/parse-files [
 	%trezor-common/protob/messages-management.proto
 	%trezor-common/protob/messages-common.proto
 	%trezor-common/protob/messages-ethereum.proto
+	%trezor-common/protob/messages-bitcoin.proto
 ] blk
 
 write %messages.red {Red [Title: "auto generated, don't modify it manully!"]}
