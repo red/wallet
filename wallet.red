@@ -181,7 +181,7 @@ wallet: context [
 					n: page * addr-per-page
 					foreach entry addr-list/data [
 						either coin-type = 'BTC [
-							replace entry "   <loading>" fetch-balance n
+							replace entry "<loading>" fetch-balance n
 							n: n + 1
 						][
 							addr: copy/part entry find entry space

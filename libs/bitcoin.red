@@ -23,6 +23,7 @@ btc: context [
 	get-url: func [url [url!] return: [map!]
 		/local res 
 	][
+		wait 0.5
 		if all [not error? res: try [read url] map? res: json/decode res][return res]
 		if map? res: json/decode read url [return res]
 		new-error 'get-url "server error" url
@@ -32,7 +33,6 @@ btc: context [
 		/local url resp err-no err-msg data balance
 	][
 		url: rejoin [network "/address/" address]
-?? url
 		resp: get-url url
 		err-no: select resp 'err_no
 		if 0 <> err-no [
@@ -126,6 +126,7 @@ btc: context [
 	post-url: func [url [url!] body [map!] return: [map!]
 		/local command res 
 	][
+		wait 0.5
 		command: compose/only [
 				POST
 				(headers)
