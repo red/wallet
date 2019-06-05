@@ -482,12 +482,16 @@ trezor: context [
 		ids				[block!]
 		return:			[string!]
 		/local
-			res len
+			res len address
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		if res/address = none [new-error 'get-eth-address "addr none" res]
-		rejoin ["0x" enbase/base res/address 16]
+		unless address: res/address [
+			unless address: res/old_address [
+				new-error 'get-eth-address "addr none" res
+			]
+		]
+		rejoin ["0x" enbase/base address 16]
 	]
 
 	get-eth-signed-data: func [
