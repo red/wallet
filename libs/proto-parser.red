@@ -54,12 +54,16 @@ proto-parser: context [
 				[any space "}" break] |
 				[any space "reserved" some space thru ";"] |
 				[some space "enum" some space enum-rule] |
+				[some space "message" some space message-rule] |
 				[any space
 					copy tags to [any space "="] [any space "="] any space
 					copy number to [[any space "[" to ";"] | [any space ";"]] thru ";"
 					(
 						tag: split tags space
 						if 2 = length? tag [insert tag "optional"]
+						if ntag: find/last/tail tag/2 "." [
+							tag/2: ntag
+						]
 						append/only items2 reduce [to integer! number to word! tag/1 to word! tag/2 to word! tag/3]
 					)
 				]
