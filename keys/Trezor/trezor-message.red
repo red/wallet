@@ -57,4 +57,25 @@ trezor-message: context [
 		]
 		new-error 'get-type-name "not found" id
 	]
+
+	get-sub: func [
+		msg					[word!]
+		sub					[word!]
+		return:				[block!]
+		/local
+			type-blk		[block!]
+			msg-blk			[block!]
+			msg-type
+	][
+		foreach type-blk messages [
+			if all [type-blk/1 = 'message type-blk/2 = msg] [
+				foreach msg-blk type-blk/3 [
+					if sub = msg-blk/4 [
+						return msg-blk
+					]
+				]
+			]
+		]
+		new-error 'get-sub "not found" sub
+	]
 ]
