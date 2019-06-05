@@ -15,11 +15,13 @@ cfg-path: none
 apply-cfg: function [][
 	Coins: cfg/Coins
 	append token-list/data extract Coins/tokens 4
-	wallet/coin-type: Coins/coin-type
 	wallet/contracts: Coins/tokens
-	keys/set-coin-type: Coins/coin-type
 	keys/ledger-path: Coins/Ledger-Path
 	if cfg/win-pos [ui/offset: cfg/win-pos]
+	if cfg/coin-type [
+		wallet/coin-type: cfg/coin-type
+		keys/set-coin-type: cfg/coin-type
+	]
 ]
 
 save-cfg: function [][
@@ -34,12 +36,38 @@ save-cfg: function [][
 	save/header cfg-path cfg [Purpose: "RED Wallet Configuration File"]
 ]
 
-load-cfg: func [/local cfg-dir cfg-content][
+load-cfg: func [/local cfg-dir cfg-content default-cfg][
 	cfg-dir: append copy system/options/cache
 			#either config/OS = 'Windows [%REDWallet/][%.REDWallet/]
 
 	unless exists? cfg-dir [make-dir/deep cfg-dir]
 	cfg-path: append cfg-dir %REDWallet-cfg.red
+
+	default-cfg: [
+		version: 0.4.0
+		Coins: [
+			;-- Token name | NetWorks | Decimal places | Fullname
+			tokens: [
+				"BTC" [
+					"MainNet" #[none]
+					"TestNet" #[none]
+				] 8 "Bitcoin"
+				"ETH" [
+					"mainnet" #[none]
+					"Rinkeby" #[none]
+					"Kovan"	  #[none]
+					"Ropsten" #[none]
+				] 18 "Ethereum"
+				"RED" [
+					"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
+					"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
+				] 18 "RED (Red Community Token)"
+			]
+			Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
+		]
+		coin-type:	BTC
+		win-pos:	#[none]
+	]
 
 	cfg: either all [
 		exists? cfg-path
@@ -47,30 +75,7 @@ load-cfg: func [/local cfg-dir cfg-content][
 	][
 		skip cfg-content 2
 	][
-		[
-			Coins: [
-				;-- Token name | NetWorks | Decimal places | Fullname
-				tokens: [
-					"BTC" [
-						"MainNet" #[none]
-						"TestNet" #[none]
-					] 8 "Bitcoin"
-					"ETH" [
-						"mainnet" #[none]
-						"Rinkeby" #[none]
-						"Kovan"	  #[none]
-						"Ropsten" #[none]
-					] 18 "Ethereum"
-					"RED" [
-						"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
-						"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
-					] 18 "RED (Red Community Token)"
-				]
-				Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
-			]
-			coin-type:	BTC
-			win-pos:	#[none]
-		]
+		default-cfg
 	]
 	apply-cfg
 ]

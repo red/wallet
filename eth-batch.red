@@ -158,7 +158,7 @@ eth-batch: context [
 		floating-text/rate: 0:0:2
 		foreach entry payment-list/data [
 			payment-list/selected: idx
-			wallet/process-events
+			process-events
 			addr: next find entry " 0x"
 			to-addr: copy/part addr 42
 			amount: trim copy skip addr 42

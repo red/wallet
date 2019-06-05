@@ -18,6 +18,8 @@ throw-error: func [msg [string! block!]][
 	cause-error 'user 'message form reduce msg
 ]
 
+process-events: does [loop 10 [do-events/no-wait]]
+
 #include %libs/int256.red
 #include %libs/JSON.red
 #include %libs/ethereum.red
@@ -39,7 +41,7 @@ wallet: context [
 	addr-per-page: 5
 	locked?: no
 
-	fast-api?: yes
+	fast-api?: no
 
 	networks: [
 		BTC [
@@ -109,9 +111,8 @@ wallet: context [
 
 	#include %settings.red
 
-	process-events: does [loop 10 [do-events/no-wait]]
-
 	fetch-balance: func [addr [string! block! integer!]][
+		?? coin-type
 		switch coin-type [
 			ETH [
 				either token-contract [

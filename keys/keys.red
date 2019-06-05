@@ -177,12 +177,12 @@ keys: context [
 	]
 
 	enum-address-info: func [
-		path			[block!]
-		account			[integer!]
-		return:			[block!]
+		path account network
 		/local
-			ids list c-list o-list len i addr-key addr pubkey utxs balance total
+			ids list c-list o-list len i addr-key
+			addr pubkey utxs balance total
 	][
+		probe "enum-address-info"
 		ids: copy path
 		poke ids 3 (80000000h + account)
 
@@ -197,6 +197,7 @@ keys: context [
 		forever [
 			process-events
 			ids/5: i
+			?? ids
 			addr-key: do [key/get-btc-address ids]
 			addr: either block? addr-key [addr-key/1][addr-key]
 			pubkey: either block? addr-key [addr-key/2][none]
@@ -257,13 +258,12 @@ keys: context [
 		list
 	]
 
-	get-balance: func [
-		"BTC only"			;-- TBD: add support for ETH
-		network	[url!]
-		idx		[integer!]
-		/local res
-	][
-		res: enum-address-info bip32-path idx
+	get-balance: func [network idx /local res][
+		probe "keys get balance"
+		?? idx
+		?? bip32-path
+		?? network
+		res: enum-address-info bip32-path idx network
 		put btc-accounts idx res
 		form-i256 res/balance 8 8
 	]
