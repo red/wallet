@@ -103,12 +103,15 @@ trezor-old: context [
 		ids				[block!]
 		return:			[string!]
 		/local
-			res len
+			res len address
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		if res/address = none [new-error 'get-eth-address "addr none" res]
-		rejoin ["0x" enbase/base res/address 16]
+		if string? res/address [return res/address]
+		if address: any [res/address res/old_address] [
+			return rejoin ["0x" enbase/base address 16]
+		]
+		new-error 'get-eth-address "addr none" res
 	]
 
 	get-eth-signed-data: func [
@@ -117,17 +120,23 @@ trezor-old: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req res nonce gas_price gas_limit amount signed data-len
+			req res nonce gas_price gas_limit amount signed data-len msg-blk *to
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
+		msg-blk: trezor-message/get-sub 'EthereumSignTx 'to
+		either msg-blk/3 = 'string [
+			*to: rejoin ["0x" enbase/base tx/4 16]
+		][
+			*to: tx/4
+		]
 		req: make map! reduce [
 			'address_n ids
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
-			'to tx/4 'value amount 'chain_id chain-id
+			'to *to 'value amount 'chain_id chain-id
 		]
 		if data-len > 0 [
 			put req 'data_length data-len
@@ -486,12 +495,11 @@ trezor: context [
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		unless address: res/address [
-			unless address: res/old_address [
-				new-error 'get-eth-address "addr none" res
-			]
+		if string? res/address [return res/address]
+		if address: any [res/address res/old_address] [
+			return rejoin ["0x" enbase/base address 16]
 		]
-		rejoin ["0x" enbase/base address 16]
+		new-error 'get-eth-address "addr none" res
 	]
 
 	get-eth-signed-data: func [
@@ -500,17 +508,23 @@ trezor: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req res nonce gas_price gas_limit amount signed data-len
+			req res nonce gas_price gas_limit amount signed data-len msg-blk *to
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
+		msg-blk: trezor-message/get-sub 'EthereumSignTx 'to
+		either msg-blk/3 = 'string [
+			*to: rejoin ["0x" enbase/base tx/4 16]
+		][
+			*to: tx/4
+		]
 		req: make map! reduce [
 			'address_n ids
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
-			'to tx/4 'value amount 'chain_id chain-id
+			'to *to 'value amount 'chain_id chain-id
 		]
 		if data-len > 0 [
 			put req 'data_length data-len
