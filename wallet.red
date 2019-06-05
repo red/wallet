@@ -110,9 +110,9 @@ wallet: context [
 	ledger-legacy-path: [8000002Ch 8000003Ch 80000000h idx]
 
 	#include %settings.red
+	btc-ui: #include %btc-ui.red
 
 	fetch-balance: func [addr [string! block! integer!]][
-		?? coin-type
 		switch coin-type [
 			ETH [
 				either token-contract [
@@ -156,8 +156,15 @@ wallet: context [
 							usb-device/rate: 0:0:2
 							"Please unlock your key"
 						]
-						true [{Please open an application on the key}]
+						true [
+							either coin-type = 'BTC [
+								"Please open the Bitcoin App on the key"
+							][
+								"Please open the Ethereum App on the key"
+							]
+						]
 					]
+					token-list/enabled?: yes
 					exit
 				]
 				append addrs addr
@@ -208,16 +215,20 @@ wallet: context [
 	]
 
 	do-send: func [face [object!] event [event!]][
-		if addr-list/data [
-			if addr-list/selected = -1 [addr-list/selected: 1]
-			network-to/text: net-name
-			addr-from/text: copy/part pick addr-list/data addr-list/selected 42
-			gas-limit/text: either token-contract ["79510"]["21000"]
-			reset-sign-button
-			label-unit/text: token-name
-			clear addr-to/text
-			clear amount-field/text
-			view/flags send-dialog 'modal
+		either coin-type = 'BTC [
+			btc-ui/do-send face event
+		][
+			if addr-list/data [
+				if addr-list/selected = -1 [addr-list/selected: 1]
+				network-to/text: net-name
+				addr-from/text: copy/part pick addr-list/data addr-list/selected 42
+				gas-limit/text: either token-contract ["79510"]["21000"]
+				reset-sign-button
+				label-unit/text: token-name
+				clear addr-to/text
+				clear amount-field/text
+				view/flags send-dialog 'modal
+			]
 		]
 	]
 
@@ -472,9 +483,10 @@ wallet: context [
 		]
 	]
 
-	copy-addr: func [][
+	copy-addr: func [/local n][
 		if btn-send/enabled? [
-			write-clipboard copy/part pick addr-list/data addr-list/selected 42
+			n: either coin-type = 'BTC [34][42]
+			write-clipboard copy/part pick addr-list/data addr-list/selected n
 		]
 	]
 
@@ -535,7 +547,7 @@ wallet: context [
 		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["Add Tokens"] 80 select 2 :do-select-token
-		net-list:   drop-list data ["mainnet" "rinkeby" "kovan" "ropsten"] select 1 :do-select-network
+		net-list:   drop-list data ["mainnet" "testnet"] select 1 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
