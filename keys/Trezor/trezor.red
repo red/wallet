@@ -10,11 +10,29 @@ Red [
 #include %trezor-message.red
 #include %trezor-driver.red
 
+get-message-version: func [
+	res			[map!]
+	return:		[word!]
+][
+	if res/major_version = 1 [
+		if res/minor_version >= 8 [return 'default]
+		return 'v6
+	]
+	if res/major_version = 2 [
+		if res/minor_version > 0 [return 'default]
+		if res/patch_version >= 11 [return 'default]
+		return 'v6
+	]
+	'default
+]
+
 trezor-old: context [
 	name:	"Trezor One"
 	id:		[534Ch 1]
 
 	command-buffer: make binary! 1000
+
+	message-version: 'default
 
 	pin-get: make string! 16
 	pin-msg: none
@@ -48,7 +66,12 @@ trezor-old: context [
 		if request-pin-state <> 'Init [return request-pin-state]
 		request-pin-state: 'Init
 		driver/init
-		Initialize #()
+		res: make map! 20
+		Initialize res
+		message-version: get-message-version res
+		if message-version = 'v6 [
+			trezor-message/messages: trezor-message/messages-v6
+		]
 	]
 
 	close-pin-requesting: does [
@@ -103,12 +126,15 @@ trezor-old: context [
 		ids				[block!]
 		return:			[string!]
 		/local
-			res len
+			res len address
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		if res/address = none [new-error 'get-eth-address "addr none" res]
-		rejoin ["0x" enbase/base res/address 16]
+		if message-version = 'default [return res/address]
+		if address: any [res/address res/old_address] [
+			return rejoin ["0x" enbase/base address 16]
+		]
+		new-error 'get-eth-address "addr none" res
 	]
 
 	get-eth-signed-data: func [
@@ -117,17 +143,22 @@ trezor-old: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req res nonce gas_price gas_limit amount signed data-len
+			req res nonce gas_price gas_limit amount signed data-len *to
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
+		either message-version = 'default [
+			*to: rejoin ["0x" enbase/base tx/4 16]
+		][
+			*to: tx/4
+		]
 		req: make map! reduce [
 			'address_n ids
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
-			'to tx/4 'value amount 'chain_id chain-id
+			'to *to 'value amount 'chain_id chain-id
 		]
 		if data-len > 0 [
 			put req 'data_length data-len
@@ -379,6 +410,7 @@ trezor: context [
 	name:	"Trezor One"
 	id:		[1209h 53C1h]
 
+	message-version: 'default
 	model:	"1"
 	command-buffer: make binary! 1000
 
@@ -422,6 +454,10 @@ trezor: context [
 		Initialize res
 		model: res/model
 		name: either model = "1" ["Trezor One"]["Trezor Model T"]
+		message-version: get-message-version res
+		if message-version = 'v6 [
+			trezor-message/messages: trezor-message/messages-v6
+		]
 	]
 
 	close-pin-requesting: does [
@@ -482,12 +518,15 @@ trezor: context [
 		ids				[block!]
 		return:			[string!]
 		/local
-			res len
+			res len address
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		if res/address = none [new-error 'get-eth-address "addr none" res]
-		rejoin ["0x" enbase/base res/address 16]
+		if message-version = 'default [return res/address]
+		if address: any [res/address res/old_address] [
+			return rejoin ["0x" enbase/base address 16]
+		]
+		new-error 'get-eth-address "addr none" res
 	]
 
 	get-btc-address: func [
@@ -515,17 +554,22 @@ trezor: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req res nonce gas_price gas_limit amount signed data-len
+			req res nonce gas_price gas_limit amount signed data-len *to
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
+		either message-version = 'default [
+			*to: rejoin ["0x" enbase/base tx/4 16]
+		][
+			*to: tx/4
+		]
 		req: make map! reduce [
 			'address_n ids
 			'nonce nonce 'gas_price gas_price 'gas_limit gas_limit
-			'to tx/4 'value amount 'chain_id chain-id
+			'to *to 'value amount 'chain_id chain-id
 		]
 		if data-len > 0 [
 			put req 'data_length data-len

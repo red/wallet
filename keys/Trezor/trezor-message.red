@@ -7,7 +7,9 @@ Red [
 ]
 
 trezor-message: context [
-	messages: #include %messages.red
+	messages-default: #include %messages.red
+	messages-v6: #include %messages-v6.red
+	messages: messages-default
 
 	system/catalog/errors/user: make system/catalog/errors/user [trezor-message: ["trezor-message [" :arg1 ": (" :arg2 " " :arg3 ")]"]]
 
@@ -56,5 +58,26 @@ trezor-message: context [
 			]
 		]
 		new-error 'get-type-name "not found" id
+	]
+
+	get-sub: func [
+		msg					[word!]
+		sub					[word!]
+		return:				[block!]
+		/local
+			type-blk		[block!]
+			msg-blk			[block!]
+			msg-type
+	][
+		foreach type-blk messages [
+			if all [type-blk/1 = 'message type-blk/2 = msg] [
+				foreach msg-blk type-blk/3 [
+					if sub = msg-blk/4 [
+						return msg-blk
+					]
+				]
+			]
+		]
+		new-error 'get-sub "not found" sub
 	]
 ]

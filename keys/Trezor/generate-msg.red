@@ -13,6 +13,7 @@ Red [
 #include %../../libs/proto-parser.red
 
 call/wait "git clone https://github.com/trezor/trezor-common/"
+;-- message-v6 need "git checkout 482a8e37f0f627bfefc720ed0bd8a8c4a93cdbe3"
 
 blk: []
 print proto-parser/parse-files [
