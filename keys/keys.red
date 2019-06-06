@@ -262,6 +262,10 @@ keys: context [
 		form-i256 res/balance 8 8
 	]
 
+	set-btc-network: func [net-name][
+		poke btc-segwit 2 either net-name = "mainnet" [80000000h][80000001h]
+	]
+
 	ledger-nano-s?: does [
 		find key/name "Ledger"
 	]

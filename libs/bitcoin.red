@@ -34,6 +34,8 @@ btc: context [
 	][
 		url: rejoin [network "/address/" address]
 		resp: get-url url
+		probe "get-addr-balance"
+		?? resp
 		err-no: select resp 'err_no
 		if 0 <> err-no [
 			err-msg: select resp 'err_msg
@@ -50,6 +52,8 @@ btc: context [
 	][
 		url: rejoin [network "/address/" address "/unspent"]
 		resp: get-url url
+		probe "unspent"
+		?? resp
 		err-no: select resp 'err_no
 		if 0 <> err-no [
 			err-msg: select resp 'err_msg

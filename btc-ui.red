@@ -37,7 +37,7 @@ context [
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			network-to/text: net-name
-			addr-from/text: copy/part pick addr-list/data addr-list/selected 34
+			addr-from/text: copy/part pick addr-list/data addr-list/selected 35
 			reset-sign-button
 			label-unit/text: unit-name
 			fee-unit/text: unit-name

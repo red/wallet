@@ -245,6 +245,7 @@ wallet: context [
 	do-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		net-name: face/data/:idx
+		if coin-type = 'BTC [keys/set-btc-network net-name]
 		select-config idx
 		do-reload
 	]
@@ -485,7 +486,7 @@ wallet: context [
 
 	copy-addr: func [/local n][
 		if btn-send/enabled? [
-			n: either coin-type = 'BTC [34][42]
+			n: either coin-type = 'BTC [35][42]
 			write-clipboard copy/part pick addr-list/data addr-list/selected n
 		]
 	]
