@@ -69,6 +69,9 @@ trezor-old: context [
 		res: make map! 20
 		Initialize res
 		message-version: get-message-version res
+		if message-version = 'v6 [
+			trezor-message/messages: trezor-message/messages-v6
+		]
 	]
 
 	close-pin-requesting: does [
@@ -452,6 +455,9 @@ trezor: context [
 		model: res/model
 		name: either model = "1" ["Trezor One"]["Trezor Model T"]
 		message-version: get-message-version res
+		if message-version = 'v6 [
+			trezor-message/messages: trezor-message/messages-v6
+		]
 	]
 
 	close-pin-requesting: does [

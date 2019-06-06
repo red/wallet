@@ -7,7 +7,9 @@ Red [
 ]
 
 trezor-message: context [
-	messages: #include %messages.red
+	messages-default: #include %messages.red
+	messages-v6: #include %messages-v6.red
+	messages: messages-default
 
 	system/catalog/errors/user: make system/catalog/errors/user [trezor-message: ["trezor-message [" :arg1 ": (" :arg2 " " :arg3 ")]"]]
 
