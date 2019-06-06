@@ -10,11 +10,29 @@ Red [
 #include %trezor-message.red
 #include %trezor-driver.red
 
+get-message-version: func [
+	res			[map!]
+	return:		[word!]
+][
+	if res/major_version = 1 [
+		if res/minor_version >= 8 [return 'default]
+		return 'v6
+	]
+	if res/major_version = 2 [
+		if res/minor_version > 0 [return 'default]
+		if res/patch_version >= 11 [return 'default]
+		return 'v6
+	]
+	'default
+]
+
 trezor-old: context [
 	name:	"Trezor One"
 	id:		[534Ch 1]
 
 	command-buffer: make binary! 1000
+
+	message-version: 'default
 
 	pin-get: make string! 16
 	pin-msg: none
@@ -48,7 +66,9 @@ trezor-old: context [
 		if request-pin-state <> 'Init [return request-pin-state]
 		request-pin-state: 'Init
 		driver/init
-		Initialize #()
+		res: make map! 20
+		Initialize res
+		message-version: get-message-version res
 	]
 
 	close-pin-requesting: does [
@@ -107,7 +127,7 @@ trezor-old: context [
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		if string? res/address [return res/address]
+		if message-version = 'default [return res/address]
 		if address: any [res/address res/old_address] [
 			return rejoin ["0x" enbase/base address 16]
 		]
@@ -120,15 +140,14 @@ trezor-old: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req res nonce gas_price gas_limit amount signed data-len msg-blk *to
+			req res nonce gas_price gas_limit amount signed data-len *to
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
-		msg-blk: trezor-message/get-sub 'EthereumSignTx 'to
-		either msg-blk/3 = 'string [
+		either message-version = 'default [
 			*to: rejoin ["0x" enbase/base tx/4 16]
 		][
 			*to: tx/4
@@ -388,6 +407,7 @@ trezor: context [
 	name:	"Trezor One"
 	id:		[1209h 53C1h]
 
+	message-version: 'default
 	model:	"1"
 	command-buffer: make binary! 1000
 
@@ -431,6 +451,7 @@ trezor: context [
 		Initialize res
 		model: res/model
 		name: either model = "1" ["Trezor One"]["Trezor Model T"]
+		message-version: get-message-version res
 	]
 
 	close-pin-requesting: does [
@@ -495,7 +516,7 @@ trezor: context [
 	][
 		res: make map! []
 		EthereumGetAddress ids res
-		if string? res/address [return res/address]
+		if message-version = 'default [return res/address]
 		if address: any [res/address res/old_address] [
 			return rejoin ["0x" enbase/base address 16]
 		]
@@ -508,15 +529,14 @@ trezor: context [
 		chain-id		[integer!]
 		return:			[binary!]
 		/local
-			req res nonce gas_price gas_limit amount signed data-len msg-blk *to
+			req res nonce gas_price gas_limit amount signed data-len *to
 	][
 		nonce: trim/head to binary! tx/1
 		gas_price: trim/head i256-to-bin tx/2
 		gas_limit: trim/head to binary! tx/3
 		amount: trim/head i256-to-bin tx/5
 		data-len: length? tx/6
-		msg-blk: trezor-message/get-sub 'EthereumSignTx 'to
-		either msg-blk/3 = 'string [
+		either message-version = 'default [
 			*to: rejoin ["0x" enbase/base tx/4 16]
 		][
 			*to: tx/4
