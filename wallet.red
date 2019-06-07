@@ -59,7 +59,7 @@ wallet: context [
 	explorers: [
 		BTC [
 			https://blockchain.info/tx/
-			https://testnet.blockchain.info/tx/
+			https://chain.so/tx/BTCTEST/
 		]
 		ETH [
 			https://etherscan.io/tx/
