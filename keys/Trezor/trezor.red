@@ -804,11 +804,11 @@ trezor: context [
 					probe req
 					clear res-in
 					encode-and-write 'TxAck req
-					trezor-driver/message-read clear command-buffer
-					either trezor-driver/msg-id = trezor-message/get-id 'TxRequest [
+					driver/message-read clear command-buffer
+					either driver/msg-id = trezor-message/get-id 'TxRequest [
 						proto-encode/decode trezor-message/messages 'TxRequest res-in command-buffer
 					][
-						either trezor-driver/msg-id = trezor-message/get-id 'ButtonRequest [
+						either driver/msg-id = trezor-message/get-id 'ButtonRequest [
 							clear res-in
 							proto-encode/decode trezor-message/messages 'ButtonRequest res-in command-buffer
 
@@ -816,7 +816,7 @@ trezor: context [
 
 							clear res-in
 							read-and-decode 'TxRequest res-in
-							if trezor-driver/msg-id = trezor-message/get-id 'ButtonRequest [
+							if driver/msg-id = trezor-message/get-id 'ButtonRequest [
 								clear res-in
 								proto-encode/decode trezor-message/messages 'ButtonRequest res-in command-buffer
 
@@ -826,7 +826,7 @@ trezor: context [
 								read-and-decode 'TxRequest res-in
 							]
 						][
-							new-error 'SignTxSequence "not support" 'trezor-driver/msg-id
+							new-error 'SignTxSequence "not support" 'driver/msg-id
 						]
 					]
 				]
