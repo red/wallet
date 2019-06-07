@@ -23,8 +23,7 @@ btc: context [
 	get-url: func [url [url!] return: [map!]
 		/local res 
 	][
-		wait 0.3
-		if all [not error? res: try [read url] map? res: json/decode res][return res]
+		if all [not error? res: try-read url map? res: json/decode res][return res]
 		if map? res: json/decode read url [return res]
 		new-error 'get-url "server error" url
 	]

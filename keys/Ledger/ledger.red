@@ -303,7 +303,7 @@ ledger: context [
 		copy/part chunk (length? chunk) - 2
 	]
 
-	sign-btc-tx: func [
+	get-btc-signed-data: func [
 		tx				[block!]
 		return:			[block! binary!]
 		/local
@@ -312,7 +312,7 @@ ledger: context [
 			signed temp pubkey sig-script
 	][
 		signed: make binary! 800
-probe tx
+
 		coin_name: "Bitcoin"
 		if tx/inputs/1/path/2 = (80000000h + 1) [
 			coin_name: "Testnet"
@@ -331,7 +331,7 @@ probe tx
 		data: make binary! 200
 		input-count: length? tx/inputs
 		tx-input: pick tx/inputs 1
-		probe tx-input
+
 		append data temp: to-bin32/little tx-input/info/version
 		append data input-count
 		append signed temp
@@ -376,7 +376,6 @@ probe tx
 		]
 		final-hash-input FFh data
 
-		probe tx/outputs
 		clear data
 		output-count: length? tx/outputs
 		append data output-count
@@ -388,7 +387,7 @@ probe tx
 			append data #{87}
 		]
 		append signed data
-		probe data
+
 		while [50 < length? data][
 			final-hash-input 0 copy/part data 50
 			data: skip data 50
@@ -396,9 +395,7 @@ probe tx
 		final-hash-input 80h data
 
 		type: 80h
-		print ["num: " input-count]
 		repeat i input-count [
-			print i
 			tx-input: pick tx/inputs i
 			trust-type: either input-segwit? [2][0]
 			clear data

@@ -20,6 +20,15 @@ throw-error: func [msg [string! block!]][
 
 process-events: does [loop 10 [do-events/no-wait]]
 
+try-read: func [url][
+	;-- workaround for speed limitation of some WebAPIs
+	loop 60 [
+		wait 0.05
+		unless error? res: try [read url][return res]
+	]
+	res
+]
+
 #include %libs/int256.red
 #include %libs/JSON.red
 #include %libs/ethereum.red
@@ -58,7 +67,7 @@ wallet: context [
 
 	explorers: [
 		BTC [
-			https://blockchain.info/tx/
+			https://blockchain.info/btc/tx/
 			https://chain.so/tx/BTCTEST/
 		]
 		ETH [
@@ -167,6 +176,7 @@ wallet: context [
 					token-list/enabled?: yes
 					exit
 				]
+				if coin-type = 'BTC [append addr "   "]		;-- add more spaces for Bitcoin address
 				append addrs addr
 				append addr-balances rejoin [addr "      <loading>"]
 				addr-list/data: addr-balances
