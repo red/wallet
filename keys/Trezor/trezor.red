@@ -543,7 +543,6 @@ trezor: context [
 		if ids/1 = (80000000h + 49) [
 			segwit?: true
 		]
-		?? segwit?
 		GetAddress ids coin-name segwit? res
 		if res/address = none [new-error 'get-btc-address "addr none" res]
 		res/address
@@ -590,7 +589,6 @@ trezor: context [
 	get-btc-signed-data: func [
 		tx			[block!]
 	][
-		probe "jfdksjflkdjsfalksdfjkdasjflsdjafkdjasflkdj88888888888888"
 		SignTxSequence tx
 	]
 
@@ -660,7 +658,6 @@ trezor: context [
 			last-output-remove
 			bin
 	][
-?? tx
 		clear serialized_tx
 		last-request_type: none
 		last-output-remove: false
@@ -679,7 +676,6 @@ trezor: context [
 		SignTx length? tx/outputs length? tx/inputs coin_name 0 res-in
 
 		forever [
-			probe res-in
 			request_type: select res-in 'request_type
 			if request_type = 'TXINPUT [
 				details: select res-in 'details
@@ -702,7 +698,6 @@ trezor: context [
 					req: make map! []
 					put req 'inputs reduce [sub-req]
 					req: make map! reduce ['tx req]
-					probe req
 					clear res-in
 					WriteAndRead 'TxAck 'TxRequest req res-in
 				]
@@ -717,7 +712,6 @@ trezor: context [
 					req: make map! []
 					put req 'inputs reduce [sub-req]
 					req: make map! reduce ['tx req]
-					probe req
 					clear res-in
 					WriteAndRead 'TxAck 'TxRequest req res-in
 				]
@@ -725,7 +719,6 @@ trezor: context [
 					if all [last-request_type = 'TXOUTPUT last-output-remove] [remove back tail serialized_tx]
 					last-output-remove: false
 					append serialized_tx select serialized 'serialized_tx
-					probe serialized_tx
 				]
 			]
 			
@@ -741,7 +734,6 @@ trezor: context [
 								'inputs_cnt length? tx-input/info/inputs
 								'outputs_cnt length? tx-input/info/outputs]
 					req: make map! reduce ['tx sub-req]
-					probe req
 					clear res-in
 					WriteAndRead 'TxAck 'TxRequest req res-in
 				]
@@ -761,7 +753,6 @@ trezor: context [
 					req: make map! []
 					put req 'bin_outputs reduce [sub-req]
 					req: make map! reduce ['tx req]
-					probe req
 					clear res-in
 					WriteAndRead 'TxAck 'TxRequest req res-in
 				]
@@ -802,7 +793,6 @@ trezor: context [
 					req: make map! []
 					put req 'outputs reduce [sub-req]
 					req: make map! reduce ['tx req]
-					probe req
 					clear res-in
 					encode-and-write 'TxAck req
 					driver/message-read clear command-buffer
@@ -840,7 +830,6 @@ trezor: context [
 						last-output-remove: false
 					]
 					append serialized_tx bin
-					probe serialized_tx
 				]
 			]
 			if request_type = 'TXFINISHED [
@@ -849,7 +838,6 @@ trezor: context [
 					;if all [last-request_type = 'TXOUTPUT last-output-remove] [remove back tail serialized_tx]
 					;last-output-remove: false
 					append serialized_tx select serialized 'serialized_tx
-					probe serialized_tx
 				]
 				break
 			]

@@ -43,7 +43,6 @@ context [
 			reset-sign-button
 
 			accout-info: select keys/btc-accounts address-index
-?? accout-info
 			label-unit/text: unit-name
 			fee-unit/text: unit-name
 			clear addr-to/text
@@ -91,11 +90,9 @@ probe "end check-data"
 		/local utx
 	][
 		utx: calc-balance-by-largest account amount fee addr-to
-?? utx
 		if utx = none [
 			utx: calc-balance-by-order account amount fee addr-to
 		]
-		;probe utx
 		utx
 	]
 
@@ -122,7 +119,6 @@ probe "end check-data"
 			foreach utx item/utxs [
 				if lesser-or-equal256? total utx/value [
 					info: btc/get-tx-info network utx/tx-hash
-?? info
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
@@ -155,7 +151,6 @@ probe "end check-data"
 				]
 			]
 		]
-probe "jfdksjfldsjafsjaflkjdslfjdsfdskafjldsjfaldsjflj"
 		none
 	]
 
@@ -167,7 +162,6 @@ probe "jfdksjfldsjafsjaflkjdslfjdsfdskafjldsjfaldsjflj"
 		return:				[none! block!]
 		/local change-addr-path change-addr ret inputs outputs total sum item utx info rest
 	][
-probe "fjdkj"
 		change-addr-path: select last account/change 'path
 		change-addr: select last account/change 'addr
 		ret: copy []
@@ -243,8 +237,7 @@ probe "end orfer"
 
 probe "get-signed-data"
 		signed-data: keys/get-signed-data 0 utx 0
-
-?? signed-data
+probe "get-signed-data end"
 
 		either binary? signed-data [
 			info-from/text:		addr-from/text

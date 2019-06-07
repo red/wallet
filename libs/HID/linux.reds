@@ -741,7 +741,6 @@ hid: context [
 	][	
 		 dev: as hid_device device
 		 block?: either dev/blocking <> 0 [-1][0]
-?? block?
 		 return read_timeout device data length block?
 	]
 

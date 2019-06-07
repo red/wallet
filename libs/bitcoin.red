@@ -33,8 +33,6 @@ btc: context [
 	][
 		url: rejoin [network "/address/" address]
 		resp: get-url url
-		probe "get-addr-balance"
-		?? resp
 		err-no: select resp 'err_no
 		if 0 <> err-no [
 			err-msg: select resp 'err_msg
@@ -51,8 +49,6 @@ btc: context [
 	][
 		url: rejoin [network "/address/" address "/unspent"]
 		resp: get-url url
-		probe "unspent"
-		?? resp
 		err-no: select resp 'err_no
 		if 0 <> err-no [
 			err-msg: select resp 'err_msg
@@ -77,9 +73,8 @@ btc: context [
 		/local url resp err-no err-msg data ret version lock_time inputs outputs item info
 	][
 		url: rejoin [network "/tx/" txid "?verbose=3"]
-?? url
 		resp: get-url url
-?? resp
+
 		err-no: select resp 'err_no
 		if 0 <> err-no [
 			err-msg: select resp 'err_msg

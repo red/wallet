@@ -22,8 +22,8 @@ process-events: does [loop 10 [do-events/no-wait]]
 
 try-read: func [url][
 	;-- workaround for speed limitation of some WebAPIs
-	loop 60 [
-		wait 0.05
+	loop 2 [
+		wait 0.5
 		unless error? res: try [read url][return res]
 	]
 	res
