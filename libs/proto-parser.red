@@ -20,36 +20,55 @@ proto-parser: context [
 	buffer: make string! 10000
 
 	space: charset " ^-^/"
+	stack: []
+
+	push: func [stack [block!] item [block!]][
+		append/only stack item
+	]
+	pop: func [stack [block!] return: [block!]][
+		also last stack remove back tail stack
+	]
 
 	parse-file: func [
 		file				[file!]
 		blk					[block!]
 		return:				[logic!]
 	][
+		clear stack
 		content-raw: read file
 		content: remove-comment content-raw
 		syntax: find content "syntax"
 		syntax2: copy/part syntax length? syntax-version
 		if syntax2 <> syntax-version [exit]
 
-		items: copy []
-		items2: copy []
+		items: none
 
 		enum-rule: [
-			copy type to [any space "{"] [any space "{"] (clear items)
+			copy type to [any space "{"] [any space "{"] (
+				items: reduce ['enum to word! type make block! 4]
+				push stack items
+			)
 			any [
 				[any space "}" break] |
 				[any space
 					copy name to [any space "="] [any space "="] any space
 					copy number to [[any space "[" to ";"] | [any space ";"]] thru ";"
-					(append/only items reduce [to integer! number to word! name])
+					(
+						items: last last stack
+						append/only items reduce [to integer! number to word! name])
 				]
 			]
-			(append/only blk reduce ['enum to word! type copy items])
+			(
+				items: pop stack
+				append/only blk items
+			)
 		]
 
 		message-rule: [
-			copy type2 to [any space "{"] [any space "{"] (clear items2)
+			copy type to [any space "{"] [any space "{"] (
+				items: reduce ['message to word! type make block! 4]
+				push stack items
+			)
 			any [
 				[any space "}" break] |
 				[any space "reserved" some space thru ";"] |
@@ -64,11 +83,15 @@ proto-parser: context [
 						if ntag: find/last/tail tag/2 "." [
 							tag/2: ntag
 						]
-						append/only items2 reduce [to integer! number to word! tag/1 to word! tag/2 to word! tag/3]
+						items: last last stack
+						append/only items reduce [to integer! number to word! tag/1 to word! tag/2 to word! tag/3]
 					)
 				]
 			]
-			(append/only blk reduce ['message to word! type2 copy items2])
+			(
+				items: pop stack
+				append/only blk items
+			)
 		]
 
 		rules: [
