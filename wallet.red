@@ -372,6 +372,9 @@ wallet: context [
 					my-addr-text/text: "My Addresses (Legacy)"
 				]
 			]
+			if all [coin-type = 'BTC keys/btc-path/1 = 8000002Ch][
+				my-addr-text/text: "My Addresses (Legacy)"	
+			]
 		]
 		process-events
 	]
@@ -570,6 +573,15 @@ wallet: context [
 					ledger-legacy-path
 				]
 				keys/bip32-path: keys/ledger-path
+				do-reload
+			]
+			if coin-type = 'BTC [
+				keys/btc-path: either keys/btc-path/1 = 8000002Ch [
+					keys/btc-segwit
+				][
+					keys/btc-legacy
+				]
+				keys/bip32-path: keys/btc-path
 				do-reload
 			]
 		] pad 160x0

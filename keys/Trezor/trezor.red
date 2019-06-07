@@ -543,6 +543,7 @@ trezor: context [
 		if ids/1 = (80000000h + 49) [
 			segwit?: true
 		]
+		?? segwit?
 		GetAddress ids coin-name segwit? res
 		if res/address = none [new-error 'get-btc-address "addr none" res]
 		res/address

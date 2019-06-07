@@ -13,10 +13,10 @@ Red [
 cfg-path: none
 
 apply-cfg: function [][
-	Coins: cfg/Coins
-	append token-list/data extract Coins/tokens 4
-	wallet/contracts: Coins/tokens
-	keys/ledger-path: Coins/Ledger-Path
+	append token-list/data extract cfg/tokens 4
+	wallet/contracts: cfg/tokens
+	keys/ledger-path: cfg/Ledger-Path
+	keys/btc-path: cfg/btc-path
 	if cfg/win-pos [ui/offset: cfg/win-pos]
 ]
 
@@ -25,8 +25,9 @@ save-cfg: function [][
 	if offset/x < 0 [offset/x: 0]
 	if offset/y < 0 [offset/y: 0]
 	cfg/win-pos:  offset
-	cfg/Coins/tokens: wallet/contracts
-	cfg/Coins/Ledger-Path: keys/ledger-path
+	cfg/tokens: wallet/contracts
+	cfg/Ledger-Path: keys/ledger-path
+	cfg/btc-path: keys/btc-path
 
 	save/header cfg-path cfg [Purpose: "RED Wallet Configuration File"]
 ]
@@ -40,27 +41,28 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 
 	default-cfg: [
 		version: 0.4.0
-		Coins: [
-			;-- Token name | NetWorks | Decimal places | Fullname
-			tokens: [
-				"BTC" [
-					"MainNet" #[none]
-					"TestNet" #[none]
-				] 8 "Bitcoin"
-				"ETH" [
-					"mainnet" #[none]
-					"Rinkeby" #[none]
-					"Kovan"	  #[none]
-					"Ropsten" #[none]
-				] 18 "Ethereum"
-				"RED" [
-					"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
-					"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
-				] 18 "RED (Red Community Token)"
-			]
-			Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
+
+		;-- Token name | NetWorks | Decimal places | Fullname
+		tokens: [
+			"BTC" [
+				"MainNet" #[none]
+				"TestNet" #[none]
+			] 8 "Bitcoin"
+			"ETH" [
+				"mainnet" #[none]
+				"Rinkeby" #[none]
+				"Kovan"	  #[none]
+				"Ropsten" #[none]
+			] 18 "Ethereum"
+			"RED" [
+				"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
+				"Rinkeby" "43df37f66b8b9fececcc3031c9c1d2511db17c42"
+			] 18 "RED (Red Community Token)"
 		]
-		win-pos:	#[none]
+
+		Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
+		btc-path:	 [80000031h 80000000h 80000000h 0 idx]
+		win-pos:	 #[none]
 	]
 
 	cfg: either all [
@@ -71,5 +73,7 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 	][
 		default-cfg
 	]
+	unless cfg/version [cfg: default-cfg]
+
 	apply-cfg
 ]

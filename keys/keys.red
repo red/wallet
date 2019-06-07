@@ -31,7 +31,8 @@ keys: context [
 	bip32-path:		[80000031h 80000000h 80000000h 0 idx]	;-- btc-segwit
 	ledger-path:	[8000002Ch 8000003Ch 80000000h idx]
 	trezor-path:	[8000002Ch 8000003Ch 80000000h 0 idx]
-	btc-segwit:		[80000031h 80000000h 80000000h 0 idx]
+	btc-path:		[80000031h 80000000h 80000000h 0 idx]	;-- btc segwit path
+	btc-segwit:		[80000031h 80000000h 80000000h 0 idx]	;-- btc segwit path
 	btc-legacy:		[8000002Ch 80000000h 80000000h 0 idx]
 
 	btc-accounts:	make block! 10	;-- BTC accounts information
@@ -83,7 +84,7 @@ keys: context [
 	set-coin-type: func [type][
 		coin-type: type
 		switch type [
-			BTC [bip32-path: btc-segwit]
+			BTC [bip32-path: btc-path]
 			ETH [bip32-path: eth-path]
 		]
 	]
@@ -258,7 +259,7 @@ keys: context [
 	]
 
 	set-btc-network: func [net-name][
-		poke btc-segwit 2 either net-name = "mainnet" [80000000h][80000001h]
+		poke btc-path 2 either net-name = "mainnet" [80000000h][80000001h]
 	]
 
 	ledger-nano-s?: does [
