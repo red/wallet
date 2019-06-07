@@ -589,6 +589,7 @@ trezor: context [
 	get-btc-signed-data: func [
 		tx			[block!]
 	][
+		probe "jfdksjflkdjsfalksdfjkdasjflsdjafkdjasflkdj88888888888888"
 		SignTxSequence tx
 	]
 
@@ -658,6 +659,7 @@ trezor: context [
 			last-output-remove
 			bin
 	][
+?? tx
 		clear serialized_tx
 		last-request_type: none
 		last-output-remove: false
@@ -899,6 +901,7 @@ trezor: context [
 		/local
 			req			[map!]
 	][
+probe "SignTx"
 		req: make map! reduce ['outputs_count outputs_count 'inputs_count inputs_count 'coin_name coin_name 'lock_time lock_time]
 		PinMatrixSequence 'SignTx 'TxRequest req res
 	]

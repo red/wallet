@@ -18,10 +18,6 @@ apply-cfg: function [][
 	wallet/contracts: Coins/tokens
 	keys/ledger-path: Coins/Ledger-Path
 	if cfg/win-pos [ui/offset: cfg/win-pos]
-	if cfg/coin-type [
-		wallet/coin-type: cfg/coin-type
-		keys/set-coin-type: cfg/coin-type
-	]
 ]
 
 save-cfg: function [][
@@ -29,7 +25,6 @@ save-cfg: function [][
 	if offset/x < 0 [offset/x: 0]
 	if offset/y < 0 [offset/y: 0]
 	cfg/win-pos:  offset
-	cfg/coin-type: wallet/coin-type
 	cfg/Coins/tokens: wallet/contracts
 	cfg/Coins/Ledger-Path: keys/ledger-path
 
@@ -65,7 +60,6 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 			]
 			Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
 		]
-		coin-type:	BTC
 		win-pos:	#[none]
 	]
 

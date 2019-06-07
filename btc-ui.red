@@ -33,12 +33,17 @@ context [
 	info-rate: none
 	info-fee: none
 
+	accout-info: []			;-- current selected accout information
+
 	do-send: func [face [object!] event [event!]][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			network-to/text: net-name
 			addr-from/text: copy/part pick addr-list/data addr-list/selected 35
 			reset-sign-button
+
+			accout-info: select keys/btc-accounts address-index
+?? accout-info
 			label-unit/text: unit-name
 			fee-unit/text: unit-name
 			clear addr-to/text
@@ -70,11 +75,11 @@ context [
 			return no
 		]
 
-		if not lesser-or-equal256? (add256 input-amount input-fee) current/balance [
+		if not lesser-or-equal256? (add256 input-amount input-fee) accout-info/balance [
 			amount-field/text: copy "Insufficient Balance"
 			return no
 		]
-
+probe "end check-data"
 		yes
 	]
 
@@ -86,6 +91,7 @@ context [
 		/local utx
 	][
 		utx: calc-balance-by-largest account amount fee addr-to
+?? utx
 		if utx = none [
 			utx: calc-balance-by-order account amount fee addr-to
 		]
@@ -101,6 +107,7 @@ context [
 		return:				[none! block!]
 		/local change-addr-path change-addr ret inputs outputs total item utx info rest
 	][
+		probe "calc-balance-by-largest"
 		change-addr-path: select last account/change 'path
 		change-addr: select last account/change 'addr
 		ret: copy []
@@ -114,7 +121,8 @@ context [
 
 			foreach utx item/utxs [
 				if lesser-or-equal256? total utx/value [
-					info: btc-api/get-tx-info network utx/tx-hash
+					info: btc/get-tx-info network utx/tx-hash
+?? info
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
@@ -134,7 +142,7 @@ context [
 
 			foreach utx item/utxs [
 				if lesser-or-equal256? total utx/value [
-					info: btc-api/get-tx-info network utx/tx-hash
+					info: btc/get-tx-info network utx/tx-hash
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
@@ -147,6 +155,7 @@ context [
 				]
 			]
 		]
+probe "jfdksjfldsjafsjaflkjdslfjdsfdskafjldsjfaldsjflj"
 		none
 	]
 
@@ -158,6 +167,7 @@ context [
 		return:				[none! block!]
 		/local change-addr-path change-addr ret inputs outputs total sum item utx info rest
 	][
+probe "fjdkj"
 		change-addr-path: select last account/change 'path
 		change-addr: select last account/change 'addr
 		ret: copy []
@@ -171,7 +181,7 @@ context [
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
-				info: btc-api/get-tx-info network utx/tx-hash
+				info: btc/get-tx-info network utx/tx-hash
 				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
@@ -192,7 +202,7 @@ context [
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
-				info: btc-api/get-tx-info network utx/tx-hash
+				info: btc/get-tx-info network utx/tx-hash
 				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
@@ -207,13 +217,23 @@ context [
 				]
 			]
 		]
+probe "end orfer"
 		none
+	]
+
+	notify-user: does [
+		btn-sign/enabled?: no
+		process-events
+		btn-sign/offset/x: 132
+		btn-sign/size/x: 230
+		btn-sign/text: "Confirm the transaction on your key"
+		process-events
 	]
 
 	do-sign-tx: func [face [object!] event [event!] /local utx rate][
 		unless check-data [exit]
 
-		utx: calc-balance current/info input-amount input-fee input-addr
+		utx: calc-balance accout-info input-amount input-fee input-addr
 		if utx = none [
 			amount-field/text: copy "NYI.!"
 			return no
@@ -221,8 +241,11 @@ context [
 
 		notify-user
 
-		signed-data: try [key/get-btc-signed-data utx]
-		;probe signed-data
+probe "get-signed-data"
+		signed-data: keys/get-signed-data 0 utx 0
+
+?? signed-data
+
 		either binary? signed-data [
 			info-from/text:		addr-from/text
 			info-to/text:		copy addr-to/text
@@ -245,12 +268,12 @@ context [
 
 	do-confirm: func [face [object!] event [event!] /local datas txid result][
 		datas: lowercase enbase/base signed-data 16
-		if error? txid: try [btc-api/decode-tx network datas][
+		if error? txid: try [btc/decode-tx network datas][
 			ui-base/tx-error/text: rejoin ["Error! Please try again^/^/" form txid]
 			view/flags ui-base/tx-error-dlg 'modal
 			exit
 		]
-		either error? result: try [btc-api/publish-tx network datas][
+		either error? result: try [btc/publish-tx network datas][
 			unview
 			ui-base/tx-error/text: rejoin ["Error! Please try again^/^/" form result]
 			view/flags ui-base/tx-error-dlg 'modal

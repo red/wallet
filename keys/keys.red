@@ -166,12 +166,7 @@ keys: context [
 					change back tail bip32-path idx
 					key/get-eth-signed-data bip32-path tx chain-id
 				]
-				BTC [
-					poke bip32-path 3 80000000h + idx
-					bip32-path/4: 0
-					bip32-path/5: 0
-					key/get-btc-signed-data bip32-path tx
-				]
+				BTC [key/get-btc-signed-data tx]
 			]
 		]
 	]
