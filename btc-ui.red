@@ -35,11 +35,12 @@ context [
 
 	accout-info: []			;-- current selected accout information
 
-	do-send: func [face [object!] event [event!]][
+	do-send: func [face [object!] event [event!] /local item][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			network-to/text: net-name
-			addr-from/text: copy/part pick addr-list/data addr-list/selected 35
+			item: pick addr-list/data addr-list/selected
+			addr-from/text: copy/part item find item space
 			reset-sign-button
 
 			accout-info: select keys/btc-accounts address-index

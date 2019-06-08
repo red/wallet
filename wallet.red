@@ -243,19 +243,17 @@ wallet: context [
 	]
 
 	select-config: func [idx [integer!]][
-		coin-type: either token-name = "BTC" ['BTC]['ETH]
+		if coin-type = 'BTC [keys/set-btc-network net-name]
 		network:  networks/:coin-type/:idx
 		explorer: explorers/:coin-type/:idx
 		chain-id: chain-ids/:idx
 		token-contract: contracts/:token-name/:net-name
-		keys/set-coin-type coin-type
 		unless string? token-contract [token-contract: none]
 	]
 
 	do-select-network: func [face [object!] event [event!] /local idx][
 		idx: face/selected
 		net-name: face/data/:idx
-		if coin-type = 'BTC [keys/set-btc-network net-name]
 		select-config idx
 		do-reload
 	]
@@ -276,6 +274,8 @@ wallet: context [
 		face/extra: idx				;-- save index
 		net: net-list/selected
 		token-name: face/data/:idx
+		coin-type: either token-name = "BTC" ['BTC]['ETH]
+		keys/set-coin-type coin-type
 
 		info: find contracts token-name
 		token-decimals: info/3
@@ -284,7 +284,7 @@ wallet: context [
 		net: net-list/selected: either net > n [n][net]
 		net-name: net-list/data/:net
 		select-config net
-		fast-api?: either token-contract [
+		fast-api?: either any [coin-type = 'BTC token-contract] [
 			clear skip addr-list/menu 2
 			no
 		][
@@ -497,10 +497,10 @@ wallet: context [
 		]
 	]
 
-	copy-addr: func [/local n][
+	copy-addr: func [/local item][
 		if btn-send/enabled? [
-			n: either coin-type = 'BTC [35][42]
-			write-clipboard copy/part pick addr-list/data addr-list/selected n
+			item: pick addr-list/data addr-list/selected
+			write-clipboard copy/part item find item space
 		]
 	]
 
@@ -582,6 +582,7 @@ wallet: context [
 					keys/btc-legacy
 				]
 				keys/bip32-path: keys/btc-path
+				keys/set-btc-network net-name
 				do-reload
 			]
 		] pad 160x0
