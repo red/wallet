@@ -719,6 +719,8 @@ wallet: context [
 			"Copy address"		copy
 			"Batch payment"		batch
 		]
+
+		btc-ui/setup-actors
 	]
 
 	run: does [

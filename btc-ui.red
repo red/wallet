@@ -35,6 +35,7 @@ context [
 	info-rate: none
 	info-fee: none
 
+	tx-rates: none
 	accout-info: []			;-- current selected accout information
 	utxs: none
 
@@ -47,10 +48,6 @@ context [
 			reset-sign-button
 
 			accout-info: select keys/btc-accounts address-index
-			tx-rate/text: "20"
-			if rate: btc/get-rate 'fast [
-				tx-rate/text: to string! rate
-			]
 			label-unit/text: unit-name
 			fee-unit/text: unit-name
 			clear addr-to/text
@@ -86,7 +83,6 @@ context [
 			amount-field/text: copy "Insufficient Balance"
 			return no
 		]
-probe "end check-data"
 		yes
 	]
 
@@ -112,7 +108,6 @@ probe "end check-data"
 		return:				[none! block!]
 		/local change-addr-path change-addr ret inputs outputs total item utx info rest
 	][
-		probe "calc-balance-by-largest"
 		change-addr-path: select last account/change 'path
 		change-addr: select last account/change 'addr
 		ret: copy []
@@ -219,7 +214,6 @@ probe "end check-data"
 				]
 			]
 		]
-probe "end orfer"
 		none
 	]
 
@@ -233,11 +227,15 @@ probe "end orfer"
 	]
 
 	do-sign-tx: func [face [object!] event [event!] /local rate][
+		unless check-data [exit]
 		notify-user
 
-probe "get-signed-data"
-		signed-data: keys/get-signed-data 0 utxs 0
-probe "get-signed-data end"
+		utxs: calc-balance accout-info input-amount input-fee input-addr
+		unless utxs [
+			amount-field/text: copy "Insufficient Balance"
+			exit
+		]
+		signed-data: try [keys/get-signed-data 0 utxs 0]
 
 		either binary? signed-data [
 			info-from/text:		addr-from/text
@@ -252,43 +250,51 @@ probe "get-signed-data end"
 		][
 			if error? signed-data [
 				unview
-				ui-base/tx-error/text: rejoin ["Error! Please try again^/^/" form signed-data]
-				view/flags ui-base/tx-error-dlg 'modal
+				tx-error/text: rejoin ["Error! Please try again^/^/" form signed-data]
+				view/flags tx-error-dlg 'modal
 			]
-			reset-sign-button
 		]
+		reset-sign-button
 	]
 
 	do-confirm: func [face [object!] event [event!] /local datas txid result][
 		datas: lowercase enbase/base signed-data 16
 		if error? txid: try [btc/decode-tx network datas][
-			ui-base/tx-error/text: rejoin ["Error! Please try again^/^/" form txid]
-			view/flags ui-base/tx-error-dlg 'modal
+			tx-error/text: rejoin ["Error! Please try again^/^/" form txid]
+			view/flags tx-error-dlg 'modal
 			exit
 		]
 		either error? result: try [btc/publish-tx network datas][
 			unview
-			ui-base/tx-error/text: rejoin ["Error! Please try again^/^/" form result]
-			view/flags ui-base/tx-error-dlg 'modal
+			tx-error/text: rejoin ["Error! Please try again^/^/" form result]
+			view/flags tx-error-dlg 'modal
 		][
 			unview
 			browse rejoin [explorer txid]
 		]
 	]
 
-	do-amount-check: func [face [object!] event [event!] /local len fee][
-		reset-sign-button
-		if error? try [load face/text][exit]
-		unless check-data [exit]
-
+	update-fee: func [/force /local len fee rate][
 		utxs: calc-balance accout-info input-amount input-fee input-addr
-		if utxs = none [
-			amount-field/text: copy "NYI.!"
+		if all [not force utxs = none][
+			amount-field/text: copy "Insufficient Balance"
 			exit
 		]
-		len: keys/get-signed-len 0 utxs 0
-		fee: (len * to integer! tx-rate/text) / 1e8
+		len: either utxs [
+			keys/get-signed-len 0 utxs 0
+		][
+			220
+		]
+		?? len
+		rate: pick tx-rates tx-rate/selected
+		fee: len * rate / 1e8
 		tx-fee/text: to string! fee
+	]
+
+	do-select-rate: func [face [object!] event [event!] /local tm][
+		tm: ["(about 10 mins)" "(about 30 mins)" "(about 1 hour)"]
+		rate-unit/text: pick tm face/selected
+		update-fee
 	]
 
 	reset-sign-button: does [
@@ -306,9 +312,11 @@ probe "get-signed-data end"
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
 		label "To Address:"		addr-to:	  field return
-		label "Amount to Send:" amount-field: field on-change :do-amount-check 120 label-unit: label 50 return
-		label "FeeRate:"		tx-rate:	  field 120 "20" rate-unit: label "sat/B" 50 return
-		label "Fee:"			tx-fee:		  field 120 "0.0001" fee-unit: label 50 return
+		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
+		label "FeeRate:"		tx-rate: drop-list 
+			data ["fast" "average" "slow"] 120 select 1 :do-select-rate
+			rate-unit: label "(About 10 mins)" 160 return
+		label "Fee:"			tx-fee:		  field 120 "0" fee-unit: label 50 return
 		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
 	]
 
@@ -323,5 +331,22 @@ probe "get-signed-data end"
 		label "Fee:" 			info-fee:	  info return
 		label "FeeRate:"		info-rate:	  info return
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
+	]
+
+	setup-actors: does [
+		send-dialog/rate: 0:0:1
+		send-dialog/actors: make object! [
+			on-time: func [face event /local res][
+				face/rate: none
+				input-amount: to-i256 0
+				input-fee: to-i256 0
+				input-addr: addr-from/text
+				tx-rates: btc/get-rate 'all
+				update-fee/force
+			]
+			on-close: func [face event][
+				face/rate: 0:0:1
+			]
+		]
 	]
 ]
