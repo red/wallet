@@ -170,7 +170,7 @@ btc: context [
 		txid
 	]
 
-	get-fee: func [speed [word!] return: [float! none!] /local network res fee][
+	get-rate: func [speed [word!] return: [float! none!] /local network res fee][
 		if all [speed <> 'average speed <> 'fastest speed <> 'safeLow speed <> 'fast][return none]
 		network: https://bitcoinfees.earn.com/api/v1/fees/recommended
 		unless map? res: try [get-url network][return none]
@@ -178,7 +178,10 @@ btc: context [
 			if fee: select res 'halfHourFee [return fee]
 			return none
 		]
-		if speed = 'fastest [
+		if any [
+			speed = 'fastest
+			speed = 'fast
+		][
 			if fee: select res 'fastestFee [return fee]
 			return none
 		]
