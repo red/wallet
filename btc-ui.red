@@ -277,6 +277,7 @@ probe "get-signed-data end"
 	]
 
 	do-amount-check: func [face [object!] event [event!] /local len fee][
+		reset-sign-button
 		if error? try [load face/text][exit]
 		unless check-data [exit]
 
@@ -288,6 +289,13 @@ probe "get-signed-data end"
 		len: keys/get-signed-len 0 utxs 0
 		fee: (len * to integer! tx-rate/text) / 1e8
 		tx-fee/text: to string! fee
+	]
+
+	reset-sign-button: does [
+		btn-sign/enabled?: yes
+		btn-sign/offset/x: 215
+		btn-sign/size/x: 60
+		btn-sign/text: "Sign"
 	]
 
 	send-dialog: layout [
