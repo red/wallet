@@ -24,6 +24,8 @@ context [
 	addr-to: none
 	amount-field: none
 	tx-fee: none
+	tx-rate: none
+	rate-unit: none
 	btn-sign: none
 	info-from: none
 	info-to: none
@@ -34,8 +36,9 @@ context [
 	info-fee: none
 
 	accout-info: []			;-- current selected accout information
+	utxs: none
 
-	do-send: func [face [object!] event [event!] /local item][
+	do-send: func [face [object!] event [event!] /local item rate][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
 			network-to/text: net-name
@@ -44,6 +47,10 @@ context [
 			reset-sign-button
 
 			accout-info: select keys/btc-accounts address-index
+			tx-rate/text: "20"
+			if rate: btc/get-rate 'fast [
+				tx-rate/text: to string! rate
+			]
 			label-unit/text: unit-name
 			fee-unit/text: unit-name
 			clear addr-to/text
@@ -225,19 +232,11 @@ probe "end orfer"
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local utx rate][
-		unless check-data [exit]
-
-		utx: calc-balance accout-info input-amount input-fee input-addr
-		if utx = none [
-			amount-field/text: copy "NYI.!"
-			return no
-		]
-
+	do-sign-tx: func [face [object!] event [event!] /local rate][
 		notify-user
 
 probe "get-signed-data"
-		signed-data: keys/get-signed-data 0 utx 0
+		signed-data: keys/get-signed-data 0 utxs 0
 probe "get-signed-data end"
 
 		either binary? signed-data [
@@ -277,6 +276,19 @@ probe "get-signed-data end"
 		]
 	]
 
+	do-address-check: function [face [object!] event [event!]][
+		unless check-data [exit]
+
+		utxs: calc-balance accout-info input-amount input-fee input-addr
+		if utxs = none [
+			amount-field/text: copy "NYI.!"
+			return no
+		]
+		len: keys/get-signed-len 0 utxs 0
+		fee: (len * to integer! tx-rate/text) / 1e8
+		tx-fee/text: to string! fee
+	]
+
 	send-dialog: layout [
 		title "Send Bitcoin"
 		style label: text  100 middle
@@ -284,8 +296,9 @@ probe "get-signed-data end"
 		style field: field 360 font [name: font-fixed size: 10]
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
-		label "To Address:"		addr-to:	  field return
+		label "To Address:"		addr-to:	  field :do-address-check return
 		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
+		label "FeeRate:"		tx-rate:	  field 120 "20" rate-unit: label " sat/B" 50 return
 		label "Fee:"			tx-fee:		  field 120 "0.0001" fee-unit: label 50 return
 		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
 	]
