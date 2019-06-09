@@ -259,7 +259,9 @@ keys: context [
 	]
 
 	set-btc-network: func [net-name][
-		poke btc-path 2 either net-name = "mainnet" [80000000h][80000001h]
+		if coin-type = 'BTC [
+			poke bip32-path 2 either net-name = "mainnet" [80000000h][80000001h]
+		]
 	]
 
 	ledger-nano-s?: does [
