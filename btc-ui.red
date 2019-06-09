@@ -276,13 +276,14 @@ probe "get-signed-data end"
 		]
 	]
 
-	do-address-check: function [face [object!] event [event!]][
+	do-amount-check: func [face [object!] event [event!] /local len fee][
+		if error? try [load face/text][exit]
 		unless check-data [exit]
 
 		utxs: calc-balance accout-info input-amount input-fee input-addr
 		if utxs = none [
 			amount-field/text: copy "NYI.!"
-			return no
+			exit
 		]
 		len: keys/get-signed-len 0 utxs 0
 		fee: (len * to integer! tx-rate/text) / 1e8
@@ -296,9 +297,9 @@ probe "get-signed-data end"
 		style field: field 360 font [name: font-fixed size: 10]
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
-		label "To Address:"		addr-to:	  field :do-address-check return
-		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
-		label "FeeRate:"		tx-rate:	  field 120 "20" rate-unit: label " sat/B" 50 return
+		label "To Address:"		addr-to:	  field return
+		label "Amount to Send:" amount-field: field on-change :do-amount-check 120 label-unit: label 50 return
+		label "FeeRate:"		tx-rate:	  field 120 "20" rate-unit: label "sat/B" 50 return
 		label "Fee:"			tx-fee:		  field 120 "0.0001" fee-unit: label 50 return
 		pad 215x10 btn-sign: button 60 "Sign" :do-sign-tx
 	]
