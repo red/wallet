@@ -169,4 +169,23 @@ btc: context [
 		unless txid: select data 'txid [new-error 'decode-tx "no txid" url]
 		txid
 	]
+
+	get-fee: func [speed [word!] return: [float! none!] /local network res fee][
+		if all [speed <> 'average speed <> 'fastest speed <> 'safeLow speed <> 'fast][return none]
+		network: https://bitcoinfees.earn.com/api/v1/fees/recommended
+		unless map? res: try [get-url network][return none]
+		if speed = 'average [
+			if fee: select res 'halfHourFee [return fee]
+			return none
+		]
+		if speed = 'fastest [
+			if fee: select res 'fastestFee [return fee]
+			return none
+		]
+		if speed = 'safeLow [
+			if fee: select res 'hourFee [return fee]
+			return none
+		]
+		none
+	]
 ]
