@@ -172,6 +172,57 @@ keys: context [
 		]
 	]
 
+	get-signed-len: function [
+		idx			[integer!]
+		tx			[block!]
+		chain-id	[integer!]
+		return:		[integer!]
+	][
+		len: 0
+		input-count: length? tx/inputs
+		;- version
+		len: len + 4
+		;-- flag
+		len: len + 2
+		;-- tx_in count
+		len: len + 1
+		;-- tx_in
+		loop length? tx/inputs [
+			;-- tx_hash
+			len: len + 32
+			;-- index
+			len: len + 4
+			;-- #{1716}
+			len: len + 2
+			;-- script
+			len: len + 22
+			;-- sequeue
+			len: len + 4
+		]
+		;-- tx_out count
+		len: len + 1
+		loop length? tx/outputs [
+			;-- value
+			len: len + 8
+			;-- #{17 A9 14}
+			len: len + 3
+			len: len + 20
+			;-- #{87}
+			len: len + 1
+		]
+		;-- segwit
+		loop length? tx/inputs [
+			;-- script num
+			len: len + 1
+			;-- script len
+			len: len + 1
+			;-- script
+			len: len + 72
+		]
+		;-- locktime
+		len: len + 4
+	]
+
 	enum-address-info: func [
 		path account network
 		/local
