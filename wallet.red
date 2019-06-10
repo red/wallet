@@ -142,7 +142,9 @@ wallet: context [
 		process-events
 	]
 
-	list-addresses: func [/prev /next /local addr-balances addrs addr entry balances n][
+	list-addresses: func [
+		/prev /next /local addr-balances addrs addr entry balances balance n
+	][
 		update-ui no
 
 		either keys/key [
@@ -198,7 +200,13 @@ wallet: context [
 					n: page * addr-per-page
 					foreach entry addr-list/data [
 						either coin-type = 'BTC [
-							replace entry "<loading>" fetch-balance n
+							balance: fetch-balance n
+							either string? balance [
+								replace entry "<loading>" balance
+							][
+								clear entry
+								insert entry first balance
+							]
 							n: n + 1
 						][
 							addr: copy/part entry find entry space
@@ -243,7 +251,10 @@ wallet: context [
 	]
 
 	select-config: func [idx [integer!]][
-		if coin-type = 'BTC [keys/set-btc-network net-name]
+		if coin-type = 'BTC [
+			if net-name = "testnet" [page: 0 page-info: 1]
+			keys/set-btc-network net-name
+		]
 		network:  networks/:coin-type/:idx
 		explorer: explorers/:coin-type/:idx
 		chain-id: chain-ids/:idx
@@ -274,7 +285,11 @@ wallet: context [
 		face/extra: idx				;-- save index
 		net: net-list/selected
 		token-name: face/data/:idx
-		coin-type: either token-name = "BTC" ['BTC]['ETH]
+		coin-type: either token-name = "BTC" [
+			page: 0
+			page-info/selected: 1
+			'BTC
+		]['ETH]
 		keys/set-coin-type coin-type
 
 		info: find contracts token-name
@@ -497,9 +512,22 @@ wallet: context [
 		]
 	]
 
-	copy-addr: func [/local item][
+	copy-addr: func [/local item idx unused][
 		if btn-send/enabled? [
-			item: pick addr-list/data addr-list/selected
+			idx: addr-list/selected
+			if coin-type = 'BTC [
+				unused: keys/unused-idx + 1
+				if idx > unused [
+					item: pick addr-list/data unused
+					tx-error/text: rejoin [
+						"Please use the first unused account #" unused ":^/^/"
+						copy/part item find item space
+					]
+					view/flags tx-error-dlg 'modal
+					exit
+				]
+			]
+			item: pick addr-list/data idx
 			write-clipboard copy/part item find item space
 		]
 	]
@@ -561,7 +589,7 @@ wallet: context [
 		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["Add Tokens"] 80 select 2 :do-select-token
-		net-list:   drop-list data ["mainnet" "testnet"] select 1 :do-select-network
+		net-list:   drop-list data ["Mainnet" "Testnet"] select 1 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		

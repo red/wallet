@@ -35,6 +35,7 @@ keys: context [
 	btc-segwit:		[80000031h 80000000h 80000000h 0 idx]	;-- btc segwit path
 	btc-legacy:		[8000002Ch 80000000h 80000000h 0 idx]
 
+	unused-idx:		-1
 	btc-accounts:	make block! 10	;-- BTC accounts information
 
 	support?: func [
@@ -84,7 +85,7 @@ keys: context [
 	set-coin-type: func [type][
 		coin-type: type
 		switch type [
-			BTC [bip32-path: btc-path]
+			BTC [unused-idx: -1 bip32-path: btc-path]
 			ETH [bip32-path: eth-path]
 		]
 	]
@@ -306,7 +307,9 @@ keys: context [
 	]
 
 	get-balance: func [network idx /local res][
+		if unused-idx > -1 [return reduce [rejoin ["Unused Account #" idx + 1]]]
 		res: enum-address-info bip32-path idx network
+		if zero256? res/balance [unused-idx: idx]
 		put btc-accounts idx res
 		form-i256 res/balance 8 8
 	]
@@ -314,6 +317,7 @@ keys: context [
 	set-btc-network: func [net-name][
 		if coin-type = 'BTC [
 			poke bip32-path 2 either net-name = "mainnet" [80000000h][80000001h]
+			unused-idx: -1
 		]
 	]
 
