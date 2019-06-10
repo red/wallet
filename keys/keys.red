@@ -218,6 +218,10 @@ keys: context [
 			len: len + 1
 			;-- script
 			len: len + 72
+			;-- pubkey len
+			len: len + 1
+			;-- pubkey
+			len: len + 33
 		]
 		;-- locktime
 		len: len + 4
