@@ -75,7 +75,7 @@ eth: context [
 	call-rpc: func [network [url!] method [word!] params [none! block!] /local data res][
 		body/method: method
 		body/params: params
-		data: json/encode body
+		data: to-json body
 		headers/cookie: cookie data
 		res: attempt [
 			write network compose/only [
@@ -85,7 +85,7 @@ eth: context [
 			]
 		]
 		if none? res [return 'Timeout]
-		res: json/decode res
+		res: load-json res
 		unless data: select res 'result [			;-- error
 			data: select res 'error
 		]
@@ -148,10 +148,10 @@ eth: context [
 		/local res 
 	][
 		unless error? res: try [read url][
-			return json/decode res
+			return load-json res
 		]
 
-		json/decode read url
+		load-json read url
 	]
 
 	get-gas-price: func [speed [word!] return: [float! none!] /local network res][

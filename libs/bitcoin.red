@@ -23,8 +23,7 @@ btc: context [
 	get-url: func [url [url!] return: [map!]
 		/local res 
 	][
-		if all [not error? res: try-read url map? res: json/decode res][return res]
-		if map? res: json/decode read url [return res]
+		if all [not error? res: try-read url map? res: load-json res][return res]
 		new-error 'get-url "server error" url
 	]
 
@@ -130,11 +129,11 @@ btc: context [
 		command: compose/only [
 				POST
 				(headers)
-				(json/encode body)
+				(to-json body)
 		]
 
-		if all [not error? res: try [write url command] map? res: json/decode res][return res]
-		if map? res: json/decode write url command [return res]
+		if all [not error? res: try [write url command] map? res: load-json res][return res]
+		if map? res: load-json write url command [return res]
 		new-error 'post-url "server error" [url command]
 	]
 

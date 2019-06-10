@@ -30,7 +30,6 @@ try-read: func [url][
 ]
 
 #include %libs/int256.red
-#include %libs/JSON.red
 #include %libs/ethereum.red
 #include %libs/bitcoin.red
 #include %libs/HID/hidapi.red
