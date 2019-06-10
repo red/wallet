@@ -281,7 +281,7 @@ context [
 			exit
 		]
 		len: either utxs [
-			keys/get-signed-len 0 utxs 0
+			keys/get-signed-len utxs
 		][
 			220
 		]
