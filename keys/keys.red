@@ -173,9 +173,7 @@ keys: context [
 	]
 
 	get-signed-len: function [
-		idx			[integer!]
 		tx			[block!]
-		chain-id	[integer!]
 		return:		[integer!]
 	][
 		len: 0
