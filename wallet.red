@@ -252,7 +252,7 @@ wallet: context [
 
 	select-config: func [idx [integer!]][
 		if coin-type = 'BTC [
-			if net-name = "testnet" [page: 0 page-info: 1]
+			if net-name = "testnet" [page: 0 page-info/selected: 1]
 			keys/set-btc-network net-name
 		]
 		network:  networks/:coin-type/:idx
@@ -269,7 +269,7 @@ wallet: context [
 		do-reload
 	]
 
-	do-select-token: func [face [object!] event [event!] /local idx net n tokens info][
+	do-select-token: func [face event /local idx net n tokens info][
 		idx: face/selected
 		if idx = 1 [				;-- add tokens
 			tokens: make block! 10
@@ -299,11 +299,15 @@ wallet: context [
 		net: net-list/selected: either net > n [n][net]
 		net-name: net-list/data/:net
 		select-config net
+
+		clear skip addr-list/menu 2
 		fast-api?: either any [coin-type = 'BTC token-contract] [
-			clear skip addr-list/menu 2
+			if coin-type = 'BTC [
+				append addr-list/menu ["Copy Unused Address" copy-unused]
+			]
 			no
 		][
-			append addr-list/menu ["Batch payment" batch]
+			append addr-list/menu ["Batch Payment" batch]
 			yes
 		]
 		do-reload
@@ -317,7 +321,10 @@ wallet: context [
 		]
 	]
 
-	do-reload: does [if keys/key [list-addresses]]
+	do-reload: does [
+		keys/unused-idx: -1
+		if keys/key [list-addresses]
+	]
 	
 	do-resize: function [delta [pair!]][
 		ref: as-pair btn-send/offset/x - 10 ui/extra/y / 2
@@ -378,6 +385,7 @@ wallet: context [
 		btn-send/enabled?: to-logic all [enabled? addr-list/selected addr-list/selected > 0]
 		if page > 0 [btn-prev/enabled?: enabled?]
 		foreach f [btn-more net-list token-list page-info btn-reload][
+			?? f
 			set in get f 'enabled? enabled?
 		]
 		if enabled? [
@@ -512,19 +520,22 @@ wallet: context [
 		]
 	]
 
-	copy-addr: func [/local item idx unused][
+	copy-addr: func [/unused /local item idx unused-idx][
 		if btn-send/enabled? [
 			idx: addr-list/selected
 			if coin-type = 'BTC [
-				unused: keys/unused-idx + 1
-				if idx > unused [
-					item: pick addr-list/data unused
+				unused-idx: keys/unused-idx + 1
+				if idx > unused-idx [
+					item: pick addr-list/data unused-idx
 					tx-error/text: rejoin [
-						"Please use the first unused account #" unused ":^/^/"
+						"Please use the first unused account #" unused-idx ":^/^/"
 						copy/part item find item space
 					]
 					view/flags tx-error-dlg 'modal
 					exit
+				]
+				if unused [
+					write-clipboard keys/get-address/unused address-index
 				]
 			]
 			item: pick addr-list/data idx
@@ -588,7 +599,7 @@ wallet: context [
 		title "RED Wallet"
 		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
-		token-list: drop-list data ["Add Tokens"] 80 select 2 :do-select-token
+		token-list: drop-list data ["Add Tokens"] 80 select 3 :do-select-token
 		net-list:   drop-list data ["Mainnet" "Testnet"] select 1 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
@@ -705,6 +716,9 @@ wallet: context [
 
 	setup-actors: does [
 		ui/actors: context [
+			on-create: func [face event][
+				do [do-select-token token-list none]
+			]
 			on-close: func [face event][
 				keys/close
 				save-cfg
@@ -719,6 +733,7 @@ wallet: context [
 
 		addr-list/actors: make object! [
 			on-menu: func [face [object!] event [event!] /local data addr amount][
+				address-index: page * addr-per-page + addr-list/selected - 1
 				switch event/picked [
 					copy	[copy-addr]
 					batch	[
@@ -727,6 +742,7 @@ wallet: context [
 						amount: eth/eth-to-wei trim/head copy skip data 42
 						eth-batch/open addr amount
 					]
+					copy-unused [copy-addr/unused]
 				]
 			]
 			on-change: func [face event][
@@ -744,8 +760,7 @@ wallet: context [
 		]
 
 		addr-list/menu: [
-			"Copy address"		copy
-			"Batch payment"		batch
+			"Copy Address"		copy
 		]
 
 		btc-ui/setup-actors

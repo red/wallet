@@ -139,7 +139,7 @@ keys: context [
 		do [key/close-pin-requesting]
 	]
 
-	get-address: func [idx [integer!] /local res][
+	get-address: func [idx [integer!] /unused /local res][
 		do [
 			switch coin-type [
 				ETH [
@@ -147,11 +147,16 @@ keys: context [
 					key/get-eth-address bip32-path
 				]
 				BTC [
-					poke bip32-path 3 80000000h + idx
-					bip32-path/4: 0
-					bip32-path/5: 0
-					res: key/get-btc-address bip32-path
-					either block? res [res/1][res]
+					either unused [
+						res: select btc-accounts idx
+						select last res/origin 'addr
+					][
+						poke bip32-path 3 80000000h + idx
+						bip32-path/4: 0
+						bip32-path/5: 0
+						res: key/get-btc-address bip32-path
+						either block? res [res/1][res]
+					]
 				]
 			]
 		]
