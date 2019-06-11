@@ -23,8 +23,39 @@ btc: context [
 	get-url: func [url [url!] return: [map!]
 		/local res 
 	][
-		if all [not error? res: try-read url map? res: load-json res][return res]
+		if all [not error? res: try-read url not error? res: load-json res][return res]
 		new-error 'get-url "server error" url
+	]
+
+	get-batch-balance: func [network [url!] addrs [block!]
+		/local len naddrs url resp err-no err-msg data ret
+	][
+		len: length? addrs
+		naddrs: copy addrs/1
+		addrs: next addrs
+		forall addrs [
+			append naddrs ","
+			append naddrs addrs/1
+		]
+		url: rejoin [network "/address/" naddrs]
+		resp: get-url url
+		err-no: select resp 'err_no
+		if 0 <> err-no [
+			err-msg: select resp 'err_msg
+			new-error 'get-addr-balance "server error" reduce [url err-no err-msg]
+		]
+
+		unless data: select resp 'data [new-error 'get-addr-balance "server error" "no data"]
+		if len <> length? data [new-error 'get-addr-balance "server error" "no enough"]
+		ret: make block! length? data
+		forall data [
+			either data/1 [
+				repend/only ret ['tx-count data/1/tx_count 'balance to-i256 data/1/balance]
+			][
+				repend/only ret ['tx-count 0]
+			]
+		]
+		ret
 	]
 
 	get-addr-balance: func [network [url!] address [string!] return: [none! vector!]

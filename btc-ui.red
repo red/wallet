@@ -39,6 +39,27 @@ context [
 	accout-info: []			;-- current selected accout information
 	utxs: none
 
+	update-utxs: function [][
+		origin: accout-info/origin
+		forall origin [
+			if origin/1/utxs [continue]
+			if origin/1/tx-count = 0 [continue]
+			if zero256? origin/1/balance [continue]
+			unless empty? utxs: btc/get-unspent network origin/1/addr [
+				repend origin/1 ['utxs utxs]
+			]
+		]
+		change: accout-info/change
+		forall change [
+			if change/1/utxs [continue]
+			if change/1/tx-count = 0 [continue]
+			if zero256? change/1/balance [continue]
+			unless empty? utxs: btc/get-unspent network change/1/addr [
+				repend change/1 ['utxs utxs]
+			]
+		]
+	]
+
 	do-send: func [face [object!] event [event!] /local item rate][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
@@ -52,6 +73,7 @@ context [
 			fee-unit/text: unit-name
 			clear addr-to/text
 			clear amount-field/text
+			update-utxs
 			view/flags send-dialog 'modal
 		]
 	]
