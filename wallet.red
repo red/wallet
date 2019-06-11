@@ -535,6 +535,7 @@ wallet: context [
 				]
 				if unused [
 					write-clipboard keys/get-address/unused address-index
+					exit
 				]
 			]
 			item: pick addr-list/data idx
