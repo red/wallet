@@ -146,13 +146,13 @@ context [
 		total: add256 amount fee
 
 		foreach item account/change [
-			if item/balance = none [break]
+			if item/tx-count = 0 [continue]
+			if zero256? item/balance [continue]
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
 				if lesser-or-equal256? total utx/value [
-					info: btc/get-tx-info network utx/tx-hash
-					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
+					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
 					if #{} <> trim/head i256-to-bin rest [
@@ -166,13 +166,13 @@ context [
 		]
 
 		foreach item account/origin [
-			if item/balance = none [break]
+			if item/tx-count = 0 [continue]
+			if zero256? item/balance [continue]
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
 				if lesser-or-equal256? total utx/value [
-					info: btc/get-tx-info network utx/tx-hash
-					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
+					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
 					if #{} <> trim/head i256-to-bin rest [
