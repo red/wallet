@@ -154,6 +154,8 @@ wallet: context [
 			if prev [page: page - 1]
 			n: page * addr-per-page
 
+			keys/unused-idx: -1
+
 			loop addr-per-page [
 				addr: keys/get-address n
 				either string? addr [
@@ -219,6 +221,8 @@ wallet: context [
 			][
 				info-msg/text: ""
 			]
+
+			if keys/unused-idx = -1 [keys/unused-idx: page + 1 * addr-per-page]
 			update-ui yes
 			do-auto-size addr-list
 		][usb-device/rate: 0:0:2]
@@ -320,10 +324,7 @@ wallet: context [
 		]
 	]
 
-	do-reload: does [
-		keys/unused-idx: -1
-		if keys/key [list-addresses]
-	]
+	do-reload: does [if keys/key [list-addresses]]
 	
 	do-resize: function [delta [pair!]][
 		ref: as-pair btn-send/offset/x - 10 ui/extra/y / 2
@@ -520,7 +521,7 @@ wallet: context [
 
 	copy-addr: func [/unused /local item idx unused-idx][
 		if btn-send/enabled? [
-			idx: addr-list/selected
+			idx: address-index + 1
 			if coin-type = 'BTC [
 				unused-idx: keys/unused-idx + 1
 				if idx > unused-idx [
