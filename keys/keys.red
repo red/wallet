@@ -231,12 +231,29 @@ keys: context [
 		len: len + 4
 	]
 
-	enum-address-info: func [
-		path account network
-		/local
-			ids list c-list o-list len i addr-key
-			addr pubkey utxs balance total
-	][
+	get-batch-balance: function [ids num network][
+		blks: make block! num
+		addrs: make block! num
+		loop num [
+			addr-key: do [key/get-btc-address ids]
+			addr: either block? addr-key [addr-key/1][addr-key]
+			pubkey: either block? addr-key [addr-key/2][none]
+			append/only blks reduce ['addr addr 'path copy ids 'pubkey pubkey]
+			append addrs addr
+			process-events
+			ids/5: ids/5 + 1
+		]
+		balances: btc/get-batch-balance network addrs
+		forall blks [
+			index: index? blks
+			append blks/1 balances/(index)
+		]
+		blks
+	]
+
+	BATCH-NUM: 10
+
+	enum-address-info: function [path account network][
 		ids: copy path
 		poke ids 3 (80000000h + account)
 
@@ -247,31 +264,27 @@ keys: context [
 		total: to-i256 0
 		;-- change address
 		ids/4: 1
-		i: 0
+		i: 0 j: 0
 		forever [
 			process-events
-			ids/5: i
-			addr-key: do [key/get-btc-address ids]
-			addr: either block? addr-key [addr-key/1][addr-key]
-			pubkey: either block? addr-key [addr-key/2][none]
-			balance: btc/get-addr-balance network addr
+			j: i % BATCH-NUM
+			if j = 0 [
+				ids/5: i
+				balance-batch: get-batch-balance ids BATCH-NUM network
+			]
 			process-events
-			if balance = none [
-				append/only c-list reduce ['addr addr 'path copy ids 'pubkey pubkey]
+			item: balance-batch/(j + 1)
+			append/only c-list item
+			if item/tx-count = 0 [
 				append list reduce ['change c-list]
 				break
 			]
 
-			utxs: btc/get-unspent network addr
-			process-events
-			if utxs = none [
-				append/only c-list reduce ['addr addr 'balance to-i256 0 'path copy ids 'pubkey pubkey]
+			if zero256? item/balance [
 				i: i + 1
 				continue
 			]
-
-			append/only c-list reduce ['addr addr 'utxs utxs 'balance balance 'path copy ids 'pubkey pubkey]
-			total: add256 total balance
+			total: add256 total item/balance
 
 			i: i + 1
 		]
@@ -281,28 +294,24 @@ keys: context [
 		i: 0
 		forever [
 			process-events
-			ids/5: i
-			addr-key: do [key/get-btc-address ids]
-			addr: either block? addr-key [addr-key/1][addr-key]
-			pubkey: either block? addr-key [addr-key/2][none]
-			balance: btc/get-addr-balance network addr
+			j: i % BATCH-NUM
+			if j = 0 [
+				ids/5: i
+				balance-batch: get-batch-balance ids BATCH-NUM network
+			]
 			process-events
-			if balance = none [
-				append/only o-list reduce ['addr addr 'path copy ids 'pubkey pubkey]
+			item: balance-batch/(j + 1)
+			append/only o-list item
+			if item/tx-count = 0 [
 				append list reduce ['origin o-list]
 				break
 			]
 
-			utxs: btc/get-unspent network addr
-			process-events
-			if utxs = none [
-				append/only o-list reduce ['addr addr 'balance to-i256 0 'path copy ids 'pubkey pubkey]
+			if zero256? item/balance [
 				i: i + 1
 				continue
 			]
-
-			append/only o-list reduce ['addr addr 'utxs utxs 'balance balance 'path copy ids 'pubkey pubkey]
-			total: add256 total balance
+			total: add256 total item/balance
 
 			i: i + 1
 		]
