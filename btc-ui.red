@@ -47,6 +47,10 @@ context [
 			if zero256? origin/1/balance [continue]
 			unless empty? utxs: btc/get-unspent network origin/1/addr [
 				repend origin/1 ['utxs utxs]
+				forall utxs [
+					info: btc/get-tx-info network utxs/1/tx-hash
+					repend utxs/1 ['info info]
+				]
 			]
 		]
 		change: accout-info/change
@@ -56,6 +60,10 @@ context [
 			if zero256? change/1/balance [continue]
 			unless empty? utxs: btc/get-unspent network change/1/addr [
 				repend change/1 ['utxs utxs]
+				forall utxs [
+					info: btc/get-tx-info network utxs/1/tx-hash
+					repend utxs/1 ['info info]
+				]
 			]
 		]
 	]
@@ -196,12 +204,12 @@ context [
 		sum: to-i256 0
 
 		foreach item account/change [
-			if item/balance = none [break]
+			if item/tx-count = 0 [continue]
+			if zero256? item/balance [continue]
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
-				info: btc/get-tx-info network utx/tx-hash
-				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
+				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
 					append/only outputs reduce ['addr addr-to 'value amount]
@@ -217,12 +225,12 @@ context [
 		]
 
 		foreach item account/origin [
-			if item/balance = none [break]
+			if item/tx-count = 0 [continue]
+			if zero256? item/balance [continue]
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
-				info: btc/get-tx-info network utx/tx-hash
-				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info info]
+				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
 					append/only outputs reduce ['addr addr-to 'value amount]
