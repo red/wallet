@@ -309,7 +309,7 @@ ledger: context [
 		/local
 			coin_name input-segwit? addr-type data type trust-type
 			input-count tx-input tx-output pre-input pre-output ids output-count preout-script
-			signed temp pubkey sig-script
+			signed temp pubkey sig-script script_type
 	][
 		signed: make binary! 800
 
@@ -382,9 +382,28 @@ ledger: context [
 		repeat i output-count [
 			tx-output: pick tx/outputs i
 			append data reverse skip i256-to-bin tx-output/value 24
-			append data #{17 A9 14}
-			append data copy/part skip debase/base tx-output/addr 58 1 20
-			append data #{87}
+			either coin_name = "Bitcoin" [
+				either tx-output/addr/1 = #"3" [
+					script_type: 'PAYTOP2SHWITNESS
+				][
+					script_type: 'PAYTOADDRESS
+				]
+			][
+				either tx-output/addr/1 = #"2" [
+					script_type: 'PAYTOP2SHWITNESS
+				][
+					script_type: 'PAYTOADDRESS
+				]
+			]
+			either script_type = 'PAYTOP2SHWITNESS [
+				append data #{17 A9 14}
+				append data copy/part skip debase/base tx-output/addr 58 1 20
+				append data #{87}
+			][
+				append data #{19 76 A9 14}
+				append data copy/part skip debase/base tx-output/addr 58 1 20
+				append data #{88 AC}
+			]
 		]
 		append signed data
 
