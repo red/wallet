@@ -37,7 +37,6 @@ context [
 
 	tx-rates: none
 	accout-info: []			;-- current selected accout information
-	utxs: none
 
 	update-utxs: function [][
 		origin: accout-info/origin
@@ -82,6 +81,7 @@ context [
 			clear addr-to/text
 			clear amount-field/text
 			update-utxs
+			tx-rates: btc/get-rate 'all
 			view/flags send-dialog 'modal
 		]
 	]
@@ -96,15 +96,12 @@ context [
 			return no
 		]
 
-		input-amount: string-to-i256 amount-field/text 8
-		input-fee: string-to-i256 tx-fee/text 8
-
-		if string? input-amount [
+		if error? input-amount: try [string-to-i256 trim/all copy amount-field/text 8][
 			amount-field/text: copy "Invalid amount"
 			return no
 		]
 
-		if string? input-fee [
+		if error? input-fee: try [string-to-i256 trim/all copy tx-fee/text 8][
 			tx-fee/text: copy "Invalid fee"
 			return no
 		]
@@ -256,7 +253,7 @@ context [
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local rate][
+	do-sign-tx: func [face [object!] event [event!] /local utxs rate][
 		unless check-data [exit]
 		notify-user
 
@@ -304,29 +301,9 @@ context [
 		]
 	]
 
-	update-fee: func [/force /local len fee rate][
-		utxs: calc-balance accout-info input-amount input-fee input-addr
-		if all [not force utxs = none][
-			amount-field/text: copy "Insufficient Balance"
-			exit
-		]
-		len: either utxs [
-			keys/get-signed-len utxs
-		][
-			220
-		]
-		?? len
-		rate: pick tx-rates tx-rate/selected
-		ilen: to-i256 len
-		irate: to-i256 rate
-		ifee: mul256 ilen irate
-		tx-fee/text: form-i256 ifee 8 8
-	]
-
 	do-select-rate: func [face [object!] event [event!] /local tm][
 		tm: ["(about 10 mins)" "(about 30 mins)" "(about 1 hour)"]
 		rate-unit/text: pick tm face/selected
-		update-fee
 	]
 
 	reset-sign-button: does [
@@ -334,6 +311,25 @@ context [
 		btn-sign/offset/x: 215
 		btn-sign/size/x: 60
 		btn-sign/text: "Sign"
+	]
+
+	set-fee: function [len [integer!]][
+		rate: pick tx-rates tx-rate/selected
+		ifee: mul256 to-i256 len to-i256 rate
+		tx-fee/text: form-i256 ifee 8 8
+	]
+
+	do-amount-chage: function [face [object!] event [event!]][
+		if error? amount: try [string-to-i256 trim/all copy face/text 8][
+			set-fee 230
+			exit
+		]
+		fee: string-to-i256 "0.0001" 8
+		unless utxs: calc-balance accout-info amount fee "none" [
+			set-fee 230
+			exit
+		]
+		set-fee keys/get-signed-len utxs
 	]
 
 	send-dialog: layout [
@@ -344,7 +340,7 @@ context [
 		label "Network:"		network-to:	  lbl return
 		label "From Address:"	addr-from:	  lbl return
 		label "To Address:"		addr-to:	  field return
-		label "Amount to Send:" amount-field: field 120 label-unit: label 50 return
+		label "Amount to Send:" amount-field: field 120 on-change :do-amount-chage label-unit: label 50 return
 		label "FeeRate:"		tx-rate: drop-list 
 			data ["fast" "average" "slow"] 120 select 1 :do-select-rate
 			rate-unit: label "(About 10 mins)" 160 return
@@ -363,22 +359,5 @@ context [
 		label "Fee:" 			info-fee:	  info return
 		label "FeeRate:"		info-rate:	  info return
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
-	]
-
-	setup-actors: does [
-		send-dialog/rate: 0:0:1
-		send-dialog/actors: make object! [
-			on-time: func [face event /local res][
-				face/rate: none
-				input-amount: to-i256 0
-				input-fee: to-i256 0
-				input-addr: addr-from/text
-				tx-rates: btc/get-rate 'all
-				update-fee/force
-			]
-			on-close: func [face event][
-				face/rate: 0:0:1
-			]
-		]
 	]
 ]
