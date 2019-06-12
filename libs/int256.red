@@ -60,7 +60,7 @@ int256: context [
 				]
 				while [all [not tail? bin bin/1 <> #"."]][
 					if any [bin/1 < #"0" bin/1 > #"9"][
-						make error! rejoin ["to-i256 invalid char " bin/1]
+						do make error! rejoin ["to-i256 invalid char " bin/1]
 					]
 					v: to-i256 to integer! (bin/1 - #"0")
 					res: mul256 res factor
@@ -69,13 +69,13 @@ int256: context [
 				]
 				return res
 			]
-		][make error! "to-i256 error: invalid type!"]
+		][do make error! "to-i256 error: invalid type!"]
 		
 		make vector! compose/only [integer! 16 (spec)]
 	]
 
 	set 'i256-to-int function [bigint [vector!] return: [integer!]][
-		repeat idx 12 [if (bigint/:idx) <> 0 [make error! "i256-to-int error!"]]
+		repeat idx 12 [if (bigint/:idx) <> 0 [do make error! "i256-to-int error!"]]
 		high: bigint/15 << 16
 		if negative? high [high: 65536 + high]
 		if negative? low: bigint/16 [low: 65536 + low]
