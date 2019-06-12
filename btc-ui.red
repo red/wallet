@@ -317,8 +317,10 @@ context [
 		]
 		?? len
 		rate: pick tx-rates tx-rate/selected
-		fee: len * rate / 1e8
-		tx-fee/text: to string! fee
+		ilen: to-i256 len
+		irate: to-i256 rate
+		ifee: mul256 ilen irate
+		tx-fee/text: form-i256 ifee 8 8
 	]
 
 	do-select-rate: func [face [object!] event [event!] /local tm][
