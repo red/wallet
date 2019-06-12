@@ -251,11 +251,15 @@ keys: context [
 		blks
 	]
 
-	BATCH-NUM: 10
-
 	enum-address-info: function [path account network][
 		ids: copy path
 		poke ids 3 (80000000h + account)
+
+		either ledger-nano-s? [
+			BATCH-NUM: 2
+		][
+			BATCH-NUM: 10
+		]
 
 		list: copy []
 		c-list: copy []
