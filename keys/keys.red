@@ -178,10 +178,50 @@ keys: context [
 		]
 	]
 
+	get-legacy-signed-len: function [
+		tx			[block!]
+		return:		[integer!]
+	][
+		len: 0
+		input-count: length? tx/inputs
+		;- version
+		len: len + 4
+		;-- tx_in count
+		len: len + 1
+		;-- tx_in
+		loop length? tx/inputs [
+			;-- tx_hash
+			len: len + 32
+			;-- index
+			len: len + 4
+			;-- #{6B}
+			len: len + 1
+			;-- script
+			len: len + 6Bh
+			;-- sequeue
+			len: len + 4
+		]
+		;-- tx_out count
+		len: len + 1
+		loop length? tx/outputs [
+			;-- value
+			len: len + 8
+			;-- #{19}
+			len: len + 1
+			len: len + 19h
+		]
+		;-- locktime
+		len: len + 4
+	]
+
 	get-signed-len: function [
 		tx			[block!]
 		return:		[integer!]
 	][
+		if tx/inputs/1/path/1 = (80000000h + 44) [
+			;-- legacy
+			return get-legacy-signed-len tx
+		]
 		len: 0
 		input-count: length? tx/inputs
 		;- version
