@@ -763,6 +763,7 @@ wallet: context [
 			"Copy Address"		copy
 		]
 
+		btc-ui/setup-actors
 	]
 
 	run: does [

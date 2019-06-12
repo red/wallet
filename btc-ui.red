@@ -80,8 +80,6 @@ context [
 			fee-unit/text: unit-name
 			clear addr-to/text
 			clear amount-field/text
-			update-utxs
-			tx-rates: btc/get-rate 'all
 			view/flags send-dialog 'modal
 		]
 	]
@@ -360,4 +358,19 @@ context [
 		label "FeeRate:"		info-rate:	  info return
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
 	]
+
+	setup-actors: does [
+		send-dialog/rate: 0:0:1
+		send-dialog/actors: make object! [
+			on-time: func [face event /local res][
+				face/rate: none
+				update-utxs
+				tx-rates: btc/get-rate 'all
+			]
+			on-close: func [face event][
+				face/rate: 0:0:1
+			]
+		]
+	]
+
 ]
