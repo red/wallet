@@ -296,9 +296,11 @@ keys: context [
 		poke ids 3 (80000000h + account)
 
 		either ledger-nano-s? [
-			BATCH-NUM: 2
+			BATCH-NUM: 1
+			set 'network-delay? no
 		][
 			BATCH-NUM: 10
+			set 'network-delay? yes
 		]
 
 		list: copy []

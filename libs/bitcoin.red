@@ -45,9 +45,19 @@ btc: context [
 			new-error 'get-addr-balance "server error" reduce [url err-no err-msg]
 		]
 
-		unless data: select resp 'data [new-error 'get-addr-balance "server error" "no data"]
+		either len = 1 [
+			if all [
+				resp/data = none
+				find resp 'data
+			][
+				return reduce [reduce ['tx-count 0]]
+			]
+			data: reduce [resp/data]
+		][
+			unless data: select resp 'data [new-error 'get-addr-balance "server error" "no data"]
+		]
 		if len <> length? data [new-error 'get-addr-balance "server error" "no enough"]
-		ret: make block! length? data
+		ret: make block! len
 		forall data [
 			either data/1 [
 				repend/only ret ['tx-count data/1/tx_count 'balance to-i256 data/1/balance]

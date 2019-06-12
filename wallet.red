@@ -20,10 +20,14 @@ throw-error: func [msg [string! block!]][
 
 process-events: does [loop 10 [do-events/no-wait]]
 
+network-delay?: yes
+
 try-read: func [url][
 	;-- workaround for speed limitation of some WebAPIs
 	loop 2 [
-		wait 0.5
+		if network-delay? [
+			wait 0.5
+		]
 		unless error? res: try [read url][return res]
 	]
 	res
