@@ -201,7 +201,7 @@ wallet: context [
 						info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
 						break
 					]
-					poke addr-balances n + 1 rejoin [addr "            " balances]
+					poke addr-balances n + 1 rejoin [addr "         " balances]
 				][
 					append addrs addr
 					append addr-balances rejoin [addr "      <loading>"]
@@ -414,6 +414,13 @@ wallet: context [
 		yes
 	]
 
+
+	update-page-info: func [/local max-n][
+		page-info/enabled?: no			;-- always disable it for BTC
+		max-n: page + 1 * addr-per-page
+		if keys/unused-idx < max-n [btn-more/enabled?: no]
+	]
+
 	update-ui: function [enabled? [logic!]][
 		btn-send/enabled?: to-logic all [enabled? addr-list/selected addr-list/selected > 0]
 		if page > 0 [btn-prev/enabled?: enabled?]
@@ -430,6 +437,7 @@ wallet: context [
 			if all [coin-type = 'BTC keys/btc-path/1 = 8000002Ch][
 				my-addr-text/text: rejoin [list-title " (Legacy)"]
 			]
+			if coin-type = 'BTC [update-page-info]
 		]
 		process-events
 	]
