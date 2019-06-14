@@ -118,6 +118,7 @@ wallet: context [
 	address-index:	0
 	page:			0
 
+	list-title: "My Addresses"
 	cfg: none
 	ledger-legacy-path: [8000002Ch 8000003Ch 80000000h idx]
 
@@ -163,7 +164,12 @@ wallet: context [
 			loop addr-per-page [
 				addr: keys/get-address n
 				either string? addr [
-					info-msg/text: "Please wait while loading addresses..."
+					info-msg/text: either coin-type = 'BTC [
+						"Please wait while loading accounts..."
+					][
+						"Please wait while loading addresses..."
+					]
+					process-events
 				][
 					info-msg/text: case [
 						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
@@ -183,47 +189,65 @@ wallet: context [
 					token-list/enabled?: yes
 					exit
 				]
-				if coin-type = 'BTC [append addr "   "]		;-- add more spaces for Bitcoin address
-				append addrs addr
-				append addr-balances rejoin [addr "      <loading>"]
+				either coin-type = 'BTC [
+					if keys/unused-idx <> -1 [break]
+
+					append addr-balances "Loading account..."
+					addr-list/data: addr-balances
+					process-events
+					if error? try [
+						balances: fetch-balance n
+					][
+						info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
+						break
+					]
+					poke addr-balances n + 1 rejoin [addr "            " balances]
+				][
+					append addrs addr
+					append addr-balances rejoin [addr "      <loading>"]
+				]
 				addr-list/data: addr-balances
-				process-events
 				n: n + 1
 			]
-			info-msg/text: "Please wait while loading balances..."
+
 			update-ui no
-			either error? try [
-				either fast-api? [
-					balances: fetch-balance addrs
-					n: 1
-					foreach addr addrs [
-						append addr rejoin ["   " balances/:n]
-						n: n + 1
-					]
-					addr-list/data: addrs
-				][
-					n: page * addr-per-page
-					foreach entry addr-list/data [
-						either coin-type = 'BTC [
-							balance: fetch-balance n
-							either string? balance [
-								replace entry "<loading>" balance
-							][
-								clear entry
-								insert entry first balance
-							]
-							n: n + 1
-						][
-							addr: copy/part entry find entry space
-							replace entry "   <loading>" fetch-balance addr
-						]
-						process-events
-					]
-				]
-			][
-				info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
-			][
+			either coin-type = 'BTC [
 				info-msg/text: ""
+			][
+				info-msg/text: "Please wait while loading balances..."
+				either error? try [
+					either fast-api? [
+						balances: fetch-balance addrs
+						n: 1
+						foreach addr addrs [
+							append addr rejoin ["   " balances/:n]
+							n: n + 1
+						]
+						addr-list/data: addrs
+					][
+						n: page * addr-per-page
+						foreach entry addr-list/data [
+							either coin-type = 'BTC [
+								balance: fetch-balance n
+								either string? balance [
+									replace entry "<loading>" balance
+								][
+									clear entry
+									insert entry first balance
+								]
+								n: n + 1
+							][
+								addr: copy/part entry find entry space
+								replace entry "   <loading>" fetch-balance addr
+							]
+							process-events
+						]
+					]
+				][
+					info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
+				][
+					info-msg/text: ""
+				]
 			]
 
 			if keys/unused-idx = -1 [keys/unused-idx: page + 1 * addr-per-page]
@@ -295,8 +319,13 @@ wallet: context [
 		coin-type: either token-name = "BTC" [
 			page: 0
 			page-info/selected: 1
+			list-title: "My Accounts"
 			'BTC
-		]['ETH]
+		][
+			list-title: "My Addresses"
+			'ETH
+		]
+		my-addr-text/text: list-title
 		keys/set-coin-type coin-type
 
 		info: find contracts token-name
@@ -309,9 +338,9 @@ wallet: context [
 
 		clear skip addr-list/menu 2
 		fast-api?: either any [coin-type = 'BTC token-contract] [
-			if coin-type = 'BTC [
-				append addr-list/menu ["Copy Unused Address" copy-unused]
-			]
+			;if coin-type = 'BTC [			;-- put it into menu
+			;	append addr-list/menu ["Copy Unused Address" copy-unused]
+			;]
 			no
 		][
 			append addr-list/menu ["Batch Payment" batch]
@@ -392,14 +421,14 @@ wallet: context [
 			set in get f 'enabled? enabled?
 		]
 		if enabled? [
-			my-addr-text/text: "My Addresses"
+			my-addr-text/text: list-title
 			if keys/ledger-nano-s? [
 				if all [coin-type = 'ETH 4 = length? keys/ledger-path][
-					my-addr-text/text: "My Addresses (Legacy)"
+					my-addr-text/text: rejoin [list-title " (Legacy)"]
 				]
 			]
 			if all [coin-type = 'BTC keys/btc-path/1 = 8000002Ch][
-				my-addr-text/text: "My Addresses (Legacy)"	
+				my-addr-text/text: rejoin [list-title " (Legacy)"]
 			]
 		]
 		process-events
