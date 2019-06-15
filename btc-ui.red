@@ -48,6 +48,15 @@ context [
 				repend origin/1 ['utxs utxs]
 				forall utxs [
 					info: btc/get-tx-info network utxs/1/tx-hash
+					outputs: info/outputs
+					index: 0
+					forall outputs [
+						if outputs/1/addresses/1 = origin/1/addr [
+							break
+						]
+						index: index + 1
+					]
+					repend info ['index index]
 					repend utxs/1 ['info info]
 				]
 			]
@@ -61,6 +70,15 @@ context [
 				repend change/1 ['utxs utxs]
 				forall utxs [
 					info: btc/get-tx-info network utxs/1/tx-hash
+					outputs: info/outputs
+					index: 0
+					forall outputs [
+						if outputs/1/addresses/1 = change/1/addr [
+							break
+						]
+						index: index + 1
+					]
+					repend info ['index index]
 					repend utxs/1 ['info info]
 				]
 			]
