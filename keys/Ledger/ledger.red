@@ -686,7 +686,7 @@ ledger: context [
 			append signed pubkey
 		]
 
-		append signed #{00000000}
+		append signed DEFAULT_LOCKTIME
 		signed
 	]
 
