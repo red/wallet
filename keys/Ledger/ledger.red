@@ -17,6 +17,9 @@ ledger: context [
 	TAG_APDU:			05h
 	PACKET_SIZE:		#either config/OS = 'Windows [65][64]
 	MAX_APDU_SIZE:		260
+	DEFAULT_VERSION:	#{01000000}
+	DEFAULT_SEQUENCE:	#{FFFFFFFF}
+	DEFAULT_LOCKTIME:	#{00000000}
 
 	dongle:		none
 	buffer:		make binary! MAX_APDU_SIZE
@@ -303,55 +306,283 @@ ledger: context [
 		copy/part chunk (length? chunk) - 2
 	]
 
-	get-btc-signed-data: func [
+	get-trusted-input: func [data [binary!] /first /out
+		/local chunk
+	][
+		chunk: make binary! 200
+		append chunk reduce [
+			E0h
+			42h
+			either first [0][80h]
+			0
+			length? data
+		]
+		append chunk data
+		write-apdu chunk
+		unless out [
+			chunk: read-apdu 50
+			if chunk <> #{9000} [throw-error "Ledger: get-trusted-input unknown chunk"]
+			exit
+		]
+		chunk: read-apdu 60
+		if 2 > length? chunk [throw-error "Ledger: get-trusted-input data too short"]
+		if #{9000} <> back back tail chunk [
+			throw-error "Ledger: get-trusted-input unknown"
+		]
+		copy/part chunk (length? chunk) - 2
+	]
+
+	set-trusted-input: function [
+			tx				[block!]
+	][
+		data: make binary! 200
+		j: 0
+		input-iter: tx/inputs
+		forall input-iter [
+			info: input-iter/1/info
+			clear data
+			append data to-bin32 info/index
+			append data to-bin32/little info/version
+			in-iter: info/inputs
+			append data length? in-iter
+			get-trusted-input/first data
+			forall in-iter [
+				clear data
+				append data reverse debase/base in-iter/1/prev-tx-hash 16
+				append data to-bin32/little to integer! in-iter/1/prev-position
+				temp: debase/base in-iter/1/script-hex 16
+				append data length? temp
+				get-trusted-input data
+				clear data
+				append data temp
+				append data to-bin32/little in-iter/1/sequence
+				while [50 < length? data][
+					get-trusted-input copy/part data 50
+					data: skip data 50
+				]
+				get-trusted-input data
+			]
+			clear data
+			out-iter: info/outputs
+			append data length? out-iter
+			get-trusted-input data
+			forall out-iter [
+				clear data
+				append data reverse skip i256-to-bin out-iter/1/value 24
+				temp: debase/base out-iter/1/script-hex 16
+				append data length? temp
+				get-trusted-input data
+
+				clear data
+				append data temp
+				get-trusted-input data
+			]
+			clear data
+			append data to-bin32 info/lock_time
+			trusted: get-trusted-input/out data
+			either find input-iter/1 'trusted [
+				input-iter/1/trusted: trusted
+			][
+				repend input-iter/1 ['trusted trusted]
+			]
+		]
+	]
+
+	get-legacy-btc-signed-data: function [
 		tx				[block!]
 		return:			[block! binary!]
-		/local
-			coin_name input-segwit? addr-type data type trust-type
-			input-count tx-input tx-output pre-input pre-output ids output-count preout-script
-			signed temp pubkey sig-script script_type
+	][
+		set-trusted-input tx
+
+		coin_name: "Bitcoin"
+		addr-type: 'P2PKH
+		if tx/inputs/1/path/2 = (80000000h + 1) [
+			coin_name: "Testnet"
+			addr-type: 'TEST-P2PKH
+		]
+
+		data: make binary! 200
+
+		input-iter: tx/inputs
+		input-iter2: tx/inputs
+		input-count: length? input-iter
+		trust-type: 1
+
+		forall input-iter [
+			clear data
+			append data DEFAULT_VERSION
+			append data input-count
+			type: 0
+			start-hash-input/first type data
+
+			forall input-iter2 [
+				info: input-iter2/1/info
+				clear data
+				append data trust-type
+				append data length? input-iter2/1/trusted
+				append data input-iter2/1/trusted
+				either (index? input-iter) <> (index? input-iter2) [
+					append data #{00}
+					start-hash-input type data
+					clear data
+					append data DEFAULT_SEQUENCE
+					start-hash-input type data
+				][
+					pubkey: get-real-pubkey input-iter2/1/pubkey input-iter2/1/addr addr-type
+					sig-script: rejoin [#{76 A9 14} btc-addr/hash160 pubkey #{88 AC}]
+					append data length? sig-script
+					start-hash-input type data
+					clear data
+					append data sig-script
+					append data DEFAULT_SEQUENCE
+					start-hash-input type data
+				]
+			]
+			clear data
+			ids: select last tx/outputs 'path
+			append data collect [
+				keep length? ids
+				forall ids [keep to-bin32 pick ids 1]
+			]
+			final-hash-input FFh data
+
+			clear data
+			append data length? tx/outputs
+			output-iter: tx/outputs 
+			forall output-iter [
+				tx-output: output-iter/1
+				append data reverse skip i256-to-bin tx-output/value 24
+				either coin_name = "Bitcoin" [
+					either tx-output/addr/1 = #"3" [
+						script_type: 'PAYTOP2SHWITNESS
+					][
+						script_type: 'PAYTOADDRESS
+					]
+				][
+					either tx-output/addr/1 = #"2" [
+						script_type: 'PAYTOP2SHWITNESS
+					][
+						script_type: 'PAYTOADDRESS
+					]
+				]
+				either script_type = 'PAYTOP2SHWITNESS [
+					append data #{17 A9 14}
+					append data copy/part skip debase/base tx-output/addr 58 1 20
+					append data #{87}
+				][
+					append data #{19 76 A9 14}
+					append data copy/part skip debase/base tx-output/addr 58 1 20
+					append data #{88 AC}
+				]
+			]
+			while [50 < length? data][
+				final-hash-input 0 copy/part data 50
+				data: skip data 50
+			]
+			final-hash-input 80h data
+
+			clear data
+			ids: input-iter/1/path
+			append data collect [
+				keep length? ids
+				forall ids [keep to-bin32 pick ids 1]
+			]
+			append data 0
+			append data DEFAULT_LOCKTIME
+			append data 1
+			temp: sign-untrusted-hash data
+			poke temp 1 temp/1 and FEh
+			either find input-iter/1 'signed [
+				input-iter/1/signed: temp
+			][
+				repend input-iter/1 ['signed temp]
+			]
+		]
+
+		signed: make binary! 800
+		append signed DEFAULT_VERSION
+		append signed input-count
+		input-iter: tx/inputs
+		forall input-iter [
+			tx-input: input-iter/1
+			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
+			append signed reverse debase/base tx-input/tx-hash 16
+			append signed to-bin32/little tx-input/info/index
+			append signed 1 + (length? tx-input/signed) + 1 + (length? pubkey)
+			append signed length? tx-input/signed
+			append signed tx-input/signed
+			append signed length? pubkey
+			append signed pubkey
+			append signed DEFAULT_SEQUENCE
+		]
+
+		clear data
+		append data length? tx/outputs
+		output-iter: tx/outputs
+		forall output-iter [
+			tx-output: output-iter/1
+			append data reverse skip i256-to-bin tx-output/value 24
+			either coin_name = "Bitcoin" [
+				either tx-output/addr/1 = #"3" [
+					script_type: 'PAYTOP2SHWITNESS
+				][
+					script_type: 'PAYTOADDRESS
+				]
+			][
+				either tx-output/addr/1 = #"2" [
+					script_type: 'PAYTOP2SHWITNESS
+				][
+					script_type: 'PAYTOADDRESS
+				]
+			]
+			either script_type = 'PAYTOP2SHWITNESS [
+				append data #{17 A9 14}
+				append data copy/part skip debase/base tx-output/addr 58 1 20
+				append data #{87}
+			][
+				append data #{19 76 A9 14}
+				append data copy/part skip debase/base tx-output/addr 58 1 20
+				append data #{88 AC}
+			]
+		]
+		append signed data
+
+		append signed DEFAULT_LOCKTIME
+		signed
+	]
+
+	get-segwit-btc-signed-data: function [
+		tx				[block!]
+		return:			[block! binary!]
 	][
 		signed: make binary! 800
 
 		coin_name: "Bitcoin"
+		addr-type: 'P2SH
 		if tx/inputs/1/path/2 = (80000000h + 1) [
 			coin_name: "Testnet"
-		]
-		input-segwit?: false
-		if tx/inputs/1/path/1 = (80000000h + 49) [
-			input-segwit?: true
-		]
-
-		addr-type: either coin_name = "Bitcoin" [
-			either input-segwit? ['P2SH]['P2PKH]
-		][
-			either input-segwit? ['TEST-P2SH]['TEST-P2PKH]
+			addr-type: 'TEST-P2SH
 		]
 
 		data: make binary! 200
 		input-count: length? tx/inputs
-		tx-input: pick tx/inputs 1
 
-		append data temp: to-bin32/little tx-input/info/version
+		append data DEFAULT_VERSION
 		append data input-count
-		append signed temp
+		append signed DEFAULT_VERSION
 		append signed #{0001}
 		append signed input-count
-		type: either input-segwit? [2][0]
+		type: 2
 		start-hash-input/first type data
 
 		repeat i input-count [
 			tx-input: pick tx/inputs i
-			trust-type: either input-segwit? [2][0]
+			trust-type: 2
 			clear data
 			append data trust-type
 			append data temp: reverse debase/base tx-input/tx-hash 16
 			append signed temp
-			repeat j length? tx-input/info/outputs [
-				pre-output: pick tx-input/info/outputs j
-				if tx-input/addr = pick pre-output/addresses 1 [break]
-			]
-			append data temp: to-bin32/little j - 1
+			append data temp: to-bin32 tx-input/info/index
 			append signed temp
 			append signed #{1716}
 			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
@@ -363,8 +594,8 @@ ledger: context [
 
 			clear data
 			;append data temp: to-bin32/little select tx-input/info/inputs/1 'sequence
-			append data temp: #{FFFFFF00}
-			append signed temp
+			append data DEFAULT_SEQUENCE
+			append signed DEFAULT_SEQUENCE
 			start-hash-input type data
 		]
 
@@ -416,7 +647,7 @@ ledger: context [
 		type: 80h
 		repeat i input-count [
 			tx-input: pick tx/inputs i
-			trust-type: either input-segwit? [2][0]
+			trust-type: 2
 			clear data
 			append data to-bin32/little tx-input/info/version
 			append data 1
@@ -425,11 +656,7 @@ ledger: context [
 			clear data
 			append data trust-type
 			append data reverse debase/base tx-input/tx-hash 16
-			repeat j length? tx-input/info/outputs [
-				pre-output: pick tx-input/info/outputs j
-				if tx-input/addr = pick pre-output/addresses 1 [break]
-			]
-			append data to-bin32/little j - 1
+			append data to-bin32 tx-input/info/index
 			append data reverse skip i256-to-bin pre-output/value 24
 			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
 			sig-script: rejoin [#{76 A9 14} btc-addr/hash160 pubkey #{88 AC}]
@@ -438,8 +665,7 @@ ledger: context [
 			start-hash-input type data
 			clear data
 			append data sig-script
-			;append data to-bin32/little select tx-input/info/inputs/1 'sequence
-			append data #{FFFFFF00}
+			append data DEFAULT_SEQUENCE
 			start-hash-input type data
 
 			clear data
@@ -462,6 +688,17 @@ ledger: context [
 
 		append signed #{00000000}
 		signed
+	]
+
+	get-btc-signed-data: function [
+		tx				[block!]
+		return:			[block! binary!]
+	][
+		if tx/inputs/1/path/1 = (80000000h + 44) [
+			;-- legacy
+			return get-legacy-btc-signed-data tx
+		]
+		get-segwit-btc-signed-data tx
 	]
 
 	close: does [if dongle [hid/close dongle dongle: none]]
