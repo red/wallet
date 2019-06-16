@@ -684,7 +684,7 @@ trezor: context [
 				tx_hash: select details 'tx_hash
 				if all [tx_hash = none request_index <> none] [
 					tx-input: tx/inputs/(request_index + 1)
-					pre-output: FindOutputByAddr tx-input/info/outputs tx-input/addr
+					pre-output: pick tx-input/info/outputs tx-input/info/index + 1
 					script_type: either pre-output/2 = "P2SH" ['SPENDP2SHWITNESS]['SPENDADDRESS]
 					sub-req: make map! reduce [
 								'address_n tx-input/path
@@ -844,23 +844,6 @@ trezor: context [
 			last-request_type: request_type
 		]
 		serialized_tx
-	]
-
-	FindOutputByAddr: func [
-		outputs			[block!]
-		addr			[string!]
-		return:			[block!]
-		/local
-			i item
-	][
-		i: 0
-		foreach item outputs [
-			if item/addresses/1 = addr [
-				return reduce [i item/type item/value]
-			]
-			i: i + 1
-		]
-		new-error 'FindOutputByAddr "not found" reduce [outputs addr]
 	]
 
 	FindInputByTxid: func [
