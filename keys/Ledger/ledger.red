@@ -341,7 +341,7 @@ ledger: context [
 		forall input-iter [
 			info: input-iter/1/info
 			clear data
-			append data to-bin32 info/index
+			append data to-bin32/little info/index
 			append data to-bin32/little info/version
 			in-iter: info/inputs
 			append data length? in-iter
@@ -582,7 +582,7 @@ ledger: context [
 			append data trust-type
 			append data temp: reverse debase/base tx-input/tx-hash 16
 			append signed temp
-			append data temp: to-bin32 tx-input/info/index
+			append data temp: to-bin32/little tx-input/info/index
 			append signed temp
 			append signed #{1716}
 			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
@@ -657,7 +657,7 @@ ledger: context [
 			clear data
 			append data trust-type
 			append data reverse debase/base tx-input/tx-hash 16
-			append data to-bin32 tx-input/info/index
+			append data to-bin32/little tx-input/info/index
 			pre-output: pick tx-input/info/outputs tx-input/info/index + 1
 			append data reverse skip i256-to-bin pre-output/value 24
 			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
