@@ -587,6 +587,7 @@ ledger: context [
 			append signed #{1716}
 			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
 			append signed btc-addr/pubkey-to-script pubkey
+			pre-output: pick tx-input/info/outputs tx-input/info/index + 1
 			append data reverse skip i256-to-bin pre-output/value 24
 			;-- #{00}: place holder for sign
 			append data #{00}
@@ -657,6 +658,7 @@ ledger: context [
 			append data trust-type
 			append data reverse debase/base tx-input/tx-hash 16
 			append data to-bin32 tx-input/info/index
+			pre-output: pick tx-input/info/outputs tx-input/info/index + 1
 			append data reverse skip i256-to-bin pre-output/value 24
 			pubkey: get-real-pubkey tx-input/pubkey tx-input/addr addr-type
 			sig-script: rejoin [#{76 A9 14} btc-addr/hash160 pubkey #{88 AC}]
