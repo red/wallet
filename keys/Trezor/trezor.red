@@ -685,15 +685,15 @@ trezor: context [
 				if all [tx_hash = none request_index <> none] [
 					tx-input: tx/inputs/(request_index + 1)
 					pre-output: pick tx-input/info/outputs tx-input/info/index + 1
-					script_type: either pre-output/2 = "P2SH" ['SPENDP2SHWITNESS]['SPENDADDRESS]
+					script_type: either pre-output/type = "P2SH" ['SPENDP2SHWITNESS]['SPENDADDRESS]
 					sub-req: make map! reduce [
 								'address_n tx-input/path
 								'prev_hash debase/base tx-input/tx-hash 16
-								'prev_index pre-output/1
+								'prev_index tx-input/info/index
 								'sequence select tx-input/info/inputs/1 'sequence
 								'script_type script_type]
-					if pre-output/2 = "P2SH" [
-						put sub-req 'amount trim/head i256-to-bin pre-output/3
+					if pre-output/type = "P2SH" [
+						put sub-req 'amount trim/head i256-to-bin pre-output/value
 					]
 					req: make map! []
 					put req 'inputs reduce [sub-req]
