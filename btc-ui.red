@@ -94,6 +94,7 @@ context [
 			reset-sign-button
 
 			accout-info: select keys/btc-accounts address-index
+			send-dialog/rate: 0:0:1
 			label-unit/text: unit-name
 			fee-unit/text: unit-name
 			clear addr-to/text
