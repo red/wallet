@@ -321,6 +321,14 @@ context [
 	do-select-rate: func [face [object!] event [event!] /local tm][
 		tm: ["(about 10 mins)" "(about 30 mins)" "(about 1 hour)"]
 		rate-unit/text: pick tm face/selected
+		unless error? amount: try [string-to-i256 trim/all copy tx-fee/text 8][
+			fee: string-to-i256 "0.00001" 8
+			unless utxs: calc-balance accout-info amount fee "none" [
+				set-fee 230
+				exit
+			]
+			set-fee keys/get-signed-len utxs
+		]
 	]
 
 	reset-sign-button: does [
@@ -341,7 +349,7 @@ context [
 			set-fee 230
 			exit
 		]
-		fee: string-to-i256 "0.0001" 8
+		fee: string-to-i256 "0.00001" 8
 		unless utxs: calc-balance accout-info amount fee "none" [
 			set-fee 230
 			exit
