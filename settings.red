@@ -16,7 +16,6 @@ apply-cfg: function [][
 	append token-list/data extract cfg/tokens 4
 	wallet/contracts: cfg/tokens
 	keys/ledger-path: cfg/Ledger-Path
-	keys/btc-path: cfg/btc-path
 	if cfg/win-pos [ui/offset: cfg/win-pos]
 ]
 
@@ -27,7 +26,6 @@ save-cfg: function [][
 	cfg/win-pos:  offset
 	cfg/tokens: wallet/contracts
 	cfg/Ledger-Path: keys/ledger-path
-	cfg/btc-path: keys/btc-path
 
 	save/header cfg-path cfg [Purpose: "RED Wallet Configuration File"]
 ]
@@ -48,6 +46,10 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 				"MainNet" #[none]
 				"TestNet" #[none]
 			] 8 "Bitcoin"
+			"BTC (Legacy)" [
+				"MainNet" #[none]
+				"TestNet" #[none]
+			] 8 "Bitcoin"
 			"ETH" [
 				"mainnet" #[none]
 				"Rinkeby" #[none]
@@ -61,7 +63,6 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 		]
 
 		Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
-		btc-path:	 [80000031h 80000000h 80000000h 0 idx]
 		win-pos:	 #[none]
 	]
 

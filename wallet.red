@@ -87,6 +87,10 @@ wallet: context [
 			"MainNet" #[none]
 			"TestNet" #[none]
 		] 8 "Bitcoin"
+		"BTC (Legacy)" [
+			"MainNet" #[none]
+			"TestNet" #[none]
+		] 8 "Bitcoin"
 		"ETH" [
 			"MainNet" #[none]
 			"Rinkeby" #[none]
@@ -112,6 +116,7 @@ wallet: context [
 	coin-type:	'BTC
 	net-name:	"mainnet"
 	token-name: "BTC"
+	token-abbr: "BTC"
 	token-contract: none
 	token-decimals: 18
 
@@ -273,7 +278,7 @@ wallet: context [
 				addr-from/text: copy/part pick addr-list/data addr-list/selected 42
 				gas-limit/text: either token-contract ["79510"]["21000"]
 				reset-sign-button
-				label-unit/text: token-name
+				label-unit/text: token-abbr
 				clear addr-to/text
 				clear amount-field/text
 				view/flags send-dialog 'modal
@@ -304,7 +309,7 @@ wallet: context [
 		idx: face/selected
 		if idx = 1 [				;-- add tokens
 			tokens: make block! 10
-			foreach [sym addrs dec name] skip contracts 8 [
+			foreach [sym addrs dec name] skip contracts 12 [
 				append tokens name
 			]
 			eth-tokens/do-config face tokens
@@ -316,7 +321,11 @@ wallet: context [
 		face/extra: idx				;-- save index
 		net: net-list/selected
 		token-name: face/data/:idx
-		coin-type: either token-name = "BTC" [
+		token-abbr: token-name
+		if idx: find token-name " (" [
+			token-abbr: copy/part token-name idx
+		]
+		coin-type: either token-abbr = "BTC" [
 			page: 0
 			page-info/selected: 1
 			list-title: "My Accounts"
@@ -341,6 +350,13 @@ wallet: context [
 			;if coin-type = 'BTC [			;-- put it into menu
 			;	append addr-list/menu ["Copy Unused Address" copy-unused]
 			;]
+			keys/btc-path: either find token-name "Legacy" [
+				keys/btc-legacy
+			][
+				keys/btc-segwit
+			]
+			keys/bip32-path: keys/btc-path
+			keys/set-btc-network net-name
 			no
 		][
 			append addr-list/menu ["Batch Payment" batch]
@@ -427,18 +443,16 @@ wallet: context [
 		foreach f [btn-more net-list token-list page-info btn-reload][
 			set in get f 'enabled? enabled?
 		]
-		if enabled? [
-			my-addr-text/text: list-title
-			if keys/ledger-nano-s? [
-				if all [coin-type = 'ETH 4 = length? keys/ledger-path][
-					my-addr-text/text: rejoin [list-title " (Legacy)"]
-				]
-			]
-			if all [coin-type = 'BTC keys/btc-path/1 = 8000002Ch][
+		my-addr-text/text: list-title
+		if keys/ledger-nano-s? [
+			if all [coin-type = 'ETH 4 = length? keys/ledger-path][
 				my-addr-text/text: rejoin [list-title " (Legacy)"]
 			]
-			if coin-type = 'BTC [update-page-info]
 		]
+		if all [coin-type = 'BTC keys/btc-path/1 = 8000002Ch][
+			my-addr-text/text: rejoin [list-title " (Legacy)"]
+		]
+		if all [enabled? coin-type = 'BTC][update-page-info]
 		process-events
 	]
 
@@ -529,7 +543,7 @@ wallet: context [
 		][
 			info-from/text:		addr-from/text
 			info-to/text:		copy addr-to/text
-			info-amount/text:	rejoin [amount-field/text " " token-name]
+			info-amount/text:	rejoin [amount-field/text " " token-abbr]
 			info-network/text:	net-name
 			info-price/text:	rejoin [gas-price/text " Gwei"]
 			info-limit/text:	gas-limit/text
@@ -640,7 +654,7 @@ wallet: context [
 		title "RED Wallet"
 		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
-		token-list: drop-list data ["Add Tokens"] 80 select 3 :do-select-token
+		token-list: drop-list data ["Add Tokens"] 80 select 4 :do-select-token
 		net-list:   drop-list data ["Mainnet" "Testnet"] select 1 :do-select-network
 		btn-reload: button "Reload" :do-reload disabled
 		return
@@ -653,16 +667,6 @@ wallet: context [
 					ledger-legacy-path
 				]
 				keys/bip32-path: keys/ledger-path
-				do-reload
-			]
-			if coin-type = 'BTC [
-				keys/btc-path: either keys/btc-path/1 = 8000002Ch [
-					keys/btc-segwit
-				][
-					keys/btc-legacy
-				]
-				keys/bip32-path: keys/btc-path
-				keys/set-btc-network net-name
 				do-reload
 			]
 		] pad 160x0
@@ -678,7 +682,7 @@ wallet: context [
 			:do-page
 		btn-prev: button "Prev" disabled :do-prev-addr 
 		btn-more: button "More" :do-more-addr
-		do [token-list/extra: 2]
+		do [token-list/extra: 4]
 	]
 
 	unlock-dev-dlg: layout [
