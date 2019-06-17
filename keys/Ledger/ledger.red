@@ -341,7 +341,7 @@ ledger: context [
 		forall input-iter [
 			info: input-iter/1/info
 			clear data
-			append data to-bin32/little info/index
+			append data to-bin32 info/index
 			append data to-bin32/little info/version
 			in-iter: info/inputs
 			append data length? in-iter
