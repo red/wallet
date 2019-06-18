@@ -85,6 +85,17 @@ context [
 		]
 	]
 
+	update-send-dialog: func [enabled? /local f][
+		either enabled? [
+			send-dialog/text: "Send Bitcoin"
+		][
+			send-dialog/text: "Preparing the transaction..."
+		]
+		foreach f [addr-to amount-field tx-rate tx-fee btn-sign][
+			set in get f 'enabled? enabled?
+		]
+	]
+
 	do-send: func [face [object!] event [event!] /local item rate][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
@@ -99,6 +110,8 @@ context [
 			fee-unit/text: unit-name
 			clear addr-to/text
 			clear amount-field/text
+
+			update-send-dialog no
 			view/flags send-dialog 'modal
 		]
 	]
@@ -339,9 +352,11 @@ context [
 	]
 
 	set-fee: function [len [integer!]][
-		rate: pick tx-rates tx-rate/selected
+		idx: tx-rate/selected
+		rate: pick tx-rates idx
+		if idx = 2 [rate: rate - 1]		;-- make it a bit smaller than highest fee
 		ifee: mul256 to-i256 len to-i256 rate
-		tx-fee/text: form-i256 ifee 8 8
+		tx-fee/text: trim/head form-i256 ifee 8 8
 	]
 
 	do-amount-chage: function [face [object!] event [event!]][
@@ -393,6 +408,7 @@ context [
 				face/rate: none
 				update-utxs
 				tx-rates: btc/get-rate 'all
+				update-send-dialog yes
 			]
 			on-close: func [face event][
 				face/rate: 0:0:1
