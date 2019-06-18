@@ -55,7 +55,7 @@ eth: context [
 		User-Agent: (
 			form reduce [
 				"Red Wallet version"
-				"0.3.0" ;#do keep [read %version.red]
+				"0.4.0" ;#do keep [read %version.red]
 				"for" system/platform
 			]
 		)
