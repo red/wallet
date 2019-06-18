@@ -168,13 +168,13 @@ keys: context [
 		chain-id	[integer!]
 	][
 		do [
-			switch coin-type [
+			switch/default coin-type [
 				ETH [
 					change back tail bip32-path idx
 					key/get-eth-signed-data bip32-path tx chain-id
 				]
 				BTC [key/get-btc-signed-data tx]
-			]
+			][none]
 		]
 	]
 

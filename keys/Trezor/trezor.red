@@ -648,7 +648,6 @@ trezor: context [
 
 	SignTxSequence: func [
 		tx				[block!]
-		return:			[block! binary!]
 		/local
 			input-segwit?
 			coin_name res-in req sub-req
@@ -806,7 +805,7 @@ trezor: context [
 							encode-and-write 'ButtonAck make map! []
 
 							clear res-in
-							read-and-decode 'TxRequest res-in
+							try [read-and-decode 'TxRequest res-in]
 							if driver/msg-id = trezor-message/get-id 'ButtonRequest [
 								clear res-in
 								proto-encode/decode trezor-message/messages 'ButtonRequest res-in command-buffer
@@ -814,7 +813,13 @@ trezor: context [
 								encode-and-write 'ButtonAck make map! []
 
 								clear res-in
-								read-and-decode 'TxRequest res-in
+								try [read-and-decode 'TxRequest res-in]
+								if driver/msg-id = trezor-message/get-id 'Failure [
+									return none
+								]
+							]
+							if driver/msg-id = trezor-message/get-id 'Failure [
+								return none
 							]
 						][
 							new-error 'SignTxSequence "not support" 'driver/msg-id
