@@ -390,7 +390,6 @@ ledger: context [
 
 	get-legacy-btc-signed-data: function [
 		tx				[block!]
-		return:			[block! binary!]
 	][
 		set-trusted-input tx
 
@@ -476,10 +475,14 @@ ledger: context [
 				]
 			]
 			while [50 < length? data][
-				final-hash-input 0 copy/part data 50
+				if error? try [final-hash-input 0 copy/part data 50][
+					return none
+				]
 				data: skip data 50
 			]
-			final-hash-input 80h data
+			if error? try [final-hash-input 80h data][
+				return none
+			]
 
 			clear data
 			ids: input-iter/1/path
@@ -553,7 +556,6 @@ ledger: context [
 
 	get-segwit-btc-signed-data: function [
 		tx				[block!]
-		return:			[block! binary!]
 	][
 		signed: make binary! 800
 
@@ -640,10 +642,14 @@ ledger: context [
 		append signed data
 
 		while [50 < length? data][
-			final-hash-input 0 copy/part data 50
+			if error? try [final-hash-input 0 copy/part data 50][
+				return none
+			]
 			data: skip data 50
 		]
-		final-hash-input 80h data
+		if error? try [final-hash-input 80h data][
+			return none
+		]
 
 		type: 80h
 		repeat i input-count [
@@ -694,7 +700,6 @@ ledger: context [
 
 	get-btc-signed-data: function [
 		tx				[block!]
-		return:			[block! binary!]
 	][
 		if tx/inputs/1/path/1 = (80000000h + 44) [
 			;-- legacy

@@ -292,25 +292,24 @@ context [
 			amount-field/text: copy "Insufficient Balance"
 			exit
 		]
-		signed-data: try [keys/get-signed-data 0 utxs 0]
-
-		either binary? signed-data [
-			info-from/text:		addr-from/text
-			info-to/text:		copy addr-to/text
-			info-amount/text:	rejoin [amount-field/text " " unit-name]
-			info-network/text:	net-name
-			info-fee/text:		rejoin [trim/head tx-fee/text " " unit-name]
-			rate: to integer! ((to float! tx-fee/text)  * 1e9 / length? signed-data)
-			info-rate/text:		rejoin [form rate / 10.0 " sat/B"]
+		either error? signed-data: try [keys/get-signed-data 0 utxs 0][
 			unview
-			view/flags confirm-sheet 'modal
+			tx-error/text: rejoin ["Error! Please try again^/^/" form signed-data]
+			view/flags tx-error-dlg 'modal
 		][
-			if error? signed-data [
+			if binary? signed-data [
+				info-from/text:		addr-from/text
+				info-to/text:		copy addr-to/text
+				info-amount/text:	rejoin [amount-field/text " " unit-name]
+				info-network/text:	net-name
+				info-fee/text:		rejoin [trim/head tx-fee/text " " unit-name]
+				rate: to integer! ((to float! tx-fee/text)  * 1e9 / length? signed-data)
+				info-rate/text:		rejoin [form rate / 10.0 " sat/B"]
 				unview
-				tx-error/text: rejoin ["Error! Please try again^/^/" form signed-data]
-				view/flags tx-error-dlg 'modal
+				view/flags confirm-sheet 'modal
 			]
 		]
+
 		reset-sign-button
 	]
 
