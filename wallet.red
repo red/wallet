@@ -70,8 +70,8 @@ wallet: context [
 
 	explorers: [
 		BTC [
-			https://blockchain.info/btc/tx/
-			https://chain.so/tx/BTCTEST/
+			https://www.blockchain.com/btc/tx/
+			https://www.blockchain.com/btctest/tx/
 		]
 		ETH [
 			https://etherscan.io/tx/

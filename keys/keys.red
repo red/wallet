@@ -382,6 +382,6 @@ keys: context [
 	]
 
 	ledger-nano-s?: does [
-		find key/name "Ledger"
+		if key [find key/name "Ledger"]
 	]
 ]
