@@ -157,13 +157,12 @@ context [
 		utx
 	]
 
-	calc-balance-by-largest: func [
+	calc-balance-by-largest: function [
 		account				[block!]
 		amount				[vector!]
 		fee					[vector!]
 		addr-to				[string!]
 		return:				[none! block!]
-		/local change-addr-path change-addr ret inputs outputs total item utx info rest
 	][
 		change-addr-path: select last account/change 'path
 		change-addr: select last account/change 'addr
@@ -183,7 +182,10 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
 					if #{} <> trim/head i256-to-bin rest [
-						append/only outputs reduce ['addr change-addr 'path change-addr-path 'value rest]
+						change-index: random length? outputs
+						outputs-at: at outputs change-index
+						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
 					append ret reduce ['outputs outputs]
@@ -203,7 +205,10 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
 					if #{} <> trim/head i256-to-bin rest [
-						append/only outputs reduce ['addr change-addr 'path change-addr-path 'value rest]
+						change-index: random length? outputs
+						outputs-at: at outputs change-index
+						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
 					append ret reduce ['outputs outputs]
@@ -214,13 +219,12 @@ context [
 		none
 	]
 
-	calc-balance-by-order: func [
+	calc-balance-by-order: function [
 		account				[block!]
 		amount				[vector!]
 		fee					[vector!]
 		addr-to				[string!]
 		return:				[none! block!]
-		/local change-addr-path change-addr ret inputs outputs total sum item utx info rest
 	][
 		change-addr-path: select last account/change 'path
 		change-addr: select last account/change 'addr
@@ -242,7 +246,10 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 sum total
 					if #{} <> trim/head i256-to-bin rest [
-						append/only outputs reduce ['addr change-addr 'path change-addr-path 'value rest]
+						change-index: random length? outputs
+						outputs-at: at outputs change-index
+						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
 					append ret reduce ['outputs outputs]
@@ -263,7 +270,10 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 sum total
 					if #{} <> trim/head i256-to-bin rest [
-						append/only outputs reduce ['addr change-addr 'path change-addr-path 'value rest]
+						change-index: random length? outputs
+						outputs-at: at outputs change-index
+						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
 					append ret reduce ['outputs outputs]
