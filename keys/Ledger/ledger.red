@@ -411,6 +411,7 @@ ledger: context [
 
 	get-legacy-btc-signed-data: function [
 		tx				[block!]
+		info			[block!]
 	][
 		set-trusted-input tx
 
@@ -577,6 +578,7 @@ ledger: context [
 
 	get-segwit-btc-signed-data: function [
 		tx				[block!]
+		info			[block!]
 	][
 		signed: make binary! 800
 
@@ -721,12 +723,13 @@ ledger: context [
 
 	get-btc-signed-data: function [
 		tx				[block!]
+		info			[block!]
 	][
 		if tx/inputs/1/path/1 = (80000000h + 44) [
 			;-- legacy
-			return get-legacy-btc-signed-data tx
+			return get-legacy-btc-signed-data tx info
 		]
-		get-segwit-btc-signed-data tx
+		get-segwit-btc-signed-data tx info
 	]
 
 	close: does [if dongle [hid/close dongle dongle: none]]

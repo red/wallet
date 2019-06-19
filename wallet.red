@@ -513,7 +513,7 @@ wallet: context [
 			]
 		]
 
-		keys/get-signed-data address-index tx chain-id
+		keys/get-eth-signed-data address-index tx chain-id
 	]
 
 	do-sign-tx: func [face [object!] event [event!] /local nonce][

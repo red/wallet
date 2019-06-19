@@ -163,20 +163,32 @@ keys: context [
 		]
 	]
 
-	get-signed-data: func [
+	get-eth-signed-data: func [
 		idx			[integer!]
 		tx			[block!]
 		chain-id	[integer!]
 	][
 		do [
-			switch/default coin-type [
-				ETH [
-					change back tail bip32-path idx
-					key/get-eth-signed-data bip32-path tx chain-id
-				]
-				BTC [key/get-btc-signed-data tx]
-			][none]
+			change back tail bip32-path idx
+			key/get-eth-signed-data bip32-path tx chain-id
 		]
+	]
+
+	get-btc-signed-data: func [
+		tx			[block!]
+		info		[block!]
+	][
+		do [
+			prepare-utx tx info
+			key/get-btc-signed-data tx info
+		]
+	]
+
+	prepare-utx: func [
+		tx			[block!]
+		info		[block!]
+	][
+		repend info ['version 1 'lock_time]
 	]
 
 	get-legacy-signed-len: function [
