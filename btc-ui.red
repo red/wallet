@@ -51,7 +51,7 @@ context [
 					outputs: info/outputs
 					index: 0
 					forall outputs [
-						if outputs/1/addresses/1 = origin/1/addr [
+						if outputs/1/address = origin/1/addr [
 							break
 						]
 						index: index + 1
@@ -73,7 +73,7 @@ context [
 					outputs: info/outputs
 					index: 0
 					forall outputs [
-						if outputs/1/addresses/1 = change/1/addr [
+						if outputs/1/address = change/1/addr [
 							break
 						]
 						index: index + 1
