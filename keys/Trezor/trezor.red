@@ -763,7 +763,7 @@ trezor: context [
 				]
 				if all [tx_hash = none request_index <> none] [
 					tx-output: tx/outputs/(request_index + 1)
-					either tx-output/path <> none [
+					either tx/change-index = (request_index + 1) [
 						addr-name: 'address_n
 						addr: tx-output/path
 						either tx-output/path/1 = (80000000h + 49) [

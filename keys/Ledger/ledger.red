@@ -460,10 +460,12 @@ ledger: context [
 				]
 			]
 			clear data
-			ids: select last tx/outputs 'path
-			append data collect [
-				keep length? ids
-				forall ids [keep to-bin32 pick ids 1]
+			if change-index: tx/change-index [
+				ids: select tx/outputs/(change-index) 'path
+				append data collect [
+					keep length? ids
+					forall ids [keep to-bin32 pick ids 1]
+				]
 			]
 			final-hash-input FFh data
 
@@ -626,10 +628,12 @@ ledger: context [
 		]
 
 		clear data
-		ids: select last tx/outputs 'path
-		append data collect [
-			keep length? ids
-			forall ids [keep to-bin32 pick ids 1]
+		if change-index: tx/change-index [
+			ids: select tx/outputs/(change-index) 'path
+			append data collect [
+				keep length? ids
+				forall ids [keep to-bin32 pick ids 1]
+			]
 		]
 		final-hash-input FFh data
 
