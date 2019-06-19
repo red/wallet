@@ -592,8 +592,9 @@ trezor: context [
 
 	get-btc-signed-data: func [
 		tx			[block!]
+		nutx		[block!]
 	][
-		SignTxSequence tx
+		SignTxSequence tx nutx
 	]
 
 	;===================
@@ -652,6 +653,7 @@ trezor: context [
 
 	SignTxSequence: func [
 		tx				[block!]
+		nutx			[block!]
 		/local
 			input-segwit?
 			coin_name res-in req sub-req

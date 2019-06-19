@@ -283,7 +283,7 @@ context [
 		process-events
 	]
 
-	do-sign-tx: func [face [object!] event [event!] /local utxs rate][
+	do-sign-tx: func [face [object!] event [event!] /local utxs tx-info rate][
 		unless check-data [exit]
 		notify-user
 
@@ -292,7 +292,8 @@ context [
 			amount-field/text: copy "Insufficient Balance"
 			exit
 		]
-		either error? signed-data: try [keys/get-signed-data 0 utxs 0][
+		tx-info: clear []
+		either error? signed-data: try [keys/get-btc-signed-data utxs tx-info][
 			unview
 			tx-error/text: rejoin ["Error! Please try again^/^/" form signed-data]
 			view/flags tx-error-dlg 'modal
