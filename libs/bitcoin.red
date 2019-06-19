@@ -27,9 +27,7 @@ btc: context [
 		new-error 'get-url "server error" url
 	]
 
-	get-batch-balance: func [network [url!] addrs [block!]
-		/local len naddrs url resp err-no err-msg data ret
-	][
+	get-batch-balance: function [network [url!] addrs [block!]][
 		len: length? addrs
 		naddrs: copy addrs/1
 		addrs: next addrs
@@ -39,22 +37,21 @@ btc: context [
 		]
 		url: rejoin [network "/address/" naddrs]
 		resp: get-url url
-		err-no: select resp 'err_no
-		if 0 <> err-no [
-			err-msg: select resp 'err_msg
-			new-error 'get-addr-balance "server error" reduce [url err-no err-msg]
+		if 0 <> err-no: resp/err_no [
+			new-error 'get-addr-balance "server error" reduce [url err-no resp/err_msg]
 		]
 
+		data: resp/data
 		either len = 1 [
 			if all [
-				resp/data = none
+				data = none
 				find resp 'data
 			][
 				return reduce [reduce ['tx-count 0]]
 			]
-			data: reduce [resp/data]
+			data: reduce [data]
 		][
-			unless data: select resp 'data [new-error 'get-addr-balance "server error" "no data"]
+			unless data [new-error 'get-addr-balance "server error" "no data"]
 		]
 		if len <> length? data [new-error 'get-addr-balance "server error" "no enough"]
 		ret: make block! len
@@ -68,93 +65,87 @@ btc: context [
 		ret
 	]
 
-	get-addr-balance: func [network [url!] address [string!] return: [none! vector!]
-		/local url resp err-no err-msg data balance
-	][
+	get-addr-balance: function [network [url!] address [string!]][
 		url: rejoin [network "/address/" address]
 		resp: get-url url
-		err-no: select resp 'err_no
-		if 0 <> err-no [
-			err-msg: select resp 'err_msg
-			new-error 'get-addr-balance "server error" reduce [url err-no err-msg]
+		if 0 <> err-no: resp/err_no [
+			new-error 'get-addr-balance "server error" reduce [url err-no resp/err_msg]
 		]
 
-		unless data: select resp 'data [return none]
-		unless balance: select data 'balance [return none]
+		unless data: resp/data [return none]
+		unless balance: data/balance [return none]
 		to-i256 balance
 	]
 
-	get-unspent: func [network [url!] address [string!] return: [none! block!]
-		/local url resp err-no err-msg data list utxs item
-	][
+	get-unspent: function [network [url!] address [string!]][
 		url: rejoin [network "/address/" address "/unspent"]
 		resp: get-url url
-		err-no: select resp 'err_no
-		if 0 <> err-no [
-			err-msg: select resp 'err_msg
-			new-error 'get-unspent "server error" reduce [url err-no err-msg]
+		if 0 <> err-no: resp/err_no [
+			new-error 'get-unspent "server error" reduce [url err-no resp/err_msg]
 		]
-		unless data: select resp 'data [return none]
-		unless list: select data 'list [return none]
+		unless data: resp/data [return none]
+		unless list: data/list [return none]
 		if list = [] [return none]
 		utxs: copy []
-		foreach item list [
-			hash: select item 'tx_hash
-			value: select item 'value
-			append/only utxs reduce [
-				'tx-hash select item 'tx_hash
-				'value to-i256 select item 'value
+		forall list [
+			repend/only utxs [
+				'tx-hash list/1/tx_hash
+				'value to-i256 list/1/value
 			]
 		]
 		utxs
 	]
 
-	get-tx-info: func [network [url!] txid [string!] return: [none! block!]
-		/local url resp err-no err-msg data ret version lock_time inputs outputs item info
-	][
+	get-tx-info: function [network [url!] txid [string!]][
 		url: rejoin [network "/tx/" txid "?verbose=3"]
 		resp: get-url url
 
-		err-no: select resp 'err_no
-		if 0 <> err-no [
-			err-msg: select resp 'err_msg
-			new-error 'get-tx-info "server error" reduce [url err-no err-msg]
+		if 0 <> err-no: resp/err_no [
+			new-error 'get-tx-info "server error" reduce [url err-no resp/err_msg]
 		]
-		unless data: select resp 'data [return none]
+		unless data: resp/data [return none]
 		ret: copy []
-		unless version: select data 'version [return none]
-		unless lock_time: select data 'lock_time [return none]
-		append ret reduce ['version version]
-		append ret reduce ['lock_time lock_time]
+		unless version: data/version [return none]
+		unless lock_time: data/lock_time [return none]
+		repend ret ['version version]
+		repend ret ['lock_time lock_time]
 
-		unless inputs: select data 'inputs [return none]
+		unless inputs: data/inputs [return none]
 		if inputs = [] [return none]
-		unless outputs: select data 'outputs [return none]
+		unless outputs: data/outputs [return none]
 		if outputs = [] [return none]
 
 		info: copy []
-		foreach item inputs [
-			append/only info reduce [
-				'prev-addresses select item 'prev_addresses
-				'prev-position select item 'prev_position
-				'prev-tx-hash select item 'prev_tx_hash
-				'script-hex select item 'script_hex
-				'prev-type select item 'prev_type
-				'sequence to integer! skip i256-to-bin to-i256 select item 'sequence 28
+		forall inputs [
+			if 1 <> length? inputs/1/prev_addresses [
+				;-- we don't support this case
+				return none
+			]
+			repend/only info [
+				'prev-address inputs/1/prev_addresses/1
+				'prev-position inputs/1/prev_position
+				'prev-tx-hash inputs/1/prev_tx_hash
+				'script-hex inputs/1/script_hex
+				'prev-type inputs/1/prev_type
+				'sequence to integer! skip i256-to-bin to-i256 inputs/1/sequence 28
 			]
 		]
-		append ret reduce ['inputs info]
+		repend ret ['inputs info]
 
 		info: copy []
-		foreach item outputs [
-			append/only info reduce [
-				'addresses select item 'addresses
-				'value to-i256 select item 'value
-				'script-hex select item 'script_hex
-				'type select item 'type
+		forall outputs [
+			if 1 <> length? outputs/1/addresses [
+				;-- we don't support this case
+				return none
+			]
+			repend/only info [
+				'address outputs/1/addresses/1
+				'value to-i256 outputs/1/value
+				'script-hex outputs/1/script_hex
+				'type outputs/1/type
 			]
 		]
-		append ret reduce ['outputs info]
+		repend ret ['outputs info]
 		ret
 	]
 
@@ -163,9 +154,7 @@ btc: context [
 		Accept: "application/json"
 	]
 
-	post-url: func [url [url!] body [map!] return: [map!]
-		/local command res 
-	][
+	post-url: function [url [url!] body [map!]][
 		wait 0.3
 		command: compose/only [
 				POST
@@ -178,56 +167,46 @@ btc: context [
 		new-error 'post-url "server error" [url command]
 	]
 
-	publish-tx: func [network [url!] tx [string!] return: [logic!]
-		/local
-			url body resp err-no err-msg
-	][
+	publish-tx: function [network [url!] tx [string!]][
 		url: rejoin [network "/tools/tx-publish"]
 		body: make map! reduce ['rawhex tx]
 		resp: post-url url body
-		err-no: select resp 'err_no
-		if 0 <> err-no [
-			err-msg: select resp 'err_msg
-			new-error 'publish-tx "server error" reduce [url err-no err-msg]
+		if 0 <> err-no: resp/err_no [
+			new-error 'publish-tx "server error" reduce [url err-no resp/err_msg]
 		]
 		true
 	]
 
-	decode-tx: func [network [url!] tx [string!] return: [string!]
-		/local
-			url body resp data err-no err-msg txid
-	][
+	decode-tx: function [network [url!] tx [string!]][
 		url: rejoin [network "/tools/tx-decode"]
 		body: make map! reduce ['rawhex tx]
 		resp: post-url url body
-		err-no: select resp 'err_no
-		if 0 <> err-no [
-			err-msg: select resp 'err_msg
-			new-error 'decode-tx "server error" reduce [url err-no err-msg]
+		if 0 <> err-no: resp/err_no [
+			new-error 'decode-tx "server error" reduce [url err-no resp/err_msg]
 		]
-		unless data: select resp 'data [new-error 'decode-tx "no data" url]
-		unless txid: select data 'txid [new-error 'decode-tx "no txid" url]
+		unless data: resp/data [new-error 'decode-tx "no data" url]
+		unless txid: data/txid [new-error 'decode-tx "no txid" url]
 		txid
 	]
 
-	get-rate: func [speed [word!] return: [float! none!] /local network res fee][
+	get-rate: function [speed [word!]][
 		network: https://bitcoinfees.earn.com/api/v1/fees/recommended
 		unless res: get-url network [return none]
 
 		if speed = 'all [return values-of res]
 		if speed = 'average [
-			if fee: select res 'halfHourFee [return fee]
+			if fee: res/halfHourFee [return fee]
 			return none
 		]
 		if any [
 			speed = 'fastest
 			speed = 'fast
 		][
-			if fee: select res 'fastestFee [return fee]
+			if fee: res/fastestFee [return fee]
 			return none
 		]
 		if speed = 'safeLow [
-			if fee: select res 'hourFee [return fee]
+			if fee: res/hourFee [return fee]
 			return none
 		]
 		none
