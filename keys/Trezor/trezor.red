@@ -414,6 +414,10 @@ trezor: context [
 	model:	"1"
 	command-buffer: make binary! 1000
 
+	DEFAULT_VERSION:	1
+	DEFAULT_SEQUENCE:	-1
+	DEFAULT_LOCKTIME:	0
+
 	pin-get: make string! 16
 	pin-msg: none
 	pin-req: none
@@ -672,7 +676,7 @@ trezor: context [
 		res-in: make map! []
 
 		;-- first step, send "SignTx" message
-		SignTx length? tx/outputs length? tx/inputs coin_name 0 res-in
+		SignTx length? tx/outputs length? tx/inputs coin_name DEFAULT_LOCKTIME res-in
 
 		forever [
 			request_type: select res-in 'request_type
