@@ -350,6 +350,13 @@ wallet: context [
 			;if coin-type = 'BTC [			;-- put it into menu
 			;	append addr-list/menu ["Copy Unused Address" copy-unused]
 			;]
+			no
+		][
+			append addr-list/menu ["Batch Payment" batch]
+			yes
+		]
+
+		if coin-type = 'BTC [
 			keys/btc-path: either find token-name "Legacy" [
 				keys/btc-legacy
 			][
@@ -357,10 +364,6 @@ wallet: context [
 			]
 			keys/bip32-path: keys/btc-path
 			keys/set-btc-network net-name
-			no
-		][
-			append addr-list/menu ["Batch Payment" batch]
-			yes
 		]
 		do-reload
 	]
