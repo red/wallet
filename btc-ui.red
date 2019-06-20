@@ -182,9 +182,13 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
 					if #{} <> trim/head i256-to-bin rest [
-						change-index: random length? outputs
-						outputs-at: at outputs change-index
-						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						len: 1 + length? outputs
+						either len = change-index: random len [
+							repend/only outputs ['addr change-addr 'path change-addr-path 'value rest]
+						][
+							outputs-at: at outputs change-index
+							insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						]
 						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
@@ -205,9 +209,13 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 utx/value total
 					if #{} <> trim/head i256-to-bin rest [
-						change-index: random length? outputs
-						outputs-at: at outputs change-index
-						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						len: 1 + length? outputs
+						either len = change-index: random len [
+							repend/only outputs ['addr change-addr 'path change-addr-path 'value rest]
+						][
+							outputs-at: at outputs change-index
+							insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						]
 						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
@@ -246,9 +254,13 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 sum total
 					if #{} <> trim/head i256-to-bin rest [
-						change-index: random length? outputs
-						outputs-at: at outputs change-index
-						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						len: 1 + length? outputs
+						either len = change-index: random len [
+							repend/only outputs ['addr change-addr 'path change-addr-path 'value rest]
+						][
+							outputs-at: at outputs change-index
+							insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						]
 						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
@@ -270,9 +282,13 @@ context [
 					append/only outputs reduce ['addr addr-to 'value amount]
 					rest: sub256 sum total
 					if #{} <> trim/head i256-to-bin rest [
-						change-index: random length? outputs
-						outputs-at: at outputs change-index
-						insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						len: 1 + length? outputs
+						either len = change-index: random len [
+							repend/only outputs ['addr change-addr 'path change-addr-path 'value rest]
+						][
+							outputs-at: at outputs change-index
+							insert/only outputs-at reduce ['addr change-addr 'path change-addr-path 'value rest]
+						]
 						append ret reduce ['change-index change-index]
 					]
 					append ret reduce ['inputs inputs]
