@@ -111,6 +111,7 @@ keys: context [
 					dongle: handle
 					unless find list key/name [append list key/name]
 					eth-path: either find key/name "Ledger" [ledger-path][trezor-path]
+					if coin-type <> 'BTC [bip32-path: eth-path]
 				]
 				index: length? list
 			][
