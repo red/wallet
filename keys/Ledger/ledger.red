@@ -20,10 +20,14 @@ ledger: context [
 	DEFAULT_VERSION:	#{01000000}
 	DEFAULT_SEQUENCE:	#{FFFFFFFF}
 	DEFAULT_LOCKTIME:	#{00000000}
+	NORMAL_ENDING:		#{9000}
 
 	dongle:		none
 	buffer:		make binary! MAX_APDU_SIZE
 	data-frame: make binary! PACKET_SIZE
+
+	sign-any-data?: yes
+	external-erc20?: no
 
 	request-pin-state: 'Init
 
@@ -34,7 +38,24 @@ ledger: context [
 		dongle
 	]
 
-	init: func [][true]
+	init: func [/local data flags][
+		data: make binary! 20
+		append data reduce [
+			E0h
+			06h
+			0
+			0
+			0
+			4
+		]
+		write-apdu data
+		data: read-apdu 1
+		if NORMAL_ENDING = back back tail data [
+			flags: data/1
+			sign-any-data?: flags and 1 <> 0
+			external-erc20?: flags and 2 <> 0
+		]
+	]
 
 	close-pin-requesting: does [
 		request-pin-state: 'Init
