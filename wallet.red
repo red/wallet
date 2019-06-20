@@ -448,7 +448,7 @@ wallet: context [
 		]
 		my-addr-text/text: list-title
 		if keys/ledger-nano-s? [
-			if all [coin-type = 'ETH 4 = length? keys/ledger-path][
+			if all [coin-type = 'ETH 4 = length? keys/eth-path][
 				my-addr-text/text: rejoin [list-title " (Legacy)"]
 			]
 		]
@@ -664,12 +664,12 @@ wallet: context [
 		
 		my-addr-text: text 185 bold "My Addresses" on-dbl-click [
 			if all [coin-type = 'ETH keys/ledger-nano-s?][
-				keys/ledger-path: either 4 = length? keys/ledger-path [
+				keys/eth-path: either 4 = length? keys/eth-path [
 					keys/trezor-path
 				][
 					ledger-legacy-path
 				]
-				keys/bip32-path: keys/ledger-path
+				keys/bip32-path: keys/eth-path
 				do-reload
 			]
 		] pad 160x0
