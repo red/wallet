@@ -62,7 +62,8 @@ btc: context [
 				sent: to-i256 data/1/unconfirmed_sent
 				nbalance: add256 balance recv
 				nbalance: sub256 nbalance sent
-				repend/only ret ['tx-count data/1/tx_count 'balance nbalance]
+				count: data/1/tx_count + data/1/unconfirmed_tx_count
+				repend/only ret ['tx-count count 'balance nbalance]
 			][
 				repend/only ret ['tx-count 0]
 			]
