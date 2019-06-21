@@ -91,6 +91,7 @@ btc: context [
 			repend/only utxs [
 				'tx-hash list/1/tx_hash
 				'value to-i256 list/1/value
+				'confirmations list/1/confirmations
 			]
 		]
 		utxs
