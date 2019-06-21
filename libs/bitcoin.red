@@ -57,7 +57,12 @@ btc: context [
 		ret: make block! len
 		forall data [
 			either data/1 [
-				repend/only ret ['tx-count data/1/tx_count 'balance to-i256 data/1/balance]
+				balance: to-i256 data/1/balance
+				recv: to-i256 data/1/unconfirmed_received
+				sent: to-i256 data/1/unconfirmed_sent
+				nbalance: add256 balance recv
+				nbalance: sub256 nbalance sent
+				repend/only ret ['tx-count data/1/tx_count 'balance nbalance]
 			][
 				repend/only ret ['tx-count 0]
 			]
