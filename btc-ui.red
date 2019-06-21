@@ -357,6 +357,7 @@ context [
 			view/flags tx-error-dlg 'modal
 		][
 			unview
+			wait 0.5
 			browse rejoin [explorer txid]
 		]
 	]
