@@ -177,6 +177,7 @@ context [
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
+				if utx/confirmations < 3 [continue]
 				if lesser-or-equal256? total utx/value [
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 					append/only outputs reduce ['addr addr-to 'value amount]
@@ -204,6 +205,7 @@ context [
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
+				if utx/confirmations < 3 [continue]
 				if lesser-or-equal256? total utx/value [
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 					append/only outputs reduce ['addr addr-to 'value amount]
@@ -248,6 +250,7 @@ context [
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
+				if utx/confirmations < 3 [continue]
 				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
@@ -276,6 +279,7 @@ context [
 			if item/utxs = none [continue]
 
 			foreach utx item/utxs [
+				if utx/confirmations < 3 [continue]
 				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
@@ -315,7 +319,7 @@ context [
 
 		utxs: calc-balance accout-info input-amount input-fee input-addr
 		unless utxs [
-			amount-field/text: copy "Insufficient Balance"
+			amount-field/text: copy "unconfirmed balance!"
 			exit
 		]
 		tx-info: clear []
