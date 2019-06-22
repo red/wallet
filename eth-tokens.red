@@ -17,20 +17,24 @@ eth-tokens: context [
 	wallet-token-list: []
 	token-list-face: none
 
+	tokens-info: make map! 10
+
 	do-add-token: func [
 		face [object!] event [event!]
 		/local contracts-list sym-list idx cur-idx name data
 	][
-		contracts-list: skip wallet-contracts 4			;-- skip ETH
-		sym-list: skip wallet-token-list 2				;-- skip "Add Tokens" and "ETH"
+		contracts-list: skip wallet-contracts 12		;-- skip ETH, BTC and BTC legacy
+		sym-list: skip wallet-token-list 4				;-- skip "Add Tokens","ETH", "BTC" and "BTC (legacy)"
 
 		idx: all-tokens-list/selected - 1
 		cur-idx: current-tokens-list/selected
 		name: pick all-tokens-list/data idx * 2 + 1		;-- token fullname
 		if find current-tokens-list/data name [exit]	;-- already added
 		
-		data: pick all-tokens-list/data idx * 2 + 2		;-- [sym address decimals name]
-		poke data 2 reduce ["mainnet" data/2]			;-- [sym ["mainnet" address] decimals name]
+		data: copy pick all-tokens-list/data idx * 2 + 2 ;-- [sym address decimals name signature]
+		put tokens-info data/2 data/5
+
+		poke data 2 reduce ["mainnet" data/2]			 ;-- [sym ["mainnet" address] decimals name signature]
 		either cur-idx > 0 [
 			insert skip current-tokens-list/data cur-idx name
 			insert skip contracts-list cur-idx * 4 data
@@ -81,9 +85,9 @@ eth-tokens: context [
 	]
 
 	make-tokens-list: function [][
-		foreach [addr sym dec name] ERC20-tokens [
+		foreach [addr sym dec name signature] ERC20-tokens [
 			token: rejoin [sym " (" name #")"]
-			info: reduce [sym addr dec token]
+			info: reduce [sym addr dec token signature]
 			repend TOKENS-LIST [token info]
 		]
 	]
@@ -97,7 +101,17 @@ eth-tokens: context [
 		view/flags add-tokens-dlg 'modal
 	]
 
-	init: does [
+	get-erc20-info: function [contract][
+		select tokens-info contract
+	]
+
+	init: function [tokens [block!]][
 		make-tokens-list
+		foreach [sym addrs dec name] skip tokens 12 [
+			contract: addrs/2
+			if info: find/skip ERC20-tokens contract 5 [
+				put tokens-info contract info/5
+			]
+		]
 	]
 ]

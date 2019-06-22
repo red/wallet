@@ -205,6 +205,22 @@ ledger: context [
 		]
 	]
 
+	provide-erc20-info: function [data [binary!]][
+		if external-erc20? [
+			chunk: make binary! 200
+			append chunk reduce [
+				E0h
+				0Ah
+				0
+				0
+				length? data
+				data
+			]
+			write-apdu chunk
+			read-apdu 1
+		]
+	]
+
 	sign-eth-tx: func [bip32-path [block!] tx [block!] /local data max-sz sz signed][
 		;-- tx: [nonce, gasprice, startgas, to, value, data]
 		tx-bin: rlp/encode tx

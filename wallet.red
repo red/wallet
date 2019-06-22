@@ -483,13 +483,18 @@ wallet: context [
 		gas-limit	[string!]
 		amount		[string!]
 		nonce		[integer!]
-		/local price limit tx value
+		/local price limit tx value data
 	][
 		price: eth/gwei-to-wei gas-price
 		limit: to-integer gas-limit
 		value: eth/eth-to-wei amount
 
 		either token-contract [
+			if keys/ledger-nano-s? [
+				data: eth-tokens/get-erc20-info token-contract
+				ledger/provide-erc20-info data
+			]
+
 			tx: reduce [
 				nonce
 				price
@@ -815,11 +820,11 @@ wallet: context [
 	]
 
 	run: does [
-		eth-tokens/init
 		min-size: ui/extra: ui/size
 		setup-actors
 		monitor-devices
 		load-cfg
+		eth-tokens/init contracts
 		do-auto-size addr-list
 		view/flags ui 'resize
 	]
