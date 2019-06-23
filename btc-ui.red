@@ -37,6 +37,7 @@ context [
 
 	tx-rates: none
 	accout-info: []			;-- current selected accout information
+	spent-txs: none
 
 	update-utxs: function [][
 		origin: accout-info/origin
@@ -80,6 +81,43 @@ context [
 					]
 					repend info ['index index]
 					repend utxs/1 ['info info]
+				]
+			]
+		]
+	]
+
+	update-spent: function [][
+		origin: accout-info/origin
+		forall origin [
+			if utxs: origin/1/utxs [
+				forall utxs [
+					inputs: spent-txs/inputs
+					forall inputs [
+						if inputs/1/tx-hash = utxs/1/tx-hash [
+							either find utxs/1 'spent [
+								utxs/1/spent: yes
+							][
+								repend utxs/1 ['spent yes]
+							]
+						]
+					]
+				]
+			]
+		]
+		change: accout-info/change
+		forall change [
+			if utxs: change/1/utxs [
+				forall utxs [
+					inputs: spent-txs/inputs
+					forall inputs [
+						if inputs/1/tx-hash = utxs/1/tx-hash [
+							either find utxs/1 'spent [
+								utxs/1/spent: yes
+							][
+								repend utxs/1 ['spent yes]
+							]
+						]
+					]
 				]
 			]
 		]
@@ -178,6 +216,7 @@ context [
 
 			foreach utx item/utxs [
 				if utx/confirmations < 3 [continue]
+				if utx/spent [continue]
 				if lesser-or-equal256? total utx/value [
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 					append/only outputs reduce ['addr addr-to 'value amount]
@@ -206,6 +245,7 @@ context [
 
 			foreach utx item/utxs [
 				if utx/confirmations < 3 [continue]
+				if utx/spent [continue]
 				if lesser-or-equal256? total utx/value [
 					append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 					append/only outputs reduce ['addr addr-to 'value amount]
@@ -251,6 +291,7 @@ context [
 
 			foreach utx item/utxs [
 				if utx/confirmations < 3 [continue]
+				if utx/spent [continue]
 				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
@@ -280,6 +321,7 @@ context [
 
 			foreach utx item/utxs [
 				if utx/confirmations < 3 [continue]
+				if utx/spent [continue]
 				append/only inputs reduce ['addr item/addr 'pubkey item/pubkey 'tx-hash utx/tx-hash 'path item/path 'info utx/info]
 				sum: add256 sum utx/value
 				if lesser-or-equal256? total sum [
@@ -323,6 +365,7 @@ context [
 			exit
 		]
 		tx-info: clear []
+		spent-txs: none
 		either error? signed-data: try [keys/get-btc-signed-data utxs tx-info][
 			unview
 			tx-error/text: rejoin ["Error! Please try again^/^/" form signed-data]
@@ -338,6 +381,7 @@ context [
 				info-rate/text:		rejoin [form rate / 10.0 " sat/B"]
 				unview
 				view/flags confirm-sheet 'modal
+				spent-txs: utxs
 			]
 		]
 
@@ -357,6 +401,7 @@ context [
 			view/flags tx-error-dlg 'modal
 		][
 			unview
+			update-spent
 			wait 0.5
 			browse rejoin [explorer txid]
 		]
