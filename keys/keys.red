@@ -334,7 +334,10 @@ keys: context [
 			process-events
 			item: balance-batch/(j + 1)
 			append/only c-list item
-			if item/tx-count = 0 [
+			if all [
+				item/tx-count = 0
+				item/unconfirmed-tx-count = 0
+			][
 				append list reduce ['change c-list]
 				break
 			]
@@ -361,7 +364,10 @@ keys: context [
 			process-events
 			item: balance-batch/(j + 1)
 			append/only o-list item
-			if item/tx-count = 0 [
+			if all [
+				item/tx-count = 0
+				item/unconfirmed-tx-count = 0
+			][
 				append list reduce ['origin o-list]
 				break
 			]
