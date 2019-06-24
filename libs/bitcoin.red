@@ -47,7 +47,11 @@ btc: context [
 				data = none
 				find resp 'data
 			][
-				return reduce [reduce ['tx-count 0]]
+				return reduce [reduce [
+					'tx-count 0
+					'unconfirmed-tx-count 0
+					'unspent-tx-count 0
+				]]
 			]
 			data: reduce [data]
 		][
