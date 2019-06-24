@@ -276,7 +276,7 @@ wallet: context [
 				if addr-list/selected = -1 [addr-list/selected: 1]
 				network-to/text: net-name
 				addr-from/text: copy/part pick addr-list/data addr-list/selected 42
-				gas-limit/text: either token-contract ["79510"]["21000"]
+				gas-limit/text: either token-contract ["159020"]["21000"]
 				reset-sign-button
 				label-unit/text: token-abbr
 				clear addr-to/text
@@ -428,6 +428,23 @@ wallet: context [
 			]
 		][
 			amount-field/text: copy "Invalid amount"
+			return no
+		]
+
+		amount: valid-amount? gas-limit/text
+		if any [
+			none? amount
+			amount < 21000
+		][
+			gas-limit/text: copy "gas limit must be larger than 21000"
+			return no
+		]
+		amount: valid-amount? gas-price/text
+		if any [
+			none? amount
+			amount <= 0
+		][
+			gas-price/text: copy "Invalid Gas Price"
 			return no
 		]
 		yes
