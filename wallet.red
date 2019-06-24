@@ -152,7 +152,7 @@ wallet: context [
 	]
 
 	list-addresses: func [
-		/prev /next /local addr-balances addrs addr entry balances balance n
+		/prev /next /local addr-balances addrs addr entry balances balance n idx
 	][
 		update-ui no
 
@@ -163,6 +163,7 @@ wallet: context [
 			if next [page: page + 1]
 			if prev [page: page - 1]
 			n: page * addr-per-page
+			idx: 1
 
 			keys/unused-idx: -1
 
@@ -206,7 +207,8 @@ wallet: context [
 						info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
 						break
 					]
-					poke addr-balances n + 1 rejoin [addr "         " balances]
+					poke addr-balances idx rejoin [addr "         " balances]
+					idx: idx + 1
 				][
 					append addrs addr
 					append addr-balances rejoin [addr "      <loading>"]
