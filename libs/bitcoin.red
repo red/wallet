@@ -91,8 +91,10 @@ btc: context [
 		to-i256 balance
 	]
 
-	get-unspent: function [network [url!] address [string!]][
-		url: rejoin [network "/address/" address "/unspent"]
+	page-size: 50
+
+	get-unspent-page: function [network [url!] address [string!] page [integer!]][
+		url: rejoin [network "/address/" address "/unspent?page=" page]
 		resp: get-url url
 		if 0 <> err-no: resp/err_no [
 			new-error 'get-unspent "server error" reduce [url err-no resp/err_msg]
@@ -108,7 +110,24 @@ btc: context [
 				'confirmations list/1/confirmations
 			]
 		]
+		set 'page-size data/pagesize
 		utxs
+	]
+
+	get-unspent: function [network [url!] address [string!]][
+		unless ret: get-unspent-page network address 1 [return none]
+		utxs: ret
+		i: 2
+		while [
+			all [
+				page-size = length? utxs
+				utxs: get-unspent-page network address i
+			]
+		][
+			repend ret utxs
+			i: i + 1
+		]
+		ret
 	]
 
 	get-tx-info: function [network [url!] txid [string!]][
