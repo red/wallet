@@ -58,14 +58,22 @@ btc: context [
 			unless data [new-error 'get-addr-balance "server error" "no data"]
 		]
 		if len <> length? data [new-error 'get-addr-balance "server error" "no enough"]
+		testnet?: false
+		if find network "tchain" [
+			testnet?: true
+		]
 		ret: make block! len
 		forall data [
 			either data/1 [
 				balance: to-i256 data/1/balance
-				recv: to-i256 data/1/unconfirmed_received
-				sent: to-i256 data/1/unconfirmed_sent
-				nbalance: add256 balance recv
-				nbalance: sub256 nbalance sent
+				either testnet? [
+					recv: to-i256 data/1/unconfirmed_received
+					sent: to-i256 data/1/unconfirmed_sent
+					nbalance: add256 balance recv
+					nbalance: sub256 nbalance sent
+				][
+					nbalance: balance
+				]
 				repend/only ret [
 					'tx-count data/1/tx_count
 					'unconfirmed-tx-count data/1/unconfirmed_tx_count
@@ -202,7 +210,7 @@ btc: context [
 
 		if all [not error? res: try [write url command] map? res: load-json res][return res]
 		if map? res: load-json write url command [return res]
-		new-error 'post-url "server error" [url command]
+		new-error 'post-url "server error" reduce [url command]
 	]
 
 	publish-tx: function [network [url!] tx [string!]][
