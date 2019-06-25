@@ -19,12 +19,12 @@ Red [
 
 keys: context [
 
-	dongle:			none
+	dongle:			none		;-- low-level device handle
 	list:			[]
-	key:			none
+	key:			none		;-- already connected device
+	current:		none		;-- current connecting device
 	index:			0
 	new?:			yes
-	current:		none
 	coin-type:		'BTC
 	support-keys:	reduce [ledger trezor-old trezor]
 	eth-path:		[]
@@ -41,12 +41,12 @@ keys: context [
 	support?: func [
 		id		[block!]
 		return:	[logic!]
-		/local key
+		/local k
 	][
-		foreach key support-keys [
-			if id = key/id [
-				current: key
-				new?: none? find list key/name
+		foreach k support-keys [
+			if id = k/id [
+				current: k
+				new?: none? find list k/name
 				return yes
 			]
 		]
@@ -90,15 +90,7 @@ keys: context [
 		]
 	]
 
-	connect-key: func [device [object! string!] /local handle k][
-		if string? device [
-			foreach k support-keys [
-				if k/name = device [
-					device: k
-					break
-				]
-			]
-		]
+	do-connect: func [device [object!] /local handle][
 		do [
 			handle: device/connect
 			either handle [
@@ -114,9 +106,23 @@ keys: context [
 					if coin-type <> 'BTC [bip32-path: eth-path]
 				]
 				index: length? list
+				yes
 			][
 				current: key
+				no
 			]
+		]
+	]
+
+	connect-key: func [device [object! string!] /local k][
+		either string? device [
+			foreach k support-keys [
+				if k/name = device [
+					if do-connect k [break]
+				]
+			]
+		][
+			do-connect device
 		]
 	]
 
@@ -124,7 +130,7 @@ keys: context [
 		if all [dongle new?][close]
 
 		unless dongle [
-			foreach k support-keys [connect-key k]
+			foreach k support-keys [do-connect k]
 		]
 		if empty? list [key: none]
 		dongle

@@ -749,13 +749,16 @@ wallet: context [
 			actors: object [
 				on-up: func [face [object!] event [event!]][
 					if keys/support? face/data [
+						update-ui no
 						face/rate: none
 						keys/connect-key keys/current
-						if any [keys/new? keys/state = 'Requesting][
+						either any [keys/new? keys/state = 'Requesting][
 							dev/data: keys/list
 							dev/selected: keys/index
 							list-addresses
 							process-events
+						][
+							update-ui yes
 						]
 					]
 				]
