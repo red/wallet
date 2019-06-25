@@ -156,10 +156,7 @@ context [
 
 	check-data: does [
 		input-addr: trim any [addr-to/text ""]
-		unless all [
-			26 <= length? input-addr
-			36 >= length? input-addr
-		][
+		unless btc-addr/decode58-check input-addr [
 			addr-to/text: copy "Invalid address"
 			return no
 		]
