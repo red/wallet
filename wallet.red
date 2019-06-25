@@ -748,7 +748,7 @@ wallet: context [
 			type: 'usb-device offset: 0x0 size: 10x10 rate: 0:0:1
 			actors: object [
 				on-up: func [face [object!] event [event!]][
-					if keys/support? face/data [
+					if all [face/extra <> 'on-time keys/support? face/data] [
 						update-ui no
 						face/rate: none
 						keys/connect-key keys/current
@@ -779,11 +779,13 @@ wallet: context [
 					]
 				]
 				on-time: func [face event][
+					face/extra: 'on-time
 					face/rate: none
 					if all [keys/key keys/state = 'Requesting][exit]
 					unless locked? [connect]
 					list-addresses
 					unless keys/key [face/rate: 0:0:2]
+					face/extra: none
 				]
 			]
 		]
