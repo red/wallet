@@ -380,7 +380,7 @@ keys: context [
 
 			i: i + 1
 		]
-
+		set 'network-delay? yes
 		append list reduce ['balance total]
 		list
 	]

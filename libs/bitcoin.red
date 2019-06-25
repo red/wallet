@@ -21,10 +21,10 @@ btc: context [
 	]
 
 	get-url: func [url [url!] return: [map!]
-		/local res 
+		/local res res2
 	][
-		if all [not error? res: try-read url not error? res: try [load-json res]][return res]
-		new-error 'get-url "server error" url
+		if all [not error? res: try-read url not error? res2: try [load-json res]][return res2]
+		new-error 'get-url "server error" reduce [url res]
 	]
 
 	get-batch-balance: function [network [url!] addrs [block!]][
