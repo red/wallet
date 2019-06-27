@@ -268,11 +268,12 @@ eth-batch: context [
 		rate 0:0:2 on-time [face/rate: none floating-dlg/visible?: no]
 	] 'no-title
 
-	actors-init: does [
+	setup-actors: does [
+		batch-send-dialog/rate: 0:0:1
 		batch-send-dialog/actors: make object! [
-			on-close: func [face event][
-				sanitize-payments payment-list/data
-				batch-result-btn/visible?: no
+			on-time: func [face event /local res][
+				face/rate: none
+				if res: eth/get-gas-price 'fast [batch-gas-price/text: to string! res]
 			]
 		]
 	]
@@ -281,7 +282,7 @@ eth-batch: context [
 		batch-addr-from/text: copy addr
 		total-balance: balance
 		clear payment-list/data
-		batch-gas-limit/text: either wallet/token-contract ["79510"]["21000"]
+		batch-gas-limit/text: either wallet/token-contract ["159020"]["21000"]
 		if batch-send-dialog/state [unview batch-send-dialog]
 		view batch-send-dialog
 	]

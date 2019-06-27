@@ -348,17 +348,8 @@ wallet: context [
 		select-config net
 
 		clear skip addr-list/menu 2
-		fast-api?: either any [coin-type = 'BTC token-contract] [
-			;if coin-type = 'BTC [			;-- put it into menu
-			;	append addr-list/menu ["Copy Unused Address" copy-unused]
-			;]
-			no
-		][
-			append addr-list/menu ["Batch Payment" batch]
-			yes
-		]
-
-		if coin-type = 'BTC [
+		either coin-type = 'BTC [
+			fast-api?: no
 			keys/btc-path: either find token-name "Legacy" [
 				keys/btc-legacy
 			][
@@ -366,6 +357,9 @@ wallet: context [
 			]
 			keys/bip32-path: keys/btc-path
 			keys/set-btc-network net-name
+		][
+			append addr-list/menu ["Batch Payment" batch]
+			fast-api?: none? token-contract
 		]
 		do-reload
 	]
@@ -841,6 +835,7 @@ wallet: context [
 		]
 
 		btc-ui/setup-actors
+		eth-batch/setup-actors
 	]
 
 	run: does [
