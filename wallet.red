@@ -504,7 +504,7 @@ wallet: context [
 		value: eth/eth-to-wei amount
 
 		either token-contract [
-			if keys/ledger-nano-s? [
+			if all [keys/ledger-nano-s? net-name = "mainnet"] [
 				data: eth-tokens/get-erc20-info token-contract
 				ledger/provide-erc20-info data
 			]
