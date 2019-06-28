@@ -208,9 +208,8 @@ btc: context [
 				(to-json body)
 		]
 
-		if all [not error? res: try [write url command] map? res: load-json res][return res]
-		if map? res: load-json write url command [return res]
-		new-error 'post-url "server error" reduce [url command]
+		if all [not error? res: try [write url command] map? res2: try [load-json res]][return res2]
+		new-error 'post-url "server error" reduce [command res]
 	]
 
 	publish-tx: function [network [url!] tx [string!]][
