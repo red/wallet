@@ -943,7 +943,7 @@ hid: context [
 			][
 				handle: open-path path-to-open ;--have not been defined
 			]
-			handle/raw-usb?: cur-dev/raw-usb?
+			if handle <> null [handle/raw-usb?: cur-dev/raw-usb?]
 		]
 
 		hid-free-enumeration devs  ;--have not been defined
