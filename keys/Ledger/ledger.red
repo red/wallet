@@ -278,7 +278,7 @@ ledger: context [
 			if addr = btc-addr/pubkey-to-addr xkey type [
 				return xkey
 			]
-			none
+			do make error! rejoin ["get-real-pubkey: " enbase/base pubkey 16 " <> " addr]
 		][
 			pubkey
 		]
