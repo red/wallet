@@ -87,7 +87,7 @@ eth: context [
 		if none? res [return 'Timeout]
 		res: load-json res
 		unless data: select res 'result [			;-- error
-			data: select res 'error
+			data: res
 		]
 		data
 	]

@@ -49,7 +49,7 @@ wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	signed-data: addr-list: min-size: none
+	signed-data: addr-list: min-size: current-balance: none
 	addr-per-page: 5
 	locked?: no
 
@@ -418,7 +418,8 @@ wallet: context [
 		amount: valid-amount? amount-field/text
 		either amount [
 			balance: to float! skip pick addr-list/data addr-list/selected 42
-			if amount > balance [
+			current-balance: balance
+			if any [zero? balance amount > balance][
 				amount-field/text: copy "Insufficient Balance"
 				return no
 			]
@@ -590,8 +591,12 @@ wallet: context [
 		either string? result [
 			browse rejoin [explorer result]
 		][							;-- error
-			tx-error/text: rejoin ["Error! Please try again^/^/" form result]
-			view/flags tx-error-dlg 'modal
+			alert rejoin [
+				"Error! Please try again^/^/"
+				"Sender:  " addr-from/text "^/"
+				"Balance: " current-balance "^/"
+				form result
+			]
 		]
 	]
 
@@ -811,7 +816,15 @@ wallet: context [
 						data: pick addr-list/data addr-list/selected
 						addr: copy/part data 42
 						amount: eth/eth-to-wei trim/head copy skip data 42
-						eth-batch/open addr amount
+						either zero256? amount [
+							alert rejoin [
+								"Error! Insufficient Balance. ^/^/"
+								"Sender:  " addr "^/"
+								"Balance: " trim/head form-i256 amount 18 18
+							]
+						][
+							eth-batch/open addr amount
+						]
 					]
 					copy-unused [copy-addr/unused]
 				]

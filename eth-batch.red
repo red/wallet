@@ -139,13 +139,13 @@ eth-batch: context [
 
 		nonce: eth/get-nonce wallet/network from-addr
 		if nonce = -1 [
-			view/flags nonce-error-dlg 'modal
+			view/flags wallet/nonce-error-dlg 'modal
 			exit
 		]
 
 		;-- Edge case: ledger key may locked in this moment
 		unless string? keys/get-address 0 [
-			view/flags unlock-dev-dlg 'modal
+			view/flags wallet/unlock-dev-dlg 'modal
 			exit
 		]
 
