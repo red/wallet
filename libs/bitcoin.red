@@ -213,13 +213,17 @@ btc: context [
 	]
 
 	publish-tx: function [network [url!] tx [string!]][
-		url: rejoin [network "/tools/tx-publish"]
-		body: make map! reduce ['rawhex tx]
-		resp: post-url url body
-		if 0 <> err-no: resp/err_no [
-			new-error 'publish-tx "server error" reduce [url err-no resp/err_msg]
+		;url: rejoin [network "/tools/tx-publish"]
+		url: either find network "tchain" [		;-- testnet
+			https://chain.so/api/v2/send_tx/BTCTEST
+		][
+			https://chain.so/api/v2/send_tx/BTC
 		]
-		true
+		body: rejoin ["tx_hex=" tx]
+		resp: load-json write url body
+		either resp/status = "success" [resp/data/txid][
+			new-error 'publish-tx "server error" resp
+		]
 	]
 
 	decode-tx: function [network [url!] tx [string!]][
