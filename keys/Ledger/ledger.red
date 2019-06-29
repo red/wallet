@@ -445,11 +445,12 @@ ledger: context [
 		input-count: length? input-iter
 		trust-type: 1
 
+		continue?: false
 		forall input-iter [
 			clear data
 			append data DEFAULT_VERSION
 			append data input-count
-			type: 0
+			type: either continue? [80h][0]
 			start-hash-input/first type data
 
 			forall input-iter2 [
@@ -540,6 +541,7 @@ ledger: context [
 			][
 				repend input-iter/1 ['signed temp]
 			]
+			continue?: true
 		]
 
 		signed: make binary! 800
