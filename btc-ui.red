@@ -359,6 +359,7 @@ context [
 		utxs: calc-balance accout-info input-amount input-fee input-addr
 		unless utxs [
 			amount-field/text: copy "unconfirmed balance!"
+			reset-sign-button
 			exit
 		]
 		tx-info: clear []
