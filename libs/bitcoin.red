@@ -201,7 +201,7 @@ btc: context [
 	]
 
 	post-url: function [url [url!] body [map!]][
-		wait 0.3
+		wait 0.5
 		command: compose/only [
 				POST
 				(headers)
