@@ -161,7 +161,7 @@ ledger: context [
 			request-pin-state: 'Requesting
 			case [
 				#{BF00018D} = data ['browser-support-on]
-				#{6804} = data [request-pin-state: 'HasRequested 'locked]
+				any [#{6804} = data data/1 = 6Fh][request-pin-state: 'HasRequested 'locked]
 				#{6700} = data ['plug]
 			]
 		]
@@ -199,8 +199,8 @@ ledger: context [
 		][
 			request-pin-state: 'Requesting
 			case [
-				#{6804} = data [request-pin-state: 'HasRequested 'locked]
-				#{6700} = data ['plug]
+				data/1 = 6Fh	[request-pin-state: 'HasRequested 'locked]
+				#{6700} = data	['plug]
 			]
 		]
 	]
