@@ -181,8 +181,12 @@ wallet: context [
 						addr = 'browser-support-on [{Please set "Browser support" to "No"}]
 						addr = 'locked [
 							locked?: yes
-							usb-device/rate: 0:0:2
-							"Please unlock your key"
+							either coin-type = 'BTC [
+								"Please unlock your key and restart the Bitcoin app"
+							][
+								usb-device/rate: 0:0:2
+								"Please unlock your key"
+							]
 						]
 						true [
 							either coin-type = 'BTC [
@@ -714,7 +718,7 @@ wallet: context [
 	unlock-dev-dlg: layout [
 		title "Unlock your key"
 		below center
-		text font-size 12 {Unlock your key. If it's Ledger, ensure "Browser support" is "No".}
+		text font-size 12 {Unlock your key. If use Ledger, please restart the app.}
 		button "OK" [unview]
 	]
 
