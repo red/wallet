@@ -394,7 +394,14 @@ keys: context [
 	get-balance: func [network idx /local res][
 		if unused-idx > -1 [return reduce [rejoin ["Unused Account #" idx + 1]]]
 		res: enum-address-info bip32-path idx network
-		if zero256? res/balance [unused-idx: idx]
+		if all [
+			1 = length? res/change
+			1 = length? res/origin
+			res/change/1/tx-count = 0
+			res/change/1/unconfirmed-tx-count = 0
+			res/origin/1/tx-count = 0
+			res/origin/1/unconfirmed-tx-count = 0
+		][unused-idx: idx]
 		put btc-accounts idx res
 		form-i256 res/balance 8 8
 	]
