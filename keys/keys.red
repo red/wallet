@@ -316,10 +316,10 @@ keys: context [
 
 		either ledger-nano-s? [
 			BATCH-NUM: 1
-			set 'network-delay? no
+			btc/network-delay?: no
 		][
 			BATCH-NUM: 10
-			set 'network-delay? yes
+			btc/network-delay?: yes
 		]
 
 		list: copy []
@@ -386,7 +386,7 @@ keys: context [
 
 			i: i + 1
 		]
-		set 'network-delay? yes
+		btc/network-delay?: yes
 		append list reduce ['balance total]
 		list
 	]
