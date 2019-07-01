@@ -152,11 +152,12 @@ wallet: context [
 	]
 
 	list-addresses: func [
-		/prev /next /local addr-balances addrs addr entry balances balance n idx
+		/prev /next /local addr-balances addrs addr entry balances balance n idx err?
 	][
 		update-ui no
 
 		either keys/key [
+			err?: no
 			locked?: no
 			addrs: clear []
 			addr-balances: clear []
@@ -209,6 +210,7 @@ wallet: context [
 						balances: fetch-balance n
 					][
 						info-msg/text: {Fetch balance: Timeout. Please try "Reload" again}
+						err?: yes
 						break
 					]
 					poke addr-balances idx rejoin [addr "         " balances]
@@ -223,7 +225,7 @@ wallet: context [
 
 			update-ui no
 			either coin-type = 'BTC [
-				info-msg/text: ""
+				unless err? [info-msg/text: ""]
 			][
 				info-msg/text: "Please wait while loading balances..."
 				either error? try [
