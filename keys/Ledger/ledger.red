@@ -476,15 +476,15 @@ ledger: context [
 					start-hash-input type data
 				]
 			]
-			clear data
 			if change-index: tx/change-index [
+				clear data
 				ids: select tx/outputs/(change-index) 'path
 				append data collect [
 					keep length? ids
 					forall ids [keep to-bin32 pick ids 1]
 				]
+				final-hash-input FFh data
 			]
-			final-hash-input FFh data
 
 			clear data
 			append data length? tx/outputs
@@ -645,15 +645,15 @@ ledger: context [
 			start-hash-input type data
 		]
 
-		clear data
 		if change-index: tx/change-index [
+			clear data
 			ids: select tx/outputs/(change-index) 'path
 			append data collect [
 				keep length? ids
 				forall ids [keep to-bin32 pick ids 1]
 			]
+			final-hash-input FFh data
 		]
-		final-hash-input FFh data
 
 		clear data
 		output-count: length? tx/outputs
