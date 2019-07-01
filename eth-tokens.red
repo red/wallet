@@ -34,7 +34,8 @@ eth-tokens: context [
 		data: copy pick all-tokens-list/data idx * 2 + 2 ;-- [sym address decimals name signature]
 		put tokens-info data/2 data/5
 
-		poke data 2 reduce ["mainnet" data/2]			 ;-- [sym ["mainnet" address] decimals name signature]
+		clear back tail data
+		poke data 2 reduce ["mainnet" data/2]			 ;-- [sym ["mainnet" address] decimals name]
 		either cur-idx > 0 [
 			insert skip current-tokens-list/data cur-idx name
 			insert skip contracts-list cur-idx * 4 data

@@ -308,9 +308,9 @@ wallet: context [
 				append tokens name
 			]
 			eth-tokens/do-config face tokens
-			face/selected: 2
-			if face/extra = 2 [exit]
-			idx: 2
+			face/selected: 4		;-- select ETH
+			if face/extra = 4 [exit]
+			idx: 4
 		]
 
 		face/extra: idx				;-- save index
