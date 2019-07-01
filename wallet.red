@@ -20,19 +20,6 @@ throw-error: func [msg [string! block!]][
 
 process-events: does [loop 10 [do-events/no-wait]]
 
-network-delay?: yes
-
-try-read: func [url][
-	;-- workaround for speed limitation of some WebAPIs
-	loop 2 [
-		if network-delay? [
-			wait 0.5
-		]
-		unless error? res: try [read url][return res]
-	]
-	res
-]
-
 #include %libs/int256.red
 #include %libs/ethereum.red
 #include %libs/bitcoin.red
