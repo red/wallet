@@ -1,5 +1,13 @@
 # A Desktop Client for Ledger Nano S and TREZOR hardware keys
 
+# FEATURES
+
+* Ledger Nano S and TREZOR hardware key support.
+* Secure BTC, ETH and 1200 ERC-20 tokens transactions.
+* Batch processing of a list of transactions. (ETH and ERC-20 tokens only)
+* Single binary (less than 1MB), no installation, no setup.
+* Runs on Windows 7/8/10 and macOS 10.1x.
+
 # How to build the wallet from source
 
 ## Quick and easy way
