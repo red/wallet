@@ -143,14 +143,14 @@ context [
 			reset-sign-button
 
 			accout-info: select keys/btc-accounts address-index
-			send-dialog/rate: 0:0:1
+			prepare-tx-dlg/rate: 0:0:1
 			label-unit/text: unit-name
 			fee-unit/text: unit-name
 			clear addr-to/text
 			clear amount-field/text
 
-			update-send-dialog no
-			view/flags send-dialog 'modal
+			center-face/with prepare-tx-dlg wallet/ui
+			view/flags prepare-tx-dlg 'modal
 		]
 	]
 
@@ -469,19 +469,26 @@ context [
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
 	]
 
+	prepare-tx-dlg: layout [
+		title "Preparing the transaction..."
+		below center
+		text font-size 12 {Preparing the transaction, Please wait a moment.}
+		button "Cancel" [unview]
+	]
+
 	setup-actors: does [
-		send-dialog/rate: 0:0:1
-		send-dialog/actors: make object! [
+		prepare-tx-dlg/rate: 0:0:1
+		prepare-tx-dlg/actors: make object! [
 			on-time: func [face event /local res][
 				face/rate: none
 				update-utxs
 				tx-rates: btc/get-rate 'all
-				update-send-dialog yes
+				unview
+				view/flags send-dialog 'modal
 			]
 			on-close: func [face event][
 				face/rate: 0:0:1
 			]
 		]
 	]
-
 ]

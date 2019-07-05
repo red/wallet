@@ -36,7 +36,7 @@ wallet: context [
 
 	list-font: make font! [name: get 'font-fixed size: 11]
 
-	signed-data: addr-list: min-size: current-balance: none
+	signed-data: addr-list: min-size: current-balance: coin-unit: none
 	addr-per-page: 5
 	locked?: no
 
@@ -320,6 +320,7 @@ wallet: context [
 		if idx: find token-name " (" [
 			token-abbr: copy/part token-name idx
 		]
+		coin-unit/text: rejoin ["Balances (" token-abbr ")"]
 		coin-type: either token-abbr = "BTC" [
 			page: 0
 			page-info/selected: 1
@@ -670,7 +671,7 @@ wallet: context [
 	]
 
 	ui: layout compose [
-		title "RED Wallet"
+		title "RED Wallet v0.4.0"
 		text 50 "Device:" dev: drop-list 125 :do-select-device
 		btn-send: button "Send" :do-send disabled
 		token-list: drop-list data ["Add Tokens"] 80 select 4 :do-select-token
@@ -678,7 +679,7 @@ wallet: context [
 		btn-reload: button "Reload" :do-reload disabled
 		return
 		
-		my-addr-text: text 185 bold "My Addresses" on-dbl-click [
+		my-addr-text: text 180 bold "My Addresses" on-dbl-click [
 			if all [coin-type = 'ETH keys/ledger-nano-s?][
 				keys/eth-path: either 4 = length? keys/eth-path [
 					keys/trezor-path
@@ -689,7 +690,7 @@ wallet: context [
 				do-reload
 			]
 		] pad 160x0
-		text bold "Balances" right return pad 0x-10
+		coin-unit: text 120 bold "Balances" right return pad 0x-10
 		
 		addr-list: text-list font list-font 530x100 return middle
 		
