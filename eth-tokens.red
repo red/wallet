@@ -51,8 +51,8 @@ eth-tokens: context [
 		face [object!] event [event!]
 		/local contracts-list sym-list cur-idx
 	][
-		contracts-list: skip wallet-contracts 4			;-- skip ETH
-		sym-list: skip wallet-token-list 2				;-- skip "Add Tokens" and "ETH"
+		contracts-list: skip wallet-contracts 12
+		sym-list: skip wallet-token-list 4
 
 		cur-idx: current-tokens-list/selected
 		if cur-idx > 0 [
