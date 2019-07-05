@@ -571,7 +571,8 @@ hid: context [
 
 	;--hid_enumerate function
 	enumerate: func [
-		id 		[integer!] ;vendor-id and product-id
+		id 		[integer!]	;-- vendor-id and product-id
+		hid?	[logic!]	;-- search HID devices only
 		return: [hid-device-info]
 		/local
 			res 				[logic!]
@@ -612,13 +613,13 @@ hid: context [
 			pass				[integer!]
 	][
 		HidClassGuid: [4D1E55B2h 11CFF16Fh 1100CB88h 30000011h]
-		pass: 1
 		root: null
 		cur-dev: null
 		devinterface-detail: null
 		device-info-set: as int-ptr! INVALID-HANDLE-VALUE
 		driver_name: as c-string! system/stack/allocate 64
 		wstr: as c-string! system/stack/allocate 256
+		either hid? [pass: 2][pass: 1]
 
 		until [
 			raw-usb?: no
@@ -909,7 +910,7 @@ hid: context [
 		handle: null
 		id: product-id << 16 + vendor-id
 
-		devs: enumerate id
+		devs: enumerate id type and 1000h <> 0	;-- 1000h: HID only
 		cur-dev: devs
 		while [cur-dev <> null] [
 			usage: cur-dev/usage >>> 16
