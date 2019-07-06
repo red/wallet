@@ -35,6 +35,7 @@ keys: context [
 	btc-segwit:		[80000031h 80000000h 80000000h 0 idx]	;-- btc segwit path
 	btc-legacy:		[8000002Ch 80000000h 80000000h 0 idx]
 
+	time-delay:		0
 	unused-idx:		-1
 	btc-accounts:	make block! 10	;-- BTC accounts information
 
@@ -146,7 +147,7 @@ keys: context [
 		do [key/close-pin-requesting]
 	]
 
-	get-address: func [idx [integer!] /unused /local res][
+	get-address: func [idx [integer!] /unused /local res t1 t2][
 		do [
 			switch coin-type [
 				ETH [
@@ -161,7 +162,12 @@ keys: context [
 						poke bip32-path 3 80000000h + idx
 						bip32-path/4: 0
 						bip32-path/5: 0
+						if zero? time-delay [t1: now/time/precise]
 						res: key/get-btc-address bip32-path
+						if zero? time-delay [
+							t2: now/time/precise
+							time-delay: 0.5 - (t2/second - t1/second)
+						]
 						either block? res [res/1][res]
 					]
 				]
@@ -314,13 +320,8 @@ keys: context [
 		ids: copy path
 		poke ids 3 (80000000h + account)
 
-		either ledger-nano-s? [
-			BATCH-NUM: 1
-			btc/network-delay?: no
-		][
-			BATCH-NUM: 10
-			btc/network-delay?: yes
-		]
+		btc/network-delay?: time-delay > 0
+		BATCH-NUM: either ledger-nano-s? [1][10]
 
 		list: copy []
 		c-list: copy []

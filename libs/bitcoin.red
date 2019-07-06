@@ -16,6 +16,7 @@ btc: context [
 	]
 
 	network-delay?: yes
+	time-delay:	0.5
 	top-scalar: to-i256 1e8
 	btc-to-sat: func [num [vector!] return: [vector!]][
 		mul256 num top-scalar
@@ -24,7 +25,7 @@ btc: context [
 	try-read: func [url][
 		;-- workaround for speed limitation of some WebAPIs
 		if network-delay? [
-			wait 0.5
+			wait time-delay
 		]
 		unless error? res: try [read url][return res]
 		wait 0.5

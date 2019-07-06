@@ -123,17 +123,6 @@ context [
 		]
 	]
 
-	update-send-dialog: func [enabled? /local f][
-		either enabled? [
-			send-dialog/text: "Send Bitcoin"
-		][
-			send-dialog/text: "Preparing the transaction..."
-		]
-		foreach f [addr-to amount-field tx-rate tx-fee btn-sign][
-			set in get f 'enabled? enabled?
-		]
-	]
-
 	do-send: func [face [object!] event [event!] /local item rate][
 		if addr-list/data [
 			if addr-list/selected = -1 [addr-list/selected: 1]
@@ -469,19 +458,16 @@ context [
 		pad 164x10 button "Cancel" [signed-data: none unview] button "Send" :do-confirm
 	]
 
-	prepare-tx-dlg: layout [
-		title "Preparing the transaction..."
-		below center
+	prepare-tx-dlg: layout/flags [
 		text font-size 12 {Preparing the transaction, Please wait a moment.}
-		button "Cancel" [unview]
-	]
+	] 'no-title
 
 	setup-actors: does [
 		prepare-tx-dlg/rate: 0:0:1
 		prepare-tx-dlg/actors: make object! [
 			on-time: func [face event /local res][
 				face/rate: none
-				update-utxs
+				try [update-utxs]
 				tx-rates: btc/get-rate 'all
 				unview
 				view/flags send-dialog 'modal
