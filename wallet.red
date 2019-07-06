@@ -263,14 +263,15 @@ wallet: context [
 		btn-sign/text: "Sign"
 	]
 
-	do-send: func [face [object!] event [event!]][
+	do-send: func [face [object!] event [event!] /local data][
 		either coin-type = 'BTC [
 			btc-ui/do-send face event
 		][
-			if addr-list/data [
+			data: addr-list/data
+			if all [data not empty? data] [
 				if addr-list/selected = -1 [addr-list/selected: 1]
 				network-to/text: net-name
-				addr-from/text: copy/part pick addr-list/data addr-list/selected 42
+				addr-from/text: copy/part pick data addr-list/selected 42
 				gas-limit/text: either token-contract ["159020"]["21000"]
 				reset-sign-button
 				label-unit/text: token-abbr
@@ -451,7 +452,7 @@ wallet: context [
 	update-ui: function [enabled? [logic!]][
 		btn-send/enabled?: to-logic all [enabled? addr-list/selected addr-list/selected > 0]
 		if page > 0 [btn-prev/enabled?: enabled?]
-		foreach f [btn-more net-list token-list page-info btn-reload][
+		foreach f [dev btn-more net-list token-list page-info btn-reload][
 			set in get f 'enabled? enabled?
 		]
 		my-addr-text/text: list-title
@@ -770,6 +771,7 @@ wallet: context [
 						dev/data: keys/list
 						dev/selected: keys/index
 					]
+					if empty? dev/data [update-ui no]
 				]
 				on-time: func [face event][
 					face/extra: 'on-time
