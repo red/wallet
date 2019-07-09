@@ -16,7 +16,7 @@ btc: context [
 	]
 
 	network-delay?: yes
-	time-delay:	0.5
+	time-delay:	0.51
 	top-scalar: to-i256 1e8
 	btc-to-sat: func [num [vector!] return: [vector!]][
 		mul256 num top-scalar
