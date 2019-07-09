@@ -166,7 +166,8 @@ keys: context [
 						res: key/get-btc-address bip32-path
 						if zero? time-delay [
 							t2: now/time/precise
-							time-delay: 0.5 - (t2/second - t1/second)
+							t1: t2 - t1
+							time-delay: 0.5 - t1/second
 						]
 						either block? res [res/1][res]
 					]
