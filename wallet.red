@@ -688,6 +688,7 @@ wallet: context [
 					ledger-legacy-path
 				]
 				keys/bip32-path: keys/eth-path
+				keys/ledger-path: keys/eth-path
 				do-reload
 			]
 		] pad 160x0
