@@ -52,6 +52,7 @@ Red/System [
 		]
 
 		USBDevWndProc: func [
+			[stdcall]
 			hWnd	[handle!]
 			msg		[integer!]
 			wParam	[integer!]
