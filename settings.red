@@ -43,18 +43,18 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 		;-- Token name | NetWorks | Decimal places | Fullname
 		tokens: [
 			"BTC" [
-				"MainNet" #[none]
-				"TestNet" #[none]
+				"MainNet" #(none)
+				"TestNet" #(none)
 			] 8 "Bitcoin"
 			"BTC (Legacy)" [
-				"MainNet" #[none]
-				"TestNet" #[none]
+				"MainNet" #(none)
+				"TestNet" #(none)
 			] 8 "Bitcoin"
 			"ETH" [
-				"mainnet" #[none]
-				"Rinkeby" #[none]
-				"Kovan"	  #[none]
-				"Ropsten" #[none]
+				"mainnet" #(none)
+				"Rinkeby" #(none)
+				"Kovan"	  #(none)
+				"Ropsten" #(none)
 			] 18 "Ethereum"
 			"RED" [
 				"mainnet" "76960Dccd5a1fe799F7c29bE9F19ceB4627aEb2f"
@@ -63,7 +63,7 @@ load-cfg: func [/local cfg-dir cfg-content default-cfg][
 		]
 
 		Ledger-Path: [8000002Ch 8000003Ch 80000000h idx]
-		win-pos:	 #[none]
+		win-pos:	 #(none)
 	]
 
 	cfg: either all [

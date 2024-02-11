@@ -183,7 +183,7 @@ trezor-old: context [
 		res				[map!]
 		return:			[integer!]
 	][
-		WriteAndRead 'Initialize 'Features #() res
+		WriteAndRead 'Initialize 'Features #[] res
 	]
 
 	EthereumGetAddress: func [
@@ -224,8 +224,8 @@ trezor-old: context [
 		res2: make map! []
 		proto-encode/decode trezor-message/messages 'ButtonRequest res2 command-buffer
 		res2: make map! []
-		WriteAndRead 'ButtonAck 'ButtonRequest #() res2
-		WriteAndRead 'ButtonAck 'EthereumTxRequest #() res
+		WriteAndRead 'ButtonAck 'ButtonRequest #[] res2
+		WriteAndRead 'ButtonAck 'EthereumTxRequest #[] res
 	]
 
 	;-- A Sequence like this, GetAbcd -> [PinMatrixRequest -> PinMatrixAck -> GetAbcd] -> Abcd
@@ -605,7 +605,7 @@ trezor: context [
 		res				[map!]
 		return:			[integer!]
 	][
-		WriteAndRead 'Initialize 'Features #() res
+		WriteAndRead 'Initialize 'Features #[] res
 	]
 
 	EthereumGetAddress: func [
@@ -647,8 +647,8 @@ trezor: context [
 		res2: make map! []
 		proto-encode/decode trezor-message/messages 'ButtonRequest res2 command-buffer
 		res2: make map! []
-		WriteAndRead 'ButtonAck 'ButtonRequest #() res2
-		WriteAndRead 'ButtonAck 'EthereumTxRequest #() res
+		WriteAndRead 'ButtonAck 'ButtonRequest #[] res2
+		WriteAndRead 'ButtonAck 'EthereumTxRequest #[] res
 	]
 
 	SignTxSequence: func [

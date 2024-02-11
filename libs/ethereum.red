@@ -61,12 +61,12 @@ eth: context [
 		)
 	]
 
-	body: #(
+	body: #[
 		jsonrpc: "2.0"
 		id: 1
 		method: none
 		params: none
-	)
+	]
 
 	cookie: func [str [string!]][
 		lowercase take/part enbase/base checksum str 'sha256 16 16
